@@ -1,0 +1,30 @@
+programsy
+ident (Hello)
+semicolon
+varsy
+ident (a)
+comma
+ident (b)
+colon
+ident (integer)
+semicolon
+beginsy
+ident (a)
+becomes
+intcon (5)
+semicolon
+ident (b)
+becomes
+ident (a)
+plus
+intcon (10)
+semicolon
+ident (writeln)
+lparent
+string ('Result = ')
+comma
+ident (b)
+rparent
+semicolon
+endsy
+period
