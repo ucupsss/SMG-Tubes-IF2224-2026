@@ -3,8 +3,11 @@
 #include <filesystem>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "lexer.hpp"
+
+namespace fs = std::filesystem;
 
 std::string tokenTypeToString(TokenType type) {
     switch (type) {
@@ -87,38 +90,74 @@ std::string formatToken(const Token& token) {
     return result;
 }
 
-std::string readInput(int argc, char* argv[]) {
-    if (argc > 1) {
-        const std::filesystem::path inputPath(argv[1]);
+bool hasTxtExtension(const fs::path& filePath) {
+    return filePath.extension() == ".txt";
+}
 
-        if (inputPath.extension() != ".txt") {
-            std::cerr << "Error: file input harus berekstensi .txt\n";
-            return "";
-        }
+bool readInputFile(const fs::path& inputPath, std::string& source) {
+    if (!hasTxtExtension(inputPath)) {
+        std::cerr << "Error: file input harus berekstensi .txt\n";
+        return false;
+    }
 
-        std::ifstream file(inputPath);
-        if (!file.is_open()) {
-            std::cerr << "Gagal membuka file input!\n";
-            return "";
-        }
-
-        std::ostringstream buffer;
-        buffer << file.rdbuf();
-        return buffer.str();
+    std::ifstream file(inputPath);
+    if (!file.is_open()) {
+        std::cerr << "Gagal membuka file input: " << inputPath.string() << "\n";
+        return false;
     }
 
     std::ostringstream buffer;
-    buffer << std::cin.rdbuf();
-    return buffer.str();
+    buffer << file.rdbuf();
+    source = buffer.str();
+    return true;
 }
 
-int main(int argc, char* argv[]) {
-    std::string source = readInput(argc, argv);
-    if (source.empty()) {
-        return 0;
+bool writeOutputFile(const fs::path& outputPath, const std::vector<std::string>& lines) {
+    if (!hasTxtExtension(outputPath)) {
+        std::cerr << "Error: file output harus berekstensi .txt\n";
+        return false;
+    }
+
+    fs::create_directories(outputPath.parent_path());
+
+    std::ofstream file(outputPath);
+    if (!file.is_open()) {
+        std::cerr << "Gagal membuat file output: " << outputPath.string() << "\n";
+        return false;
+    }
+
+    for (const std::string& line : lines) {
+        file << line << "\n";
+    }
+
+    return true;
+}
+
+int main() {
+    std::string inputFileName;
+    std::string outputFileName;
+
+    std::cout << "Masukkan nama file input: ";
+    std::getline(std::cin, inputFileName);
+
+    std::cout << "Masukkan nama file output: ";
+    std::getline(std::cin, outputFileName);
+
+    if (inputFileName.empty() || outputFileName.empty()) {
+        std::cerr << "Error: nama file input dan output tidak boleh kosong\n";
+        return 1;
+    }
+
+    const fs::path inputPath = fs::path("test") / "input" / inputFileName;
+    const fs::path outputPath = fs::path("test") / "output" / outputFileName;
+
+    std::string source;
+    if (!readInputFile(inputPath, source)) {
+        return 1;
     }
 
     Lexer lexer(source);
+    std::vector<std::string> outputLines;
 
     while (true) {
         Token token = lexer.getNextToken();
@@ -132,8 +171,13 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
-        std::cout << formatToken(token) << "\n";
+        outputLines.push_back(formatToken(token));
     }
 
+    if (!writeOutputFile(outputPath, outputLines)) {
+        return 1;
+    }
+
+    std::cout << "Output berhasil ditulis ke " << outputPath.string() << "\n";
     return 0;
 }
