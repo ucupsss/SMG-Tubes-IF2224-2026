@@ -1,11 +1,11 @@
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <sstream>
-#include <vector>
+#include <string>
 
 #include "lexer.hpp"
 
-// Helper
 std::string tokenTypeToString(TokenType type) {
     switch (type) {
         case TokenType::INTCON: return "intcon";
@@ -80,7 +80,7 @@ std::string formatToken(const Token& token) {
         if (token.type == TokenType::STRING || token.type == TokenType::CHARCON) {
             result += " ('" + token.value + "')";
         } else {
-            result += " (" + token.value + "')";
+            result += " (" + token.value + ")";
         }
     }
 
@@ -89,7 +89,14 @@ std::string formatToken(const Token& token) {
 
 std::string readInput(int argc, char* argv[]) {
     if (argc > 1) {
-        std::ifstream file(argv[1]);
+        const std::filesystem::path inputPath(argv[1]);
+
+        if (inputPath.extension() != ".txt") {
+            std::cerr << "Error: file input harus berekstensi .txt\n";
+            return "";
+        }
+
+        std::ifstream file(inputPath);
         if (!file.is_open()) {
             std::cerr << "Gagal membuka file input!\n";
             return "";
@@ -118,6 +125,11 @@ int main(int argc, char* argv[]) {
 
         if (token.type == TokenType::END_OF_FILE) {
             break;
+        }
+
+        if (token.type == TokenType::UNKNOWN) {
+            std::cerr << "Error: token tidak dikenali: " << token.value << "\n";
+            return 1;
         }
 
         std::cout << formatToken(token) << "\n";

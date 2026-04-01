@@ -7,11 +7,11 @@ Lexer::Lexer(const std::string& source) : content(source), pos(0) {
 }
 
 void Lexer::initKeywords() {
-    keywords["NOT"] = TokenType::NOTSY;
+    keywords["not"] = TokenType::NOTSY;
     keywords["div"] = TokenType::IDIV;
-    keywords["MOD"] = TokenType::IMOD;
-    keywords["AND"] = TokenType::ANDSY;
-    keywords["OR"] = TokenType::ORSY;
+    keywords["mod"] = TokenType::IMOD;
+    keywords["and"] = TokenType::ANDSY;
+    keywords["or"] = TokenType::ORSY;
     keywords["const"] = TokenType::CONSTSY;
     keywords["type"] = TokenType::TYPESY;
     keywords["var"] = TokenType::VARSY;
@@ -32,7 +32,7 @@ void Lexer::initKeywords() {
     keywords["of"] = TokenType::OFSY;
     keywords["do"] = TokenType::DOSY;
     keywords["to"] = TokenType::TOSY;
-    keywords["down"] = TokenType::DOWNTOSY;
+    keywords["downto"] = TokenType::DOWNTOSY;
     keywords["then"] = TokenType::THENSY;
 }
 
@@ -52,10 +52,12 @@ void Lexer::skipWhiteSpaceAndComments() {
     while (pos < content.length()) {
         char c = peek();
 
-        if (isspace(c)) {
+        if (std::isspace(static_cast<unsigned char>(c))) {
             advance();
 
         } else if (c == '{') {
+            advance();
+
             while (pos < content.length() && peek() != '}') {
                 advance();
             }
@@ -64,18 +66,18 @@ void Lexer::skipWhiteSpaceAndComments() {
                 advance();
             }
 
-        } else if (c == '(' && content[pos + 1] == '*') {
+        } else if (c == '(' && pos + 1 < content.length() && content[pos + 1] == '*') {
             advance();
             advance();
 
-            while(pos < content.length() && !(content[pos] != '*' && content[pos + 1] != ')')) {
+            while (pos + 1 < content.length() && !(content[pos] == '*' && content[pos + 1] == ')')) {
                 advance();
+            }
 
-                if (pos < content.length()) {
-                    advance();
-                    advance();
-                }
-            } 
+            if (pos + 1 < content.length()) {
+                advance();
+                advance();
+            }
 
         } else {
             break;
@@ -93,15 +95,20 @@ Token Lexer::getNextToken() {
     char c = peek();
 
     // DFA State: Identifier & Keywords
-    if (isalpha(c)) {
+    if (std::isalpha(static_cast<unsigned char>(c))) {
         std::string result;
 
-        while (isalnum(peek())) {
+        while (std::isalnum(static_cast<unsigned char>(peek()))) {
             result += advance();
         }
 
         std::string lowerResult = result;
-        std::transform(lowerResult.begin(), lowerResult.end(), lowerResult.begin(), ::tolower);
+        std::transform(
+            lowerResult.begin(),
+            lowerResult.end(),
+            lowerResult.begin(),
+            [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); }
+        );
 
         if (keywords.count(lowerResult)) {
             return {keywords[lowerResult], result};
@@ -111,16 +118,17 @@ Token Lexer::getNextToken() {
     }
 
     // DFA State: Numbers (Integer & Real)
-    if (isdigit(c)) {
+    if (std::isdigit(static_cast<unsigned char>(c))) {
         std::string result;
 
-        while (isdigit(peek())) {
+        while (std::isdigit(static_cast<unsigned char>(peek()))) {
             result += advance();
         }
 
-        if (peek() == '.') {
+        if (peek() == '.' && pos + 1 < content.length() &&
+            std::isdigit(static_cast<unsigned char>(content[pos + 1]))) {
             result += advance();
-            while (isdigit(peek())) {
+            while (std::isdigit(static_cast<unsigned char>(peek()))) {
                 result += advance();
             }
             
@@ -162,18 +170,20 @@ Token Lexer::getNextToken() {
         case ')': return {TokenType::RPARENT, ")"};
         case '[': return {TokenType::LBRACK, "["};
         case ']': return {TokenType::RBRACK, "]"};
-        case '=': 
+        case '=':
             if (peek() == '=') {
                 advance();
                 return {TokenType::EQL, "=="};
             }
+
+            return {TokenType::UNKNOWN, std::string(1, c)};
         case ':':
             if (peek() == '=') {
                 advance();
                 return {TokenType::BECOMES, ":="};
             }
 
-            return  {TokenType::COLON, ";"};
+            return  {TokenType::COLON, ":"};
         case '>':
             if (peek() == '=') {
                 advance();
