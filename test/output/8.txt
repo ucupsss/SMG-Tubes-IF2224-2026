@@ -11,8 +11,7 @@ semicolon
 beginsy
 ident (a)
 becomes
-minus
-intcon (12)
+intcon (-12)
 semicolon
 ident (b)
 unknown (=)

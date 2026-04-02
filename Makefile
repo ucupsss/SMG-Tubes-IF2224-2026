@@ -1,14 +1,21 @@
-CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic
-TARGET = bin/lexer_app
-SRC = src/main.cpp src/lexer.cpp
+CXX := g++
+CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic
 
-.PHONY: all run clean
+SRC_DIR := src
+BIN_DIR := bin
+TARGET := $(BIN_DIR)/lexer_app.exe
+TARGET_WIN := $(subst /,\,$(TARGET))
+SRC := $(SRC_DIR)/main.cpp $(SRC_DIR)/lexer.cpp
 
-all: $(TARGET)
+.PHONY: all build run clean
+
+all: build
+
+build: $(TARGET)
 
 $(TARGET): $(SRC)
 	@echo Mengompilasi program...
+	@mkdir -p $(BIN_DIR)
 	@$(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET)
 
 run: $(TARGET)
@@ -17,4 +24,4 @@ run: $(TARGET)
 
 clean:
 	@echo Membersihkan program...
-	@del /Q $(TARGET).exe 2>nul || rm -f $(TARGET)
+	@cmd /C if exist "$(TARGET_WIN)" del /Q "$(TARGET_WIN)"
