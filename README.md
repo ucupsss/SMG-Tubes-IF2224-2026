@@ -91,7 +91,8 @@ make clean
 SMG-Tubes-IF2224-2026/
 ├── Makefile              # Skrip untuk kompilasi
 ├── README.md             # File ini
-├── doc/                  # Dokumentasi (jika ada)
+├── bin/                  # Executable File
+├── doc/                  # Dokumentasi 
 ├── src/                  # Folder Source Code
 │   ├── main.cpp         # Program utama
 │   ├── lexer.cpp        # Implementasi lexer

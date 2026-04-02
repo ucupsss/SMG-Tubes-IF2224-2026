@@ -141,7 +141,7 @@ Token Lexer::getNextToken() {
     // DFA State: Numbers (Integer & Real) - including negative numbers
     if (std::isdigit(static_cast<unsigned char>(c)) || 
         (c == '-' && pos + 1 < content.length() && 
-         std::isdigit(static_cast<unsigned char>(content[pos + 1])))) {
+        std::isdigit(static_cast<unsigned char>(content[pos + 1])))) {
         std::string result;
 
         // Handle negative sign
