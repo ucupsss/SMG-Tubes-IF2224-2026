@@ -8,10 +8,13 @@ SRC = src/main.cpp src/lexer.cpp
 all: $(TARGET)
 
 $(TARGET): $(SRC)
-	$(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET)
+	@echo Mengompilasi program...
+	@$(CXX) $(CXXFLAGS) $(SRC) -o $(TARGET)
 
 run: $(TARGET)
-	./$(TARGET)
+	@echo Menjalankan program...
+	@./$(TARGET)
 
 clean:
-	del /Q $(TARGET).exe 2>nul || rm -f $(TARGET)
+	@echo Membersihkan program...
+	@del /Q $(TARGET).exe 2>nul || rm -f $(TARGET)
