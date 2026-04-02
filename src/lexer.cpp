@@ -117,9 +117,16 @@ Token Lexer::getNextToken() {
         return {TokenType::IDENT, result};
     }
 
-    // DFA State: Numbers (Integer & Real)
-    if (std::isdigit(static_cast<unsigned char>(c))) {
+    // DFA State: Numbers (Integer & Real) - including negative numbers
+    if (std::isdigit(static_cast<unsigned char>(c)) || 
+        (c == '-' && pos + 1 < content.length() && 
+         std::isdigit(static_cast<unsigned char>(content[pos + 1])))) {
         std::string result;
+
+        // Handle negative sign
+        if (c == '-') {
+            result += advance();
+        }
 
         while (std::isdigit(static_cast<unsigned char>(peek()))) {
             result += advance();
