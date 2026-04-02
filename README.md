@@ -4,8 +4,9 @@ Tugas Besar Teori Bahasa Formal dan Automata 2026
 # Milestone 1 - Lexical Analysis (Arion Compiler)
 
 ## Identitas Kelompok
-**Kelompok:** [Kode Kelompok Anda, misal: K01-KelompokX]
-Anggota Kelompok:
+**Kelompok:** Kelompok SMG
+
+**Anggota Kelompok:**
 1. 13524014 - Yusuf Faishal Listyardi
 2. 13524046 -  Farrel Limjaya
 3. 13524066 - Nathanael Gunawan
@@ -78,10 +79,10 @@ make clean
 
 | No | Anggota | NIM | Tugas |
 |---|---|---|---|
-| 1 | Yusuf Faishal Listyardi | 13524014 | [Deskripsi Tugas] |
-| 2 | Farrel Limjaya | 13524046 | [Deskripsi Tugas] |
-| 3 | Nathanael Gunawan | 13524066 | [Deskripsi Tugas] |
-| 4 | A. Fawwaz Azzam Wicaksono | 13524070 | [Deskripsi Tugas] |
+| 1 | Yusuf Faishal Listyardi | 13524014 | Membuat DFA, Membuat code program, Membuat Laporan |
+| 2 | Farrel Limjaya | 13524046 | Membuat DFA, Membuat code program, Membuat Laporan |
+| 3 | Nathanael Gunawan | 13524066 | Membuat DFA, Membuat code program, Membuat Laporan |
+| 4 | A. Fawwaz Azzam Wicaksono | 13524070 | Membuat DFA, Membuat code program, Membuat Laporan |
 
 ---
 
