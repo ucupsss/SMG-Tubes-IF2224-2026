@@ -98,10 +98,7 @@ SMG-Tubes-IF2224-2026/
 │   └── lexer.hpp        # Header file lexer
 └── test/                # Folder Test
     ├── input/           # File input test
-    │   └── sample.txt
     └── output/          # File output hasil run
-        ├── sample_out.txt
-        └── coba.txt
 ```
 
 ---

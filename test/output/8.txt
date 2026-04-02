@@ -1,5 +1,5 @@
 programsy
-ident (Hello)
+ident (negative)
 semicolon
 varsy
 ident (a)
@@ -11,19 +11,21 @@ semicolon
 beginsy
 ident (a)
 becomes
-intcon (5)
+minus
+intcon (3)
 semicolon
 ident (b)
-becomes
-ident (a)
-plus
-intcon (10)
+unknown (=)
+intcon (2)
 semicolon
 ident (writeln)
 lparent
-string ('Result = ')
-comma
-ident (b)
+string ('a adalah bilangan negatif')
+rparent
+semicolon
+ident (writeln)
+lparent
+string ('b bukan bilangan negatif')
 rparent
 semicolon
 endsy

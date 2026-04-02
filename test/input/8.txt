@@ -1,0 +1,11 @@
+program negative;
+
+var
+    a, b: integer;
+
+begin
+    a := -3;
+    b = 2;
+    writeln('a adalah bilangan negatif');
+    writeln('b bukan bilangan negatif');
+end.

@@ -32,6 +32,8 @@ class Lexer {
         std::string content;
         size_t pos;
         std::map<std::string, TokenType> keywords;
+        bool hasPendingToken;
+        Token pendingToken;
 
         void initKeywords();
         char peek();

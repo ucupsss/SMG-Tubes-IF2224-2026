@@ -1,0 +1,11 @@
+program Angka;
+
+var
+    x, y: real;
+    z: integer;
+
+begin
+    x := 3.14159;
+    y := 007;
+    z := 5;
+end.

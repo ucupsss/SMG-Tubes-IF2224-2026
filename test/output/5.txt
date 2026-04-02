@@ -1,0 +1,7 @@
+programsy
+ident (nanggung)
+semicolon
+beginsy
+ident (writeln)
+lparent
+unknown (string tidak ditutup sebelum akhir file)

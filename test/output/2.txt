@@ -1,0 +1,32 @@
+programsy
+ident (Rapat)
+semicolon
+varsy
+ident (a)
+comma
+ident (b)
+colon
+ident (integer)
+semicolon
+beginsy
+ifsy
+lparent
+ident (a)
+leq
+intcon (10)
+rparent
+andsy
+lparent
+ident (b)
+neq
+intcon (5)
+rparent
+thensy
+ident (a)
+becomes
+ident (b)
+plus
+intcon (20)
+semicolon
+endsy
+period

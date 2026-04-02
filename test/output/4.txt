@@ -1,0 +1,29 @@
+programsy
+ident (Angka)
+semicolon
+varsy
+ident (x)
+comma
+ident (y)
+colon
+ident (real)
+semicolon
+ident (z)
+colon
+ident (integer)
+semicolon
+beginsy
+ident (x)
+becomes
+realcon (3.14159)
+semicolon
+ident (y)
+becomes
+intcon (007)
+semicolon
+ident (z)
+becomes
+intcon (5)
+semicolon
+endsy
+period

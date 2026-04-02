@@ -2,7 +2,7 @@
 #include <cctype>
 #include <algorithm>
 
-Lexer::Lexer(const std::string& source) : content(source), pos(0) {
+Lexer::Lexer(const std::string& source) : content(source), pos(0), hasPendingToken(false), pendingToken{TokenType::END_OF_FILE, ""} {
     initKeywords();
 }
 
@@ -64,6 +64,10 @@ void Lexer::skipWhiteSpaceAndComments() {
 
             if (peek() == '}') {
                 advance();
+            } else {
+                hasPendingToken = true;
+                pendingToken = {TokenType::UNKNOWN, "komentar tidak ditutup sebelum akhir file"};
+                return;
             }
 
         } else if (c == '(' && pos + 1 < content.length() && content[pos + 1] == '*') {
@@ -77,6 +81,10 @@ void Lexer::skipWhiteSpaceAndComments() {
             if (pos + 1 < content.length()) {
                 advance();
                 advance();
+            } else {
+                hasPendingToken = true;
+                pendingToken = {TokenType::UNKNOWN, "komentar tidak ditutup sebelum akhir file"};
+                return;
             }
 
         } else {
@@ -87,6 +95,11 @@ void Lexer::skipWhiteSpaceAndComments() {
 
 Token Lexer::getNextToken() {
     skipWhiteSpaceAndComments();
+
+    if (hasPendingToken) {
+        hasPendingToken = false;
+        return pendingToken;
+    }
 
     if (pos >= content.length()) {
         return {TokenType::END_OF_FILE, ""}; 
@@ -142,14 +155,31 @@ Token Lexer::getNextToken() {
     if (c == '\'') {
         advance();
         std::string result;
+        bool hasEscapedQuote = false;
 
-        while (pos < content.length() && peek() != '\'') {
+        while (pos < content.length()) {
+            if (peek() == '\'') {
+                if (pos + 1 < content.length() && content[pos + 1] == '\'') {
+                    result += '\'';
+                    hasEscapedQuote = true;
+                    advance();
+                    advance();
+                    continue;
+                }
+
+                break;
+            }
+
             result += advance();
         }
 
-        advance();
+        if (peek() == '\'') {
+            advance();
+        } else {
+            return {TokenType::UNKNOWN, "string tidak ditutup sebelum akhir file"};
+        }
 
-        if (result.length() == 1) {
+        if (!hasEscapedQuote && result.length() == 1) {
             return {TokenType::CHARCON, result};
         }
 

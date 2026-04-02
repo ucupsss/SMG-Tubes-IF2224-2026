@@ -1,0 +1,22 @@
+programsy
+ident (aneh)
+semicolon
+varsy
+ident (a)
+comma
+ident (b)
+colon
+ident (integer)
+semicolon
+beginsy
+ident (a)
+unknown (@)
+ident (b)
+semicolon
+ident (writeln)
+lparent
+string ('Aku cinta asisten 'hehe'')
+rparent
+semicolon
+endsy
+period

@@ -1,0 +1,26 @@
+programsy
+ident (StringTest)
+semicolon
+constsy
+ident (huruf)
+becomes
+charcon ('a')
+semicolon
+varsy
+ident (arrayzz)
+semicolon
+ident (pesan)
+colon
+ident (string)
+semicolon
+beginsy
+ident (pesan)
+becomes
+string ('begin := 5; {bukan komentar}')
+semicolon
+ident (huruf)
+becomes
+string ('')
+semicolon
+endsy
+period

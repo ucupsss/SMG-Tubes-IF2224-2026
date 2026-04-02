@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic
-TARGET = lexer_app
+TARGET = bin/lexer_app
 SRC = src/main.cpp src/lexer.cpp
 
 .PHONY: all run clean

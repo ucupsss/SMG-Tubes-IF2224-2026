@@ -73,7 +73,8 @@ bool needsValue(TokenType type) {
            type == TokenType::INTCON ||
            type == TokenType::REALCON ||
            type == TokenType::CHARCON ||
-           type == TokenType::STRING;
+           type == TokenType::STRING ||
+           type == TokenType::UNKNOWN;
 }
 
 std::string formatToken(const Token& token) {
@@ -92,6 +93,12 @@ std::string formatToken(const Token& token) {
 
 bool hasTxtExtension(const fs::path& filePath) {
     return filePath.extension() == ".txt";
+}
+
+bool isLexerWarning(const Token& token) {
+    return token.type == TokenType::UNKNOWN && 
+            (token.value == "string tidak ditutup sebelum akhir file" || 
+                token.value == "komentar tidak ditutup sebelum akhir file");
 }
 
 bool readInputFile(const fs::path& inputPath, std::string& source) {
@@ -166,9 +173,8 @@ int main() {
             break;
         }
 
-        if (token.type == TokenType::UNKNOWN) {
-            std::cerr << "Error: token tidak dikenali: " << token.value << "\n";
-            return 1;
+        if (isLexerWarning(token)) {
+            std::cerr << "Warning: " << token.value << "\n";
         }
 
         outputLines.push_back(formatToken(token));

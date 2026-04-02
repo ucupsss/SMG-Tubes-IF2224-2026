@@ -1,0 +1,13 @@
+program StringTest;
+
+const
+    huruf := 'a';
+
+var
+    arrayzz;
+    pesan: string;
+
+begin
+    pesan := 'begin := 5; {bukan komentar}';
+    huruf := '';
+end.

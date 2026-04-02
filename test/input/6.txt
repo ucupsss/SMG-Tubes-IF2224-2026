@@ -1,0 +1,9 @@
+program aneh;
+
+var
+    a, b: integer;
+
+begin
+    a @ b;
+    writeln('Aku cinta asisten ''hehe''');
+end.

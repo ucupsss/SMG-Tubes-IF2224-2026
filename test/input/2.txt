@@ -1,0 +1,9 @@
+program Rapat;
+
+var
+    a, b: integer;
+
+begin
+    if (a <= 10) and (b <> 5) then
+    a := b + 20;
+end.
