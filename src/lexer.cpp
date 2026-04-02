@@ -56,14 +56,18 @@ void Lexer::skipWhiteSpaceAndComments() {
             advance();
 
         } else if (c == '{') {
-            advance();
+            std::string comment;
+            comment += advance();
 
             while (pos < content.length() && peek() != '}') {
-                advance();
+                comment += advance();
             }
 
             if (peek() == '}') {
-                advance();
+                comment += advance();
+                hasPendingToken = true;
+                pendingToken = {TokenType::COMMENT, comment};
+                return;
             } else {
                 hasPendingToken = true;
                 pendingToken = {TokenType::UNKNOWN, "komentar tidak ditutup sebelum akhir file"};
@@ -71,16 +75,20 @@ void Lexer::skipWhiteSpaceAndComments() {
             }
 
         } else if (c == '(' && pos + 1 < content.length() && content[pos + 1] == '*') {
-            advance();
-            advance();
+            std::string comment;
+            comment += advance();
+            comment += advance();
 
             while (pos + 1 < content.length() && !(content[pos] == '*' && content[pos + 1] == ')')) {
-                advance();
+                comment += advance();
             }
 
             if (pos + 1 < content.length()) {
-                advance();
-                advance();
+                comment += advance();
+                comment += advance();
+                hasPendingToken = true;
+                pendingToken = {TokenType::COMMENT, comment};
+                return;
             } else {
                 hasPendingToken = true;
                 pendingToken = {TokenType::UNKNOWN, "komentar tidak ditutup sebelum akhir file"};

@@ -62,6 +62,7 @@ std::string tokenTypeToString(TokenType type) {
         case TokenType::TOSY: return "tosy";
         case TokenType::DOWNTOSY: return "downtosy";
         case TokenType::THENSY: return "thensy";
+        case TokenType::COMMENT: return "comment";
         case TokenType::UNKNOWN: return "unknown";
         case TokenType::END_OF_FILE: return "eof";
         default: return "unknown";
@@ -74,6 +75,7 @@ bool needsValue(TokenType type) {
            type == TokenType::REALCON ||
            type == TokenType::CHARCON ||
            type == TokenType::STRING ||
+           type == TokenType::COMMENT ||
            type == TokenType::UNKNOWN;
 }
 

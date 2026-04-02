@@ -22,5 +22,7 @@ ident (huruf)
 becomes
 string ('')
 semicolon
+comment ({kalo ini baru komentar})
+comment ((*ini juga*))
 endsy
 period

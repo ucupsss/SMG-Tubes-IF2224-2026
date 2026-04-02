@@ -4,7 +4,7 @@ var
     a, b: integer;
 
 begin
-    a := -3;
+    a := -12;
     b = 2;
     writeln('a adalah bilangan negatif');
     writeln('b bukan bilangan negatif');

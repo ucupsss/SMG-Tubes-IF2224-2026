@@ -2,5 +2,4 @@ program nanggung;
 
 begin
     writeln('hello
-    { komentar tidak ditutup
 end.

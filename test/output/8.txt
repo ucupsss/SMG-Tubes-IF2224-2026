@@ -12,7 +12,7 @@ beginsy
 ident (a)
 becomes
 minus
-intcon (3)
+intcon (12)
 semicolon
 ident (b)
 unknown (=)

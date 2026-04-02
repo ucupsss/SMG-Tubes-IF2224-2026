@@ -10,4 +10,6 @@ var
 begin
     pesan := 'begin := 5; {bukan komentar}';
     huruf := '';
+    {kalo ini baru komentar}
+    (*ini juga*)
 end.
