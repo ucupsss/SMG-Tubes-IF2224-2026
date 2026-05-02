@@ -1,8 +1,13 @@
 #include "lexer.hpp"
+
 #include <cctype>
 #include <algorithm>
 
-Lexer::Lexer(const std::string& source) : content(source), pos(0), hasPendingToken(false), pendingToken{TokenType::END_OF_FILE, ""} {
+Lexer::Lexer(const std::string& source) 
+    : content(source), 
+      pos(0),
+      line(1),
+      column(1) {
     initKeywords();
 }
 
@@ -36,7 +41,7 @@ void Lexer::initKeywords() {
     keywords["then"] = TokenType::THENSY;
 }
 
-char Lexer::peek() {
+char Lexer::peek() const {
     if (pos >= content.length()) {
         return '\0';
     }
@@ -44,212 +49,329 @@ char Lexer::peek() {
     return content[pos];
 }
 
+char Lexer::peekNext() const {
+    if (pos + 1 >= content.length()) {
+        return '\0';
+    }
+
+    return content[pos + 1];
+}
+
 char Lexer::advance() {
-    return content[pos++];
+    char c = content[pos++];
+
+    if (c == '\n') {
+        line++;
+        column = 1;
+    } else {
+        column++;
+    }
+
+    return c;
 }
 
-void Lexer::skipWhiteSpaceAndComments() {
+bool Lexer::isSeparator(char c) const {
+    return c == ' ' || c == '\n' || c == '\t' || c == '\r';
+}
+
+bool Lexer::isTokenBoundary(char c) const {
+    return c == '\0' || 
+            isSeparator(c) ||
+            c == '+' || c == '-' || c == '*' || c == '/' ||
+            c == ',' || c == ';' || c == ':' ||
+            c == '(' || c == ')' || c == '[' || c ==']' ||
+            c == '<' || c == '>' || c == '=';
+}
+
+void Lexer::skipSeparators() {
+    while (pos < content.length() && isSeparator(peek())) {
+        advance();
+    }
+}
+
+Token Lexer::makeToken(TokenType type, const std::string& value, int startLine, int startColumn) const {
+    return {type, value, startLine, startColumn};
+}
+
+std::string Lexer::consumeUnknownSequence() {
+    std::string result;
+
+    while (pos < content.length() && !isSeparator(peek())) {
+        result += advance();
+    }
+
+    return result;
+}
+
+Token Lexer::readBraceComment(int startLine, int startColumn) {
+    std::string comment;
+    comment += advance();
+
+    while (pos < content.length() && peek() != '}') {
+        comment += advance();
+    }
+
+    if (peek() == '}') {
+        comment += advance();
+        return makeToken(TokenType::COMMENT, comment, startLine, startColumn);
+    }
+
+    return makeToken(TokenType::UNKNOWN, "komentar tidak ditutup sebelum akhir file", startLine, startColumn);
+}
+
+Token Lexer::readParenStarComment(int startLine, int startColumn) {
+    std::string comment;
+    comment += advance();
+    comment += advance();
+
     while (pos < content.length()) {
-        char c = peek();
-
-        if (std::isspace(static_cast<unsigned char>(c))) {
-            advance();
-
-        } else if (c == '{') {
-            std::string comment;
-            comment += advance();
-
-            while (pos < content.length() && peek() != '}') {
-                comment += advance();
-            }
-
-            if (peek() == '}') {
-                comment += advance();
-                hasPendingToken = true;
-                pendingToken = {TokenType::COMMENT, comment};
-                return;
-            } else {
-                hasPendingToken = true;
-                pendingToken = {TokenType::UNKNOWN, "komentar tidak ditutup sebelum akhir file"};
-                return;
-            }
-
-        } else if (c == '(' && pos + 1 < content.length() && content[pos + 1] == '*') {
-            std::string comment;
+        if (peek() == '*' && peekNext() == ')') {
             comment += advance();
             comment += advance();
-
-            while (pos + 1 < content.length() && !(content[pos] == '*' && content[pos + 1] == ')')) {
-                comment += advance();
-            }
-
-            if (pos + 1 < content.length()) {
-                comment += advance();
-                comment += advance();
-                hasPendingToken = true;
-                pendingToken = {TokenType::COMMENT, comment};
-                return;
-            } else {
-                hasPendingToken = true;
-                pendingToken = {TokenType::UNKNOWN, "komentar tidak ditutup sebelum akhir file"};
-                return;
-            }
-
-        } else {
-            break;
+            return makeToken(TokenType::COMMENT, comment, startLine, startColumn);
         }
+
+        comment += advance();
     }
+
+    return makeToken(TokenType::UNKNOWN, "komentar tidak ditutup sebelum akhir file", startLine, startColumn);
 }
 
-Token Lexer::getNextToken() {
-    skipWhiteSpaceAndComments();
+Token Lexer::readIdentifierOrKeyword(int startLine, int startColumn) {
+    std::string result;
 
-    if (hasPendingToken) {
-        hasPendingToken = false;
-        return pendingToken;
+    while (std::isalnum(static_cast<unsigned char>(peek()))) {
+        result += advance();
     }
 
-    if (pos >= content.length()) {
-        return {TokenType::END_OF_FILE, ""}; 
+    std::string lowerResult = result;
+    std::transform(
+        lowerResult.begin(),
+        lowerResult.end(),
+        lowerResult.begin(),
+        [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); }
+    );
+
+    auto keyword = keywords.find(lowerResult);
+    if (keyword != keywords.end()) {
+        return makeToken(keyword->second, result, startLine, startColumn);
     }
 
-    char c = peek();
+    return makeToken(TokenType::IDENT, result, startLine, startColumn);
+}
 
-    // DFA State: Identifier & Keywords
-    if (std::isalpha(static_cast<unsigned char>(c))) {
-        std::string result;
+Token Lexer::readNumber(int startLine, int startColumn) {
+    std::string result;
 
-        while (std::isalnum(static_cast<unsigned char>(peek()))) {
-            result += advance();
-        }
-
-        std::string lowerResult = result;
-        std::transform(
-            lowerResult.begin(),
-            lowerResult.end(),
-            lowerResult.begin(),
-            [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); }
-        );
-
-        if (keywords.count(lowerResult)) {
-            return {keywords[lowerResult], result};
-        }
-
-        return {TokenType::IDENT, result};
+    while (std::isdigit(static_cast<unsigned char>(peek()))) {
+        result += advance();
     }
 
-    // DFA State: Numbers (Integer & Real) - including negative numbers
-    if (std::isdigit(static_cast<unsigned char>(c)) || 
-        (c == '-' && pos + 1 < content.length() && 
-        std::isdigit(static_cast<unsigned char>(content[pos + 1])))) {
-        std::string result;
+    // Range: 1..10 -> intcon(1), period, period, intcon(10)
+    if (peek() == '.' && peekNext() == '.') {
+        return makeToken(TokenType::INTCON, result, startLine, startColumn);
+    }
 
-        // Handle negative sign
-        if (c == '-') {
-            result += advance();
-        }
+    // Real number: 1.23 -> realcon(1.23)
+    if (peek() == '.' && std::isdigit(static_cast<unsigned char>(peekNext()))) {
+        result += advance();
 
         while (std::isdigit(static_cast<unsigned char>(peek()))) {
             result += advance();
         }
 
-        if (peek() == '.' && pos + 1 < content.length() &&
-            std::isdigit(static_cast<unsigned char>(content[pos + 1]))) {
-            result += advance();
-            while (std::isdigit(static_cast<unsigned char>(peek()))) {
-                result += advance();
-            }
-            
-            return {TokenType::REALCON, result};
+        // Real range: 1.23..4.56 -> realcon(1.23), period, period, realcon(4.56)
+        if (peek() == '.' && peekNext() == '.') {
+            return makeToken(TokenType::REALCON, result, startLine, startColumn);
         }
 
-        return {TokenType::INTCON, result};
+        // 1.23abc or 1.23.abc -> malformed sequence
+        if (!isTokenBoundary(peek()) && peek() != '.') {
+            result += consumeUnknownSequence();
+            return makeToken(TokenType::UNKNOWN, result, startLine, startColumn);
+        }
+
+        // 1.23.abc -> consume as unknown, not realcon(1.23), period, ident(abc)
+        if (peek() == '.') {
+            result += consumeUnknownSequence();
+            return makeToken(TokenType::UNKNOWN, result, startLine, startColumn);
+        }
+
+        return makeToken(TokenType::REALCON, result, startLine, startColumn);
     }
 
-    // DFA State: String & Charcon
-    if (c == '\'') {
-        advance();
-        std::string result;
-        bool hasEscapedQuote = false;
+    // 1. -> intcon(1), period
+    if (peek() == '.') {
+        return makeToken(TokenType::INTCON, result, startLine, startColumn);
+    }
 
-        while (pos < content.length()) {
-            if (peek() == '\'') {
-                if (pos + 1 < content.length() && content[pos + 1] == '\'') {
-                    result += '\'';
-                    hasEscapedQuote = true;
-                    advance();
-                    advance();
-                    continue;
-                }
+    // 123abc -> malformed sequence
+    if (!isTokenBoundary(peek())) {
+        result += consumeUnknownSequence();
+        return makeToken(TokenType::UNKNOWN, result, startLine, startColumn);
+    }
 
-                break;
-            }
+    return makeToken(TokenType::INTCON, result, startLine, startColumn);
+}
+    
+Token Lexer::readStringOrChar(int startLine, int startColumn) {
+    advance();
 
-            result += advance();
-        }
+    std::string result;
+    bool hasEscapedQuote = false;
 
+    while (pos < content.length()) {
         if (peek() == '\'') {
-            advance();
-        } else {
-            return {TokenType::UNKNOWN, "string tidak ditutup sebelum akhir file"};
+            if (peekNext() == '\'') {
+                result += '\'';
+                hasEscapedQuote = true;
+                advance();
+                advance();
+                continue;
+            }
+
+            break;
         }
 
-        if (!hasEscapedQuote && result.length() == 1) {
-            return {TokenType::CHARCON, result};
-        }
+        result += advance();
+    } 
 
-        return {TokenType::STRING, result};
+    if (peek() == '\'') {
+        advance();
+    } else {
+        return makeToken(TokenType::UNKNOWN, "string tidak ditutup sebelum akhir file", startLine, startColumn);
     }
+
+    if (!hasEscapedQuote && result.length() == 1) {
+        return makeToken(TokenType::CHARCON, result, startLine, startColumn);
+    }
+
+    return makeToken(TokenType::STRING, result, startLine, startColumn);
+}
+
+Token Lexer::readDotStartedToken(int startLine, int startColumn) {
+    if (pos > 0 && content[pos - 1] == '.') {
+        advance();
+        return makeToken(TokenType::PERIOD, ".", startLine, startColumn);
+    }
+
+    if (std::isdigit(static_cast<unsigned char>(peekNext()))) {
+        std::string result;
+        result += advance();
+        result += consumeUnknownSequence();
+        return makeToken(TokenType::UNKNOWN, result, startLine, startColumn);
+    }
+
+    advance();
+    return makeToken(TokenType::PERIOD, ".", startLine, startColumn);
+}
+
+Token Lexer::getNextToken() {
+    skipSeparators();
+
+    if (pos >= content.length()) {
+        return makeToken(TokenType::END_OF_FILE, "", line, column);
+    }
+
+    int startLine = line;
+    int startColumn = column;
+    char c = peek();
+
+    if (c == '{') {
+        return readBraceComment(startLine, startColumn);
+    }
+
+    if (c == '(' && peekNext() == '*') {
+        return readParenStarComment(startLine, startColumn);
+    }
+
+    if (std::isalpha(static_cast<unsigned char>(c))) {
+        return readIdentifierOrKeyword(startLine, startColumn);
+    }
+
+    if (std::isdigit(static_cast<unsigned char>(c))) {
+        return readNumber(startLine, startColumn);
+    }
+
+    if (c == '\'') {
+        return readStringOrChar(startLine, startColumn);
+    }
+
+    if (c == '.') {
+        return readDotStartedToken(startLine, startColumn);
+    }
+
+    advance();
 
     // DFA State: Operators & Symbols
-    advance();
     switch(c) {
-        case '+': return {TokenType::PLUS, "+"};
-        case '-': return {TokenType::MINUS, "-"};
-        case '*': return {TokenType::TIMES, "*"};
-        case '/': return {TokenType::RDIV, "/"};
-        case ',': return {TokenType::COMMA, ","};
-        case ';': return {TokenType::SEMICOLON, ";"};
-        case '.': return {TokenType::PERIOD, "."};
-        case '(': return {TokenType::LPARENT, "("};
-        case ')': return {TokenType::RPARENT, ")"};
-        case '[': return {TokenType::LBRACK, "["};
-        case ']': return {TokenType::RBRACK, "]"};
+        case '+':
+            return makeToken(TokenType::PLUS, "+", startLine, startColumn);
+
+        case '-':
+            return makeToken(TokenType::MINUS, "-", startLine, startColumn);
+
+        case '*':
+            return makeToken(TokenType::TIMES, "*", startLine, startColumn);
+            
+        case '/':
+            return makeToken(TokenType::RDIV, "/", startLine, startColumn);
+
+        case ',':
+            return makeToken(TokenType::COMMA, ",", startLine, startColumn);
+
+        case ';':
+            return makeToken(TokenType::SEMICOLON, ";", startLine, startColumn);
+
+        case '(':
+            return makeToken(TokenType::LPARENT, "(", startLine, startColumn);
+
+        case ')':
+            return makeToken(TokenType::RPARENT, ")", startLine, startColumn);
+
+        case '[':
+            return makeToken(TokenType::LBRACK, "[", startLine, startColumn);
+
+        case ']':
+            return makeToken(TokenType::RBRACK, "]", startLine, startColumn);
+
         case '=':
             if (peek() == '=') {
                 advance();
-                return {TokenType::EQL, "=="};
+                return makeToken(TokenType::EQL, "==", startLine, startColumn);
             }
 
-            return {TokenType::UNKNOWN, std::string(1, c)};
+            return makeToken(TokenType::UNKNOWN, std::string(1, c), startLine, startColumn);
+
         case ':':
             if (peek() == '=') {
                 advance();
-                return {TokenType::BECOMES, ":="};
+                return makeToken(TokenType::BECOMES, ":=", startLine, startColumn);
             }
 
-            return  {TokenType::COLON, ":"};
+            return makeToken(TokenType::COLON, ":", startLine, startColumn);
+
         case '>':
             if (peek() == '=') {
                 advance();
-                return {TokenType::GEQ, ">="};
+                return makeToken(TokenType::GEQ, ">=", startLine, startColumn);
             }
             
-            return {TokenType::GTR, ">"};
+            return makeToken(TokenType::GTR, ">", startLine, startColumn);
         case '<':
             if (peek() == '=') {
                 advance();
-                return {TokenType::LEQ, "<="};
+                return makeToken(TokenType::LEQ, "<=", startLine, startColumn);
             }
 
             if (peek() == '>') {
                 advance();
-                return {TokenType::NEQ, "<>"};
+                return makeToken(TokenType::NEQ, "<>", startLine, startColumn);
             }
 
-            return {TokenType::LSS, "<"};
+            return makeToken(TokenType::LSS, "<", startLine, startColumn);
         
     }
 
-    return {TokenType::UNKNOWN, std::string(1, c)};
+    return makeToken(TokenType::UNKNOWN, std::string(1, c), startLine, startColumn);
 }

@@ -1,0 +1,26 @@
+# Build artifacts
+/build/
+/bin/*
+!/bin/.gitkeep
+
+# Compiled objects and dependency files
+*.o
+*.obj
+*.d
+
+# Executables and libraries
+*.exe
+*.out
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# Editor and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
