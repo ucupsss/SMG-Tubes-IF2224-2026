@@ -8,6 +8,14 @@ bool isIndexAtom(TokenType type) {
            type == TokenType::IDENT;
 }
 
+bool isStatementFollow(TokenType type) {
+    return type == TokenType::SEMICOLON ||
+           type == TokenType::ENDSY ||
+           type == TokenType::UNTILSY ||
+           type == TokenType::ELSESY ||
+           type == TokenType::END_OF_FILE;
+}
+
 }
 
 ParseNode Parser::parseCompoundStatement() {
@@ -62,11 +70,11 @@ ParseNode Parser::parseStatement() {
         return parseForStatement();
     }
 
-    if (check(TokenType::BEGINSY)) {
-        return parseCompoundStatement();
+    if (isStatementFollow(current().type)) {
+        return ParseNode("<statement>");
     }
 
-    return ParseNode("<statement>");
+    throw error("expected statement");
 }
 
 ParseNode Parser::parseVariable() {
