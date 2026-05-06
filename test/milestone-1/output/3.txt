@@ -1,28 +1,28 @@
 programsy
-ident (StringTest)
+ident(StringTest)
 semicolon
 constsy
-ident (huruf)
+ident(huruf)
 becomes
-charcon ('a')
+charcon('a')
 semicolon
 varsy
-ident (arrayzz)
+ident(arrayzz)
 semicolon
-ident (pesan)
+ident(pesan)
 colon
-ident (string)
+ident(string)
 semicolon
 beginsy
-ident (pesan)
+ident(pesan)
 becomes
-string ('begin := 5; {bukan komentar}')
+string('begin := 5; {bukan komentar}')
 semicolon
-ident (huruf)
+ident(huruf)
 becomes
-string ('')
+string('')
 semicolon
-comment ({kalo ini baru komentar})
-comment ((*ini juga*))
+comment({kalo ini baru komentar})
+comment((*ini juga*))
 endsy
 period

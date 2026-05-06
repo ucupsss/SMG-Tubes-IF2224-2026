@@ -1,7 +1,24 @@
-program CommentTest;
+program Declarations;
 
-{ ini komentar }
+const
+    Limit == 10;
+    Letter == 'z';
+    Title == 'ok';
+
+type
+    Index == 1..10;
+    Day == (Mon, Tue, Wed);
+    Scores == array[Index] of integer;
+    Person == record
+        age: integer;
+        grade: char;
+    end;
+
+var
+    i: Index;
+    p: Person;
 
 begin
-    writeln('hi');
+    i := Limit;
+    p.age := i;
 end.

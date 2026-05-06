@@ -1,9 +1,12 @@
-program LoopTest;
+program CaseFor;
 
 var
-    i: integer;
+    i, result: integer;
 
 begin
-    for i := 1 to 10 do
-        writeln(i);
+    for i := 10 downto 1 do result := result + i;
+    case result of
+        0: writeln('zero');
+        1, 2: writeln('small');
+    end;
 end.

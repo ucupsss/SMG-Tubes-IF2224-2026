@@ -1,29 +1,29 @@
 programsy
-ident (Hello)
+ident(Hello)
 semicolon
 varsy
-ident (a)
+ident(a)
 comma
-ident (b)
+ident(b)
 colon
-ident (integer)
+ident(integer)
 semicolon
 beginsy
-ident (a)
+ident(a)
 becomes
-intcon (5)
+intcon(5)
 semicolon
-ident (b)
+ident(b)
 becomes
-ident (a)
+ident(a)
 plus
-intcon (10)
+intcon(10)
 semicolon
-ident (writeln)
+ident(writeln)
 lparent
-string ('Result = ')
+string('Result = ')
 comma
-ident (b)
+ident(b)
 rparent
 semicolon
 endsy

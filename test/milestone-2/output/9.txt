@@ -1,0 +1,1 @@
+Syntax error at line 5, column 1: declarations must be ordered as const, type, var, then procedure/function, found constsy (const)

@@ -1,32 +1,32 @@
 programsy
-ident (Rapat)
+ident(Rapat)
 semicolon
 varsy
-ident (a)
+ident(a)
 comma
-ident (b)
+ident(b)
 colon
-ident (integer)
+ident(integer)
 semicolon
 beginsy
 ifsy
 lparent
-ident (a)
+ident(a)
 leq
-intcon (10)
+intcon(10)
 rparent
 andsy
 lparent
-ident (b)
+ident(b)
 neq
-intcon (5)
+intcon(5)
 rparent
 thensy
-ident (a)
+ident(a)
 becomes
-ident (b)
+ident(b)
 plus
-intcon (20)
+intcon(20)
 semicolon
 endsy
 period

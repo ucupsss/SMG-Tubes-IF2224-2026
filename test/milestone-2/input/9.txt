@@ -1,0 +1,9 @@
+program BadDeclarationOrder;
+
+var
+    x: integer;
+const
+    y == 1;
+
+begin
+end.

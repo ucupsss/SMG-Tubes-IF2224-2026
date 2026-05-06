@@ -1,0 +1,136 @@
+<program>
+├── <program-header>
+│   ├── programsy
+│   ├── ident(Components)
+│   └── semicolon
+├── <declaration-part>
+│   ├── <type-declaration>
+│   │   ├── typesy
+│   │   ├── ident(Matrix)
+│   │   ├── eql
+│   │   ├── <type>
+│   │   │   └── <array-type>
+│   │   │       ├── arraysy
+│   │   │       ├── lbrack
+│   │   │       ├── <range>
+│   │   │       │   ├── <constant>
+│   │   │       │   │   └── intcon(1)
+│   │   │       │   ├── period
+│   │   │       │   ├── period
+│   │   │       │   └── <constant>
+│   │   │       │       └── intcon(3)
+│   │   │       ├── rbrack
+│   │   │       ├── ofsy
+│   │   │       └── <type>
+│   │   │           └── <array-type>
+│   │   │               ├── arraysy
+│   │   │               ├── lbrack
+│   │   │               ├── <range>
+│   │   │               │   ├── <constant>
+│   │   │               │   │   └── intcon(1)
+│   │   │               │   ├── period
+│   │   │               │   ├── period
+│   │   │               │   └── <constant>
+│   │   │               │       └── intcon(3)
+│   │   │               ├── rbrack
+│   │   │               ├── ofsy
+│   │   │               └── <type>
+│   │   │                   └── ident(integer)
+│   │   ├── semicolon
+│   │   ├── ident(Point)
+│   │   ├── eql
+│   │   ├── <type>
+│   │   │   └── <record-type>
+│   │   │       ├── recordsy
+│   │   │       ├── <field-list>
+│   │   │       │   ├── <field-part>
+│   │   │       │   │   ├── <identifier-list>
+│   │   │       │   │   │   └── ident(x)
+│   │   │       │   │   ├── colon
+│   │   │       │   │   └── <type>
+│   │   │       │   │       └── ident(integer)
+│   │   │       │   ├── semicolon
+│   │   │       │   ├── <field-part>
+│   │   │       │   │   ├── <identifier-list>
+│   │   │       │   │   │   └── ident(y)
+│   │   │       │   │   ├── colon
+│   │   │       │   │   └── <type>
+│   │   │       │   │       └── ident(integer)
+│   │   │       │   └── semicolon
+│   │   │       └── endsy
+│   │   └── semicolon
+│   └── <var-declaration>
+│       ├── varsy
+│       ├── <identifier-list>
+│       │   └── ident(m)
+│       ├── colon
+│       ├── <type>
+│       │   └── ident(Matrix)
+│       ├── semicolon
+│       ├── <identifier-list>
+│       │   └── ident(p)
+│       ├── colon
+│       ├── <type>
+│       │   └── ident(Point)
+│       └── semicolon
+├── <compound-statement>
+│   ├── beginsy
+│   ├── <statement-list>
+│   │   ├── <assignment-statement>
+│   │   │   ├── <variable>
+│   │   │   │   ├── ident(m)
+│   │   │   │   ├── <component-variable>
+│   │   │   │   │   ├── lbrack
+│   │   │   │   │   ├── <index-list>
+│   │   │   │   │   │   └── intcon(1)
+│   │   │   │   │   └── rbrack
+│   │   │   │   └── <component-variable>
+│   │   │   │       ├── lbrack
+│   │   │   │       ├── <index-list>
+│   │   │   │       │   └── intcon(2)
+│   │   │   │       └── rbrack
+│   │   │   ├── becomes
+│   │   │   └── <expression>
+│   │   │       └── <simple-expression>
+│   │   │           ├── <term>
+│   │   │           │   └── <factor>
+│   │   │           │       └── <variable>
+│   │   │           │           ├── ident(p)
+│   │   │           │           └── <component-variable>
+│   │   │           │               ├── period
+│   │   │           │               └── ident(x)
+│   │   │           ├── plus
+│   │   │           └── <term>
+│   │   │               └── <factor>
+│   │   │                   └── <variable>
+│   │   │                       ├── ident(p)
+│   │   │                       └── <component-variable>
+│   │   │                           ├── period
+│   │   │                           └── ident(y)
+│   │   ├── semicolon
+│   │   ├── <assignment-statement>
+│   │   │   ├── <variable>
+│   │   │   │   ├── ident(p)
+│   │   │   │   └── <component-variable>
+│   │   │   │       ├── period
+│   │   │   │       └── ident(y)
+│   │   │   ├── becomes
+│   │   │   └── <expression>
+│   │   │       └── <simple-expression>
+│   │   │           └── <term>
+│   │   │               └── <factor>
+│   │   │                   └── <variable>
+│   │   │                       ├── ident(m)
+│   │   │                       ├── <component-variable>
+│   │   │                       │   ├── lbrack
+│   │   │                       │   ├── <index-list>
+│   │   │                       │   │   └── intcon(2)
+│   │   │                       │   └── rbrack
+│   │   │                       └── <component-variable>
+│   │   │                           ├── lbrack
+│   │   │                           ├── <index-list>
+│   │   │                           │   └── intcon(3)
+│   │   │                           └── rbrack
+│   │   └── semicolon
+│   └── endsy
+└── period

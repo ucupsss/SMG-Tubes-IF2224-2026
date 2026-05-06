@@ -1,0 +1,17 @@
+program Components;
+
+type
+    Matrix == array[1..3] of array[1..3] of integer;
+    Point == record
+        x: integer;
+        y: integer;
+    end;
+
+var
+    m: Matrix;
+    p: Point;
+
+begin
+    m[1][2] := p.x + p.y;
+    p.y := m[2][3];
+end.
