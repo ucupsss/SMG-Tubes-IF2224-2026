@@ -1,6 +1,6 @@
 program Hello;
 
-var 
+var
     a, b: integer;
 
 begin

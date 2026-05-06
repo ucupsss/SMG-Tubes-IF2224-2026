@@ -1,5 +1,7 @@
 #include "formatter.hpp"
 
+#include <vector>
+
 namespace {
 
 bool needsValue(TokenType type) {
@@ -10,6 +12,34 @@ bool needsValue(TokenType type) {
            type == TokenType::STRING ||
            type == TokenType::COMMENT ||
            type == TokenType::UNKNOWN;
+}
+
+void formatParseTreeNode(
+    const ParseNode& node,
+    const std::string& prefix,
+    bool isLast,
+    bool isRoot,
+    std::vector<std::string>& lines
+) {
+    if (isRoot) {
+        lines.push_back(node.label);
+    } else {
+        lines.push_back(prefix + (isLast ? "└── " : "├── ") + node.label);
+    }
+
+    const std::string childPrefix = isRoot
+        ? ""
+        : prefix + (isLast ? "    " : "│   ");
+
+    for (size_t i = 0; i < node.children.size(); ++i) {
+        formatParseTreeNode(
+            node.children[i],
+            childPrefix,
+            i + 1 == node.children.size(),
+            false,
+            lines
+        );
+    }
 }
 
 }
@@ -86,6 +116,12 @@ std::string formatToken(const Token& token) {
     }
 
     return result;
+}
+
+std::vector<std::string> formatParseTree(const ParseNode& root) {
+    std::vector<std::string> lines;
+    formatParseTreeNode(root, "", true, true, lines);
+    return lines;
 }
 
 bool isLexerWarning(const Token& token) {

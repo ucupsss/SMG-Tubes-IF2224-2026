@@ -1,0 +1,23 @@
+<program>
+├── <program-header>
+│   ├── programsy
+│   ├── ident (CommentTest)
+│   └── semicolon
+├── <declaration-part>
+├── <compound-statement>
+│   ├── beginsy
+│   ├── <statement-list>
+│   │   ├── <procedure/function-call>
+│   │   │   ├── ident (writeln)
+│   │   │   ├── lparent
+│   │   │   ├── <parameter-list>
+│   │   │   │   └── <expression>
+│   │   │   │       └── <simple-expression>
+│   │   │   │           └── <term>
+│   │   │   │               └── <factor>
+│   │   │   │                   └── string ('hi')
+│   │   │   └── rparent
+│   │   ├── semicolon
+│   │   └── <statement>
+│   └── endsy
+└── period

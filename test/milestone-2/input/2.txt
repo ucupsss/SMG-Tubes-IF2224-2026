@@ -1,0 +1,7 @@
+program CommentTest;
+
+{ ini komentar }
+
+begin
+    writeln('hi');
+end.

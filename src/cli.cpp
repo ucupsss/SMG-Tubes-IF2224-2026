@@ -199,6 +199,16 @@ PromptResult promptOutputFile(
     }
 }
 
+void printOutputLines(const std::vector<std::string>& outputLines) {
+    std::cout << "\nHasil syntax analyzer:\n";
+
+    for (const std::string& line : outputLines) {
+        std::cout << line << "\n";
+    }
+
+    std::cout << "\n";
+}
+
 }
 
 int runCli() {
@@ -227,7 +237,8 @@ int runCli() {
                 break;
             }
 
-            const std::vector<std::string> outputLines = runLexer(source);
+            const std::vector<std::string> outputLines = runSyntaxAnalyzer(source);
+            printOutputLines(outputLines);
 
             result = promptOutputFile(selectedFolder, outputLines);
             if (result == PromptResult::Quit) {

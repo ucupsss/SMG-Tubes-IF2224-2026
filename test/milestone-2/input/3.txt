@@ -1,0 +1,5 @@
+program Bad;
+
+begin
+    x = 1;
+end.
