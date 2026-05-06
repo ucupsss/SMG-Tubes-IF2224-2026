@@ -35,6 +35,13 @@ ParseNode Parser::parseStatementList() {
 
     while (match(TokenType::SEMICOLON)) {
         node.addChild(makeTerminalNode(tokens[pos - 1]));
+
+        if (check(TokenType::ENDSY) ||
+            check(TokenType::UNTILSY) ||
+            check(TokenType::END_OF_FILE)) {
+            break;
+        }
+
         node.addChild(parseStatement());
     }
 

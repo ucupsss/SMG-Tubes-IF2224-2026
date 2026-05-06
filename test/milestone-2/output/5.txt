@@ -1,48 +1,46 @@
 <program>
 ├── <program-header>
 │   ├── programsy
-│   ├── ident (LoopTest)
+│   ├── ident(LoopTest)
 │   └── semicolon
 ├── <declaration-part>
 │   └── <var-declaration>
 │       ├── varsy
 │       ├── <identifier-list>
-│       │   └── ident (i)
+│       │   └── ident(i)
 │       ├── colon
 │       ├── <type>
-│       │   └── ident (integer)
+│       │   └── ident(integer)
 │       └── semicolon
 ├── <compound-statement>
 │   ├── beginsy
 │   ├── <statement-list>
 │   │   ├── <for-statement>
 │   │   │   ├── forsy
-│   │   │   ├── ident (i)
+│   │   │   ├── ident(i)
 │   │   │   ├── becomes
 │   │   │   ├── <expression>
 │   │   │   │   └── <simple-expression>
 │   │   │   │       └── <term>
 │   │   │   │           └── <factor>
-│   │   │   │               └── intcon (1)
+│   │   │   │               └── intcon(1)
 │   │   │   ├── tosy
 │   │   │   ├── <expression>
 │   │   │   │   └── <simple-expression>
 │   │   │   │       └── <term>
 │   │   │   │           └── <factor>
-│   │   │   │               └── intcon (10)
+│   │   │   │               └── intcon(10)
 │   │   │   ├── dosy
 │   │   │   └── <procedure/function-call>
-│   │   │       ├── ident (writeln)
+│   │   │       ├── ident(writeln)
 │   │   │       ├── lparent
 │   │   │       ├── <parameter-list>
 │   │   │       │   └── <expression>
 │   │   │       │       └── <simple-expression>
 │   │   │       │           └── <term>
 │   │   │       │               └── <factor>
-│   │   │       │                   └── <variable>
-│   │   │       │                       └── ident (i)
+│   │   │       │                   └── ident(i)
 │   │   │       └── rparent
-│   │   ├── semicolon
-│   │   └── <statement>
+│   │   └── semicolon
 │   └── endsy
 └── period

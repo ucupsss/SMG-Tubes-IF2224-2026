@@ -1,66 +1,60 @@
 <program>
 ├── <program-header>
 │   ├── programsy
-│   ├── ident (Hello)
+│   ├── ident(Hello)
 │   └── semicolon
 ├── <declaration-part>
 │   └── <var-declaration>
 │       ├── varsy
 │       ├── <identifier-list>
-│       │   ├── ident (a)
+│       │   ├── ident(a)
 │       │   ├── comma
-│       │   └── ident (b)
+│       │   └── ident(b)
 │       ├── colon
 │       ├── <type>
-│       │   └── ident (integer)
+│       │   └── ident(integer)
 │       └── semicolon
 ├── <compound-statement>
 │   ├── beginsy
 │   ├── <statement-list>
 │   │   ├── <assignment-statement>
-│   │   │   ├── <variable>
-│   │   │   │   └── ident (a)
+│   │   │   ├── ident(a)
 │   │   │   ├── becomes
 │   │   │   └── <expression>
 │   │   │       └── <simple-expression>
 │   │   │           └── <term>
 │   │   │               └── <factor>
-│   │   │                   └── intcon (5)
+│   │   │                   └── intcon(5)
 │   │   ├── semicolon
 │   │   ├── <assignment-statement>
-│   │   │   ├── <variable>
-│   │   │   │   └── ident (b)
+│   │   │   ├── ident(b)
 │   │   │   ├── becomes
 │   │   │   └── <expression>
 │   │   │       └── <simple-expression>
 │   │   │           ├── <term>
 │   │   │           │   └── <factor>
-│   │   │           │       └── <variable>
-│   │   │           │           └── ident (a)
-│   │   │           ├── <additive-operator>
-│   │   │           │   └── plus
+│   │   │           │       └── ident(a)
+│   │   │           ├── plus
 │   │   │           └── <term>
 │   │   │               └── <factor>
-│   │   │                   └── intcon (10)
+│   │   │                   └── intcon(10)
 │   │   ├── semicolon
 │   │   ├── <procedure/function-call>
-│   │   │   ├── ident (writeln)
+│   │   │   ├── ident(writeln)
 │   │   │   ├── lparent
 │   │   │   ├── <parameter-list>
 │   │   │   │   ├── <expression>
 │   │   │   │   │   └── <simple-expression>
 │   │   │   │   │       └── <term>
 │   │   │   │   │           └── <factor>
-│   │   │   │   │               └── string ('Result = ')
+│   │   │   │   │               └── string('Result = ')
 │   │   │   │   ├── comma
 │   │   │   │   └── <expression>
 │   │   │   │       └── <simple-expression>
 │   │   │   │           └── <term>
 │   │   │   │               └── <factor>
-│   │   │   │                   └── <variable>
-│   │   │   │                       └── ident (b)
+│   │   │   │                   └── ident(b)
 │   │   │   └── rparent
-│   │   ├── semicolon
-│   │   └── <statement>
+│   │   └── semicolon
 │   └── endsy
 └── period

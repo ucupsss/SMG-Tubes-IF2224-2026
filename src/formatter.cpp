@@ -14,6 +14,40 @@ bool needsValue(TokenType type) {
            type == TokenType::UNKNOWN;
 }
 
+bool shouldSkipNode(const ParseNode& node) {
+    return node.label == "<statement>" && node.children.empty();
+}
+
+bool shouldFlattenNode(const ParseNode& node) {
+    return node.label == "<variable>" ||
+           node.label == "<additive-operator>";
+}
+
+std::vector<ParseNode> normalizeParseTreeNode(const ParseNode& node) {
+    std::vector<ParseNode> normalizedChildren;
+
+    for (const ParseNode& child : node.children) {
+        std::vector<ParseNode> normalizedChildNodes = normalizeParseTreeNode(child);
+        normalizedChildren.insert(
+            normalizedChildren.end(),
+            normalizedChildNodes.begin(),
+            normalizedChildNodes.end()
+        );
+    }
+
+    if (shouldSkipNode(node)) {
+        return {};
+    }
+
+    if (shouldFlattenNode(node)) {
+        return normalizedChildren;
+    }
+
+    ParseNode normalizedNode = node;
+    normalizedNode.children = std::move(normalizedChildren);
+    return {normalizedNode};
+}
+
 void formatParseTreeNode(
     const ParseNode& node,
     const std::string& prefix,
@@ -109,9 +143,9 @@ std::string formatToken(const Token& token) {
 
     if (needsValue(token.type)) {
         if (token.type == TokenType::STRING || token.type == TokenType::CHARCON) {
-            result += " ('" + token.value + "')";
+            result += "('" + token.value + "')";
         } else {
-            result += " (" + token.value + ")";
+            result += "(" + token.value + ")";
         }
     }
 
@@ -119,8 +153,13 @@ std::string formatToken(const Token& token) {
 }
 
 std::vector<std::string> formatParseTree(const ParseNode& root) {
+    std::vector<ParseNode> normalizedRoots = normalizeParseTreeNode(root);
     std::vector<std::string> lines;
-    formatParseTreeNode(root, "", true, true, lines);
+
+    if (!normalizedRoots.empty()) {
+        formatParseTreeNode(normalizedRoots.front(), "", true, true, lines);
+    }
+
     return lines;
 }
 
