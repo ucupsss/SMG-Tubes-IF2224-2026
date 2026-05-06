@@ -90,15 +90,13 @@ ParseNode Parser::parseVariable() {
     node.addChild(makeTerminalNode(consume(TokenType::IDENT, "ident")));
 
     while (check(TokenType::LBRACK) || check(TokenType::PERIOD)) {
-        node.addChild(parseComponentVariable(node));
+        node.addChild(parseComponentVariable());
     }
 
     return node;
 }
 
-ParseNode Parser::parseComponentVariable(ParseNode baseVariable) {
-    (void)baseVariable;
-
+ParseNode Parser::parseComponentVariable() {
     ParseNode node("<component-variable>");
 
     if (check(TokenType::LBRACK)) {
@@ -126,14 +124,14 @@ ParseNode Parser::parseIndexList() {
 
     node.addChild(makeTerminalNode(advance()));
 
-    while (match(TokenType::COMMA)) {
+    if (match(TokenType::COMMA)) {
         node.addChild(makeTerminalNode(tokens[pos - 1]));
 
         if (!isIndexAtom(current().type)) {
             throw error("expected intcon, charcon, or ident after comma in index-list");
         }
 
-        node.addChild(makeTerminalNode(advance()));
+        node.addChild(parseIndexList());
     }
 
     return node;

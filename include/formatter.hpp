@@ -10,6 +10,5 @@
 std::string tokenTypeToString(TokenType type);
 std::string formatToken(const Token& token);
 std::vector<std::string> formatParseTree(const ParseNode& root);
-bool isLexerWarning(const Token& token);
 
 #endif

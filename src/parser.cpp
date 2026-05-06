@@ -110,8 +110,8 @@ Token Parser::consume(TokenType type, const std::string& expected) {
     std::ostringstream message;
     message << "Syntax error at line " << current().line
             << ", column " << current().column
-            << ": unexpected token " << describeToken(current())
-            << ", expected " << expected;
+            << ": expected " << expected
+            << ", found " << describeToken(current());
 
     throw ParseError(message.str(), current());
 }
@@ -134,15 +134,6 @@ bool Parser::isDeclarationStart(TokenType type) const {
            type == TokenType::FUNCTIONSY;
 }
 
-bool Parser::isStatementStart(TokenType type) const {
-    return type == TokenType::IDENT ||
-           type == TokenType::IFSY ||
-           type == TokenType::CASESY ||
-           type == TokenType::WHILESY ||
-           type == TokenType::REPEATSY ||
-           type == TokenType::FORSY;
-}
-
 bool Parser::isConstantStart(TokenType type) const {
     return type == TokenType::CHARCON ||
            type == TokenType::STRING ||
@@ -151,14 +142,6 @@ bool Parser::isConstantStart(TokenType type) const {
            type == TokenType::IDENT ||
            type == TokenType::INTCON ||
            type == TokenType::REALCON;
-}
-
-bool Parser::isTypeStart(TokenType type) const {
-    return type == TokenType::IDENT ||
-           type == TokenType::ARRAYSY ||
-           type == TokenType::LPARENT ||
-           type == TokenType::RECORDSY ||
-           isConstantStart(type);
 }
 
 bool Parser::isRelationalOperator(TokenType type) const {
@@ -182,10 +165,6 @@ bool Parser::isMultiplicativeOperator(TokenType type) const {
            type == TokenType::IDIV ||
            type == TokenType::IMOD ||
            type == TokenType::ANDSY;
-}
-
-bool Parser::isProcedureOrFunctionCallStart() const {
-    return check(TokenType::IDENT);
 }
 
 bool Parser::isAssignmentStatementStart() const {
@@ -253,18 +232,24 @@ ParseNode Parser::parseProgramHeader() {
 ParseNode Parser::parseDeclarationPart() {
     ParseNode node("<declaration-part>");
 
-    while (isDeclarationStart(current().type)) {
-        if (check(TokenType::CONSTSY)) {
-            node.addChild(parseConstDeclaration());
-        } else if (check(TokenType::TYPESY)) {
-            node.addChild(parseTypeDeclaration());
-        } else if (check(TokenType::VARSY)) {
-            node.addChild(parseVarDeclaration());
-        } else if (check(TokenType::PROCEDURESY) || check(TokenType::FUNCTIONSY)) {
-            node.addChild(parseSubprogramDeclaration());
-        } else {
-            throw error("expected declaration");
-        }
+    while (check(TokenType::CONSTSY)) {
+        node.addChild(parseConstDeclaration());
+    }
+
+    while (check(TokenType::TYPESY)) {
+        node.addChild(parseTypeDeclaration());
+    }
+
+    while (check(TokenType::VARSY)) {
+        node.addChild(parseVarDeclaration());
+    }
+
+    while (check(TokenType::PROCEDURESY) || check(TokenType::FUNCTIONSY)) {
+        node.addChild(parseSubprogramDeclaration());
+    }
+
+    if (isDeclarationStart(current().type)) {
+        throw error("declarations must be ordered as const, type, var, then procedure/function");
     }
 
     return node;

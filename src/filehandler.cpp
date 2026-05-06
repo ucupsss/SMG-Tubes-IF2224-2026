@@ -46,13 +46,13 @@ bool readInputFile(const fs::path& inputPath, std::string& source) {
     const fs::path resolvedInputPath = resolveTxtPath(inputPath);
 
     if (!hasTxtExtension(resolvedInputPath)) {
-        std::cerr << "Error: file input harus berekstensi .txt\n";
+        std::cerr << "Error: input file must use .txt extension.\n";
         return false;
     }
 
     std::ifstream file(resolvedInputPath);
     if (!file.is_open()) {
-        std::cerr << "Gagal membuka file input: " << resolvedInputPath.string() << "\n";
+        std::cerr << "Error: cannot open input file '" << resolvedInputPath.string() << "'.\n";
         return false;
     }
 
@@ -66,7 +66,7 @@ bool writeOutputFile(const fs::path& outputPath, const std::vector<std::string>&
     const fs::path resolvedOutputPath = resolveTxtPath(outputPath);
 
     if (!hasTxtExtension(resolvedOutputPath)) {
-        std::cerr << "Error: file output harus berekstensi .txt\n";
+        std::cerr << "Error: output file must use .txt extension.\n";
         return false;
     }
 
@@ -74,7 +74,7 @@ bool writeOutputFile(const fs::path& outputPath, const std::vector<std::string>&
 
     std::ofstream file(resolvedOutputPath);
     if (!file.is_open()) {
-        std::cerr << "Gagal membuat file output: " << resolvedOutputPath.string() << "\n";
+        std::cerr << "Error: cannot write output file '" << resolvedOutputPath.string() << "'.\n";
         return false;
     }
 

@@ -18,7 +18,8 @@
 │   ├── beginsy
 │   ├── <statement-list>
 │   │   ├── <assignment-statement>
-│   │   │   ├── ident(a)
+│   │   │   ├── <variable>
+│   │   │   │   └── ident(a)
 │   │   │   ├── becomes
 │   │   │   └── <expression>
 │   │   │       └── <simple-expression>
@@ -27,13 +28,15 @@
 │   │   │                   └── intcon(5)
 │   │   ├── semicolon
 │   │   ├── <assignment-statement>
-│   │   │   ├── ident(b)
+│   │   │   ├── <variable>
+│   │   │   │   └── ident(b)
 │   │   │   ├── becomes
 │   │   │   └── <expression>
 │   │   │       └── <simple-expression>
 │   │   │           ├── <term>
 │   │   │           │   └── <factor>
-│   │   │           │       └── ident(a)
+│   │   │           │       └── <variable>
+│   │   │           │           └── ident(a)
 │   │   │           ├── plus
 │   │   │           └── <term>
 │   │   │               └── <factor>
@@ -53,7 +56,8 @@
 │   │   │   │       └── <simple-expression>
 │   │   │   │           └── <term>
 │   │   │   │               └── <factor>
-│   │   │   │                   └── ident(b)
+│   │   │   │                   └── <variable>
+│   │   │   │                       └── ident(b)
 │   │   │   └── rparent
 │   │   └── semicolon
 │   └── endsy

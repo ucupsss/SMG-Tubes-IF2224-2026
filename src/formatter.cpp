@@ -19,8 +19,7 @@ bool shouldSkipNode(const ParseNode& node) {
 }
 
 bool shouldFlattenNode(const ParseNode& node) {
-    return node.label == "<variable>" ||
-           node.label == "<additive-operator>";
+    return node.label == "<additive-operator>";
 }
 
 std::vector<ParseNode> normalizeParseTreeNode(const ParseNode& node) {
@@ -161,10 +160,4 @@ std::vector<std::string> formatParseTree(const ParseNode& root) {
     }
 
     return lines;
-}
-
-bool isLexerWarning(const Token& token) {
-    return token.type == TokenType::UNKNOWN &&
-           (token.value == "string tidak ditutup sebelum akhir file" ||
-            token.value == "komentar tidak ditutup sebelum akhir file");
 }

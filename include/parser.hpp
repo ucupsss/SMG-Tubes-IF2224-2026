@@ -53,18 +53,15 @@ private:
     ParseError error(const std::string& message) const;
 
     bool isDeclarationStart(TokenType type) const;
-    bool isStatementStart(TokenType type) const;
     bool isConstantStart(TokenType type) const;
-    bool isTypeStart(TokenType type) const;
     bool isRelationalOperator(TokenType type) const;
     bool isAdditiveOperator(TokenType type) const;
     bool isMultiplicativeOperator(TokenType type) const;
 
-    bool isProcedureOrFunctionCallStart() const;
     bool isAssignmentStatementStart() const;
 
     ParseNode makeTerminalNode(const Token& token) const;
-    
+
     ParseNode parseProgram();
     ParseNode parseProgramHeader();
     ParseNode parseDeclarationPart();
@@ -96,7 +93,7 @@ private:
     ParseNode parseStatement();
 
     ParseNode parseVariable();
-    ParseNode parseComponentVariable(ParseNode baseVariable);
+    ParseNode parseComponentVariable();
     ParseNode parseIndexList();
 
     ParseNode parseAssignmentStatement();

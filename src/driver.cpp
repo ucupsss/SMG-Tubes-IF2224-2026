@@ -4,7 +4,18 @@
 #include "lexer.hpp"
 #include "parser.hpp"
 
-#include <iostream>
+namespace {
+
+std::string formatLexicalError(const Token& token) {
+    return "Lexical error at line " +
+           std::to_string(token.line) +
+           ", column " +
+           std::to_string(token.column) +
+           ": " +
+           token.value;
+}
+
+}
 
 std::vector<std::string> runLexer(const std::string& source) {
     Lexer lexer(source);
@@ -15,12 +26,6 @@ std::vector<std::string> runLexer(const std::string& source) {
 
         if (token.type == TokenType::END_OF_FILE) {
             break;
-        }
-
-        if (isLexerWarning(token)) {
-            std::cerr << "Warning lexer baris " << token.line
-                      << ", kolom " << token.column
-                      << ": " << token.value << "\n";
         }
 
         outputLines.push_back(formatToken(token));
@@ -36,16 +41,8 @@ std::vector<std::string> runSyntaxAnalyzer(const std::string& source) {
     while (true) {
         Token token = lexer.getNextToken();
 
-        if (isLexerWarning(token)) {
-            std::cerr << "Warning lexer baris " << token.line
-                      << ", kolom " << token.column
-                      << ": " << token.value << "\n";
-        }
-
         if (token.type == TokenType::UNKNOWN) {
-            return {"Lexical error at line " +
-                    std::to_string(token.line) + ", column " +
-                    std::to_string(token.column) + ": " + token.value};
+            return {formatLexicalError(token)};
         }
 
         if (token.type != TokenType::COMMENT) {

@@ -14,6 +14,26 @@ bool isUnsignedConstantBody(TokenType type) {
            type == TokenType::STRING;
 }
 
+template <typename TokenAt>
+bool looksLikeRange(TokenAt tokenAt) {
+    size_t offset = 0;
+
+    if (tokenAt(offset).type == TokenType::PLUS ||
+        tokenAt(offset).type == TokenType::MINUS) {
+        offset++;
+
+        if (!isSignedConstantBody(tokenAt(offset).type)) {
+            return false;
+        }
+    } else if (!isUnsignedConstantBody(tokenAt(offset).type)) {
+        return false;
+    }
+
+    offset++;
+    return tokenAt(offset).type == TokenType::PERIOD &&
+           tokenAt(offset + 1).type == TokenType::PERIOD;
+}
+
 }
 
 ParseNode Parser::parseConstDeclaration() {
@@ -81,32 +101,13 @@ ParseNode Parser::parseType() {
         return offset == 0 ? current() : peek(offset);
     };
 
-    auto looksLikeRange = [&tokenAt]() {
-        size_t offset = 0;
-
-        if (tokenAt(offset).type == TokenType::PLUS ||
-            tokenAt(offset).type == TokenType::MINUS) {
-            offset++;
-
-            if (!isSignedConstantBody(tokenAt(offset).type)) {
-                return false;
-            }
-        } else if (!isUnsignedConstantBody(tokenAt(offset).type)) {
-            return false;
-        }
-
-        offset++;
-        return tokenAt(offset).type == TokenType::PERIOD &&
-               tokenAt(offset + 1).type == TokenType::PERIOD;
-    };
-
     if (check(TokenType::ARRAYSY)) {
         node.addChild(parseArrayType());
     } else if (check(TokenType::LPARENT)) {
         node.addChild(parseEnumerated());
     } else if (check(TokenType::RECORDSY)) {
         node.addChild(parseRecordType());
-    } else if (looksLikeRange()) {
+    } else if (looksLikeRange(tokenAt)) {
         node.addChild(parseRange());
     } else if (check(TokenType::IDENT)) {
         node.addChild(makeTerminalNode(consume(TokenType::IDENT, "ident")));
@@ -124,29 +125,10 @@ ParseNode Parser::parseArrayType() {
         return offset == 0 ? current() : peek(offset);
     };
 
-    auto looksLikeRange = [&tokenAt]() {
-        size_t offset = 0;
-
-        if (tokenAt(offset).type == TokenType::PLUS ||
-            tokenAt(offset).type == TokenType::MINUS) {
-            offset++;
-
-            if (!isSignedConstantBody(tokenAt(offset).type)) {
-                return false;
-            }
-        } else if (!isUnsignedConstantBody(tokenAt(offset).type)) {
-            return false;
-        }
-
-        offset++;
-        return tokenAt(offset).type == TokenType::PERIOD &&
-               tokenAt(offset + 1).type == TokenType::PERIOD;
-    };
-
     node.addChild(makeTerminalNode(consume(TokenType::ARRAYSY, "arraysy")));
     node.addChild(makeTerminalNode(consume(TokenType::LBRACK, "lbrack")));
 
-    if (looksLikeRange()) {
+    if (looksLikeRange(tokenAt)) {
         node.addChild(parseRange());
     } else {
         node.addChild(makeTerminalNode(consume(TokenType::IDENT, "ident or range")));

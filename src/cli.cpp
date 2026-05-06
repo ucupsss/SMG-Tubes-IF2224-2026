@@ -103,7 +103,7 @@ PromptResult promptTestFolder(std::string& selectedFolder) {
         const std::vector<std::string> testFolders = getTestFolders(TEST_ROOT);
 
         if (testFolders.empty()) {
-            std::cerr << "Error: folder test tidak ditemukan.\n";
+            std::cerr << "Error: test folder not found.\n";
             return PromptResult::FatalError;
         }
 
@@ -117,13 +117,12 @@ PromptResult promptTestFolder(std::string& selectedFolder) {
         }
 
         if (input.empty()) {
-            std::cerr << "Error: pilihan folder tidak boleh kosong. Silakan pilih nomor folder yang tersedia.\n";
+            std::cerr << "Error: test folder choice cannot be empty.\n";
             continue;
         }
 
         if (!selectFolderByInput(testFolders, input, selectedFolder)) {
-            std::cerr << "Error: pilihan folder '" << input
-                      << "' tidak valid. Masukkan nomor folder yang tersedia.\n";
+            std::cerr << "Error: invalid test folder '" << input << "'.\n";
             continue;
         }
 
@@ -149,13 +148,12 @@ PromptResult promptInputSource(const std::string& selectedFolder, std::string& s
         }
 
         if (inputFileName.empty()) {
-            std::cerr << "Error: nama file input tidak boleh kosong. Silakan coba lagi.\n";
+            std::cerr << "Error: input file name cannot be empty.\n";
             continue;
         }
 
         const fs::path inputPath = TEST_ROOT / selectedFolder / "input" / inputFileName;
         if (!readInputFile(inputPath, source)) {
-            std::cerr << "Silahkan dicek kembali file inputnyaaa.\n";
             continue;
         }
 
@@ -184,13 +182,12 @@ PromptResult promptOutputFile(
         }
 
         if (outputFileName.empty()) {
-            std::cerr << "Error: nama file output tidak boleh kosong. Silakan coba lagi.\n";
+            std::cerr << "Error: output file name cannot be empty.\n";
             continue;
         }
 
         const fs::path outputPath = TEST_ROOT / selectedFolder / "output" / outputFileName;
         if (!writeOutputFile(outputPath, outputLines)) {
-            std::cerr << "Dicek lagi yaa, pastikan formatnya benar.\n";
             continue;
         }
 
@@ -199,8 +196,30 @@ PromptResult promptOutputFile(
     }
 }
 
-void printOutputLines(const std::vector<std::string>& outputLines) {
-    std::cout << "\nHasil syntax analyzer:\n";
+bool shouldRunLexerOnly(const std::string& selectedFolder) {
+    return selectedFolder == "milestone-1";
+}
+
+std::vector<std::string> runAnalyzerForFolder(
+    const std::string& selectedFolder,
+    const std::string& source
+) {
+    if (shouldRunLexerOnly(selectedFolder)) {
+        return runLexer(source);
+    }
+
+    return runSyntaxAnalyzer(source);
+}
+
+void printOutputLines(
+    const std::string& selectedFolder,
+    const std::vector<std::string>& outputLines
+) {
+    if (shouldRunLexerOnly(selectedFolder)) {
+        std::cout << "\nHasil lexical analyzer:\n";
+    } else {
+        std::cout << "\nHasil syntax analyzer:\n";
+    }
 
     for (const std::string& line : outputLines) {
         std::cout << line << "\n";
@@ -237,8 +256,8 @@ int runCli() {
                 break;
             }
 
-            const std::vector<std::string> outputLines = runSyntaxAnalyzer(source);
-            printOutputLines(outputLines);
+            const std::vector<std::string> outputLines = runAnalyzerForFolder(selectedFolder, source);
+            printOutputLines(selectedFolder, outputLines);
 
             result = promptOutputFile(selectedFolder, outputLines);
             if (result == PromptResult::Quit) {

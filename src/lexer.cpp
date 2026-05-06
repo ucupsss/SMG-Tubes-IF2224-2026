@@ -3,8 +3,8 @@
 #include <cctype>
 #include <algorithm>
 
-Lexer::Lexer(const std::string& source) 
-    : content(source), 
+Lexer::Lexer(const std::string& source)
+    : content(source),
       pos(0),
       line(1),
       column(1) {
@@ -21,7 +21,7 @@ void Lexer::initKeywords() {
     keywords["type"] = TokenType::TYPESY;
     keywords["var"] = TokenType::VARSY;
     keywords["function"] = TokenType::FUNCTIONSY;
-    keywords["procedure"] = TokenType::PROCEDURESY; 
+    keywords["procedure"] = TokenType::PROCEDURESY;
     keywords["array"] = TokenType::ARRAYSY;
     keywords["record"] = TokenType::RECORDSY;
     keywords["program"] = TokenType::PROGRAMSY;
@@ -75,7 +75,7 @@ bool Lexer::isSeparator(char c) const {
 }
 
 bool Lexer::isTokenBoundary(char c) const {
-    return c == '\0' || 
+    return c == '\0' ||
             isSeparator(c) ||
             c == '+' || c == '-' || c == '*' || c == '/' ||
             c == ',' || c == ';' || c == ':' ||
@@ -116,7 +116,7 @@ Token Lexer::readBraceComment(int startLine, int startColumn) {
         return makeToken(TokenType::COMMENT, comment, startLine, startColumn);
     }
 
-    return makeToken(TokenType::UNKNOWN, "komentar tidak ditutup sebelum akhir file", startLine, startColumn);
+    return makeToken(TokenType::UNKNOWN, "unterminated comment", startLine, startColumn);
 }
 
 Token Lexer::readParenStarComment(int startLine, int startColumn) {
@@ -134,7 +134,7 @@ Token Lexer::readParenStarComment(int startLine, int startColumn) {
         comment += advance();
     }
 
-    return makeToken(TokenType::UNKNOWN, "komentar tidak ditutup sebelum akhir file", startLine, startColumn);
+    return makeToken(TokenType::UNKNOWN, "unterminated comment", startLine, startColumn);
 }
 
 Token Lexer::readIdentifierOrKeyword(int startLine, int startColumn) {
@@ -213,7 +213,7 @@ Token Lexer::readNumber(int startLine, int startColumn) {
 
     return makeToken(TokenType::INTCON, result, startLine, startColumn);
 }
-    
+
 Token Lexer::readStringOrChar(int startLine, int startColumn) {
     advance();
 
@@ -234,12 +234,12 @@ Token Lexer::readStringOrChar(int startLine, int startColumn) {
         }
 
         result += advance();
-    } 
+    }
 
     if (peek() == '\'') {
         advance();
     } else {
-        return makeToken(TokenType::UNKNOWN, "string tidak ditutup sebelum akhir file", startLine, startColumn);
+        return makeToken(TokenType::UNKNOWN, "unterminated string", startLine, startColumn);
     }
 
     if (!hasEscapedQuote && result.length() == 1) {
@@ -313,7 +313,7 @@ Token Lexer::getNextToken() {
 
         case '*':
             return makeToken(TokenType::TIMES, "*", startLine, startColumn);
-            
+
         case '/':
             return makeToken(TokenType::RDIV, "/", startLine, startColumn);
 
@@ -356,7 +356,7 @@ Token Lexer::getNextToken() {
                 advance();
                 return makeToken(TokenType::GEQ, ">=", startLine, startColumn);
             }
-            
+
             return makeToken(TokenType::GTR, ">", startLine, startColumn);
         case '<':
             if (peek() == '=') {
@@ -370,7 +370,7 @@ Token Lexer::getNextToken() {
             }
 
             return makeToken(TokenType::LSS, "<", startLine, startColumn);
-        
+
     }
 
     return makeToken(TokenType::UNKNOWN, std::string(1, c), startLine, startColumn);
