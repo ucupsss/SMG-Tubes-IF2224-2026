@@ -1,0 +1,18 @@
+program Subprograms;
+
+procedure Show(x: integer; y: array[1..3] of integer);
+var
+    local: integer;
+begin
+    local := x;
+    writeln(local);
+end;
+
+function Next(n: integer): integer;
+begin
+    Next := n + 1;
+end;
+
+begin
+    Show(Next(1), 2);
+end.

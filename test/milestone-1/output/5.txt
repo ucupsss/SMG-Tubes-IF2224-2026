@@ -1,7 +1,7 @@
 programsy
-ident (nanggung)
+ident(nanggung)
 semicolon
 beginsy
-ident (writeln)
+ident(writeln)
 lparent
-unknown (string tidak ditutup sebelum akhir file)
+unknown(unterminated string)

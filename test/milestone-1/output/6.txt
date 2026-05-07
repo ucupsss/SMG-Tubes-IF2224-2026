@@ -1,21 +1,21 @@
 programsy
-ident (aneh)
+ident(aneh)
 semicolon
 varsy
-ident (a)
+ident(a)
 comma
-ident (b)
+ident(b)
 colon
-ident (integer)
+ident(integer)
 semicolon
 beginsy
-ident (a)
-unknown (@)
-ident (b)
+ident(a)
+unknown(@)
+ident(b)
 semicolon
-ident (writeln)
+ident(writeln)
 lparent
-string ('Aku cinta asisten 'hehe'')
+string('Aku cinta asisten 'hehe'')
 rparent
 semicolon
 endsy

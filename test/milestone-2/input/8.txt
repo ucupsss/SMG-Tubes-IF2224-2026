@@ -1,0 +1,7 @@
+program Calls;
+
+begin
+    { comments are ignored }
+    writeln();
+    writeln('done');
+end.

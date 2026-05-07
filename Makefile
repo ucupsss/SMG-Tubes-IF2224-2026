@@ -1,29 +1,69 @@
-CXX := g++
-CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic
+# Makefile for Arion Compiler
+
+CXX      := g++
+CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic -MMD -MP
+CPPFLAGS := -Iinclude
 
 SRC_DIR := src
-INC_DIR := include
-BIN_DIR := bin
-TARGET := $(BIN_DIR)/lexer_app.exe
-TARGET_WIN := $(subst /,\,$(TARGET))
-SRC := $(SRC_DIR)/main.cpp $(SRC_DIR)/lexer.cpp $(SRC_DIR)/parser.cpp $(SRC_DIR)/formatter.cpp $(SRC_DIR)/filehandler.cpp
-HEADERS := $(INC_DIR)/lexer.hpp $(INC_DIR)/parser.hpp $(INC_DIR)/formatter.hpp $(INC_DIR)/filehandler.hpp
 
-.PHONY: all build run clean
+ifeq ($(OS),Windows_NT)
+  PLATFORM := windows
+  EXE_EXT := .exe
+  PATH_SEP := \\
+  MKDIR = if not exist "$(subst /,\,$1)" mkdir "$(subst /,\,$1)"
+  RMDIR = if exist "$(subst /,\,$1)" rmdir /s /q "$(subst /,\,$1)"
+  RMFILE = if exist "$(subst /,\,$1)" del /f /q "$(subst /,\,$1)"
+  RUN_PREFIX :=
+else
+  PLATFORM := linux
+  EXE_EXT :=
+  PATH_SEP := /
+  MKDIR = mkdir -p "$1"
+  RMDIR = rm -rf "$1"
+  RMFILE = rm -f "$1"
+  RUN_PREFIX := ./
+endif
+
+OBJ_DIR := build/$(PLATFORM)
+BIN_DIR := bin/$(PLATFORM)
+TARGET := $(BIN_DIR)/arion_compiler$(EXE_EXT)
+
+SRCS := $(wildcard $(SRC_DIR)/*.cpp)
+OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRCS))
+DEPS := $(OBJS:.o=.d)
+
+.PHONY: all build run clean rebuild directories
 
 all: build
 
-build: $(TARGET)
+build: directories $(TARGET)
 
-$(TARGET): $(SRC) $(HEADERS)
-	@echo Mengompilasi program...
-	@cmd /C if not exist "$(BIN_DIR)" mkdir "$(BIN_DIR)"
-	@$(CXX) $(CXXFLAGS) -I$(INC_DIR) $(SRC) -o $(TARGET)
+directories:
+	@$(call MKDIR,$(OBJ_DIR))
+	@$(call MKDIR,$(BIN_DIR))
 
-run: $(TARGET)
-	@echo Menjalankan program...
-	@./$(TARGET)
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $^ -o $@
+	@echo "Build successful! Executable is at $(TARGET)"
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@$(call MKDIR,$(dir $@))
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
+
+run: build
+	$(RUN_PREFIX)$(TARGET)
 
 clean:
-	@echo Membersihkan program...
-	@cmd /C if exist "$(TARGET_WIN)" del /Q "$(TARGET_WIN)"
+	@$(call RMDIR,$(OBJ_DIR))
+	@$(call RMFILE,$(TARGET))
+	@echo "Cleaned up $(OBJ_DIR) and $(TARGET)"
+
+clean-all:
+	@$(call RMDIR,build)
+	@$(call RMDIR,bin/windows)
+	@$(call RMDIR,bin/linux)
+	@echo "Cleaned up all build artifacts"
+
+rebuild: clean build
+
+-include $(DEPS)

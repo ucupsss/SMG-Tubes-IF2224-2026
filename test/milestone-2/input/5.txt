@@ -1,0 +1,12 @@
+program CaseFor;
+
+var
+    i, result: integer;
+
+begin
+    for i := 10 downto 1 do result := result + i;
+    case result of
+        0: writeln('zero');
+        1, 2: writeln('small');
+    end;
+end.

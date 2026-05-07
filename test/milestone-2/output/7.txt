@@ -1,0 +1,96 @@
+<program>
+├── <program-header>
+│   ├── programsy
+│   ├── ident(Expressions)
+│   └── semicolon
+├── <declaration-part>
+│   └── <var-declaration>
+│       ├── varsy
+│       ├── <identifier-list>
+│       │   ├── ident(a)
+│       │   ├── comma
+│       │   ├── ident(b)
+│       │   ├── comma
+│       │   └── ident(c)
+│       ├── colon
+│       ├── <type>
+│       │   └── ident(integer)
+│       └── semicolon
+├── <compound-statement>
+│   ├── beginsy
+│   ├── <statement-list>
+│   │   ├── <assignment-statement>
+│   │   │   ├── <variable>
+│   │   │   │   └── ident(a)
+│   │   │   ├── becomes
+│   │   │   └── <expression>
+│   │   │       └── <simple-expression>
+│   │   │           ├── minus
+│   │   │           ├── <term>
+│   │   │           │   └── <factor>
+│   │   │           │       └── intcon(1)
+│   │   │           ├── plus
+│   │   │           └── <term>
+│   │   │               ├── <factor>
+│   │   │               │   └── intcon(2)
+│   │   │               ├── <multiplicative-operator>
+│   │   │               │   └── times
+│   │   │               └── <factor>
+│   │   │                   ├── lparent
+│   │   │                   ├── <expression>
+│   │   │                   │   └── <simple-expression>
+│   │   │                   │       ├── <term>
+│   │   │                   │       │   └── <factor>
+│   │   │                   │       │       └── intcon(3)
+│   │   │                   │       ├── plus
+│   │   │                   │       └── <term>
+│   │   │                   │           └── <factor>
+│   │   │                   │               └── intcon(4)
+│   │   │                   └── rparent
+│   │   ├── semicolon
+│   │   ├── <assignment-statement>
+│   │   │   ├── <variable>
+│   │   │   │   └── ident(b)
+│   │   │   ├── becomes
+│   │   │   └── <expression>
+│   │   │       └── <simple-expression>
+│   │   │           ├── <term>
+│   │   │           │   └── <factor>
+│   │   │           │       ├── notsy
+│   │   │           │       └── <factor>
+│   │   │           │           └── <variable>
+│   │   │           │               └── ident(a)
+│   │   │           ├── orsy
+│   │   │           └── <term>
+│   │   │               ├── <factor>
+│   │   │               │   └── <variable>
+│   │   │               │       └── ident(b)
+│   │   │               ├── <multiplicative-operator>
+│   │   │               │   └── andsy
+│   │   │               └── <factor>
+│   │   │                   └── <variable>
+│   │   │                       └── ident(c)
+│   │   ├── semicolon
+│   │   ├── <assignment-statement>
+│   │   │   ├── <variable>
+│   │   │   │   └── ident(c)
+│   │   │   ├── becomes
+│   │   │   └── <expression>
+│   │   │       └── <simple-expression>
+│   │   │           └── <term>
+│   │   │               ├── <factor>
+│   │   │               │   └── <variable>
+│   │   │               │       └── ident(a)
+│   │   │               ├── <multiplicative-operator>
+│   │   │               │   └── idiv
+│   │   │               ├── <factor>
+│   │   │               │   └── <variable>
+│   │   │               │       └── ident(b)
+│   │   │               ├── <multiplicative-operator>
+│   │   │               │   └── imod
+│   │   │               └── <factor>
+│   │   │                   └── <variable>
+│   │   │                       └── ident(c)
+│   │   └── semicolon
+│   └── endsy
+└── period

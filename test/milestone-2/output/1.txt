@@ -1,0 +1,64 @@
+<program>
+├── <program-header>
+│   ├── programsy
+│   ├── ident(Hello)
+│   └── semicolon
+├── <declaration-part>
+│   └── <var-declaration>
+│       ├── varsy
+│       ├── <identifier-list>
+│       │   ├── ident(a)
+│       │   ├── comma
+│       │   └── ident(b)
+│       ├── colon
+│       ├── <type>
+│       │   └── ident(integer)
+│       └── semicolon
+├── <compound-statement>
+│   ├── beginsy
+│   ├── <statement-list>
+│   │   ├── <assignment-statement>
+│   │   │   ├── <variable>
+│   │   │   │   └── ident(a)
+│   │   │   ├── becomes
+│   │   │   └── <expression>
+│   │   │       └── <simple-expression>
+│   │   │           └── <term>
+│   │   │               └── <factor>
+│   │   │                   └── intcon(5)
+│   │   ├── semicolon
+│   │   ├── <assignment-statement>
+│   │   │   ├── <variable>
+│   │   │   │   └── ident(b)
+│   │   │   ├── becomes
+│   │   │   └── <expression>
+│   │   │       └── <simple-expression>
+│   │   │           ├── <term>
+│   │   │           │   └── <factor>
+│   │   │           │       └── <variable>
+│   │   │           │           └── ident(a)
+│   │   │           ├── plus
+│   │   │           └── <term>
+│   │   │               └── <factor>
+│   │   │                   └── intcon(10)
+│   │   ├── semicolon
+│   │   ├── <procedure/function-call>
+│   │   │   ├── ident(writeln)
+│   │   │   ├── lparent
+│   │   │   ├── <parameter-list>
+│   │   │   │   ├── <expression>
+│   │   │   │   │   └── <simple-expression>
+│   │   │   │   │       └── <term>
+│   │   │   │   │           └── <factor>
+│   │   │   │   │               └── string('Result = ')
+│   │   │   │   ├── comma
+│   │   │   │   └── <expression>
+│   │   │   │       └── <simple-expression>
+│   │   │   │           └── <term>
+│   │   │   │               └── <factor>
+│   │   │   │                   └── <variable>
+│   │   │   │                       └── ident(b)
+│   │   │   └── rparent
+│   │   └── semicolon
+│   └── endsy
+└── period

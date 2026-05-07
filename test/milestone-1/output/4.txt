@@ -1,29 +1,29 @@
 programsy
-ident (Angka)
+ident(Angka)
 semicolon
 varsy
-ident (x)
+ident(x)
 comma
-ident (y)
+ident(y)
 colon
-ident (real)
+ident(real)
 semicolon
-ident (z)
+ident(z)
 colon
-ident (integer)
+ident(integer)
 semicolon
 beginsy
-ident (x)
+ident(x)
 becomes
-realcon (3.14159)
+realcon(3.14159)
 semicolon
-ident (y)
+ident(y)
 becomes
-intcon (007)
+intcon(007)
 semicolon
-ident (z)
+ident(z)
 becomes
-intcon (5)
+intcon(5)
 semicolon
 endsy
 period

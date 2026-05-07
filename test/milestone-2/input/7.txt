@@ -1,0 +1,10 @@
+program Expressions;
+
+var
+    a, b, c: integer;
+
+begin
+    a := -1 + 2 * (3 + 4);
+    b := not a or b and c;
+    c := a div b mod c;
+end.
