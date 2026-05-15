@@ -16,6 +16,18 @@ bool isStatementFollow(TokenType type) {
            type == TokenType::END_OF_FILE;
 }
 
+bool isCompoundStatementFollow(TokenType type) {
+    return type == TokenType::ENDSY ||
+           type == TokenType::UNTILSY ||
+           type == TokenType::ELSESY ||
+           type == TokenType::END_OF_FILE;
+}
+
+bool consumesOwnTerminator(const ParseNode& node) {
+    return node.label == "<while-statement>" ||
+           node.label == "<for-statement>";
+}
+
 }
 
 ParseNode Parser::parseCompoundStatement() {
@@ -31,18 +43,28 @@ ParseNode Parser::parseCompoundStatement() {
 ParseNode Parser::parseStatementList() {
     ParseNode node("<statement-list>");
 
-    node.addChild(parseStatement());
-
-    while (match(TokenType::SEMICOLON)) {
-        node.addChild(makeTerminalNode(tokens[pos - 1]));
-
-        if (check(TokenType::ENDSY) ||
-            check(TokenType::UNTILSY) ||
-            check(TokenType::END_OF_FILE)) {
-            break;
+    while (!isCompoundStatementFollow(current().type)) {
+        if (match(TokenType::SEMICOLON)) {
+            node.addChild(makeTerminalNode(tokens[pos - 1]));
+            continue;
         }
 
-        node.addChild(parseStatement());
+        ParseNode statement = parseStatement();
+        const bool statementConsumesTerminator = consumesOwnTerminator(statement);
+        node.addChild(statement);
+
+        if (statementConsumesTerminator) {
+            continue;
+        }
+
+        if (match(TokenType::SEMICOLON)) {
+            node.addChild(makeTerminalNode(tokens[pos - 1]));
+            continue;
+        }
+
+        if (!isCompoundStatementFollow(current().type)) {
+            consume(TokenType::SEMICOLON, "semicolon");
+        }
     }
 
     return node;
@@ -205,7 +227,8 @@ ParseNode Parser::parseWhileStatement() {
     node.addChild(makeTerminalNode(consume(TokenType::WHILESY, "whilesy")));
     node.addChild(parseExpression());
     node.addChild(makeTerminalNode(consume(TokenType::DOSY, "dosy")));
-    node.addChild(parseStatement());
+    node.addChild(parseCompoundStatement());
+    node.addChild(makeTerminalNode(consume(TokenType::SEMICOLON, "semicolon")));
 
     return node;
 }
@@ -237,7 +260,8 @@ ParseNode Parser::parseForStatement() {
 
     node.addChild(parseExpression());
     node.addChild(makeTerminalNode(consume(TokenType::DOSY, "dosy")));
-    node.addChild(parseStatement());
+    node.addChild(parseCompoundStatement());
+    node.addChild(makeTerminalNode(consume(TokenType::SEMICOLON, "semicolon")));
 
     return node;
 }

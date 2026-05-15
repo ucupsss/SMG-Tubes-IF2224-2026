@@ -67,21 +67,25 @@
 │   │   │   │           └── <factor>
 │   │   │   │               └── intcon(10)
 │   │   │   ├── dosy
-│   │   │   └── <assignment-statement>
-│   │   │       ├── <variable>
-│   │   │       │   └── ident(y)
-│   │   │       ├── becomes
-│   │   │       └── <expression>
-│   │   │           └── <simple-expression>
-│   │   │               ├── <term>
-│   │   │               │   └── <factor>
-│   │   │               │       └── <variable>
-│   │   │               │           └── ident(y)
-│   │   │               ├── plus
-│   │   │               └── <term>
-│   │   │                   └── <factor>
-│   │   │                       └── intcon(1)
-│   │   ├── semicolon
+│   │   │   ├── <compound-statement>
+│   │   │   │   ├── beginsy
+│   │   │   │   ├── <statement-list>
+│   │   │   │   │   └── <assignment-statement>
+│   │   │   │   │       ├── <variable>
+│   │   │   │   │       │   └── ident(y)
+│   │   │   │   │       ├── becomes
+│   │   │   │   │       └── <expression>
+│   │   │   │   │           └── <simple-expression>
+│   │   │   │   │               ├── <term>
+│   │   │   │   │               │   └── <factor>
+│   │   │   │   │               │       └── <variable>
+│   │   │   │   │               │           └── ident(y)
+│   │   │   │   │               ├── plus
+│   │   │   │   │               └── <term>
+│   │   │   │   │                   └── <factor>
+│   │   │   │   │                       └── intcon(1)
+│   │   │   │   └── endsy
+│   │   │   └── semicolon
 │   │   ├── <repeat-statement>
 │   │   │   ├── repeatsy
 │   │   │   ├── <statement-list>

@@ -1,0 +1,8 @@
+program split;
+
+var
+    x: integer;
+
+begin
+    x2 := 5e + 1.25abc;
+end.

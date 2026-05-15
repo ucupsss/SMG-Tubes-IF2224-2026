@@ -80,7 +80,8 @@ bool Lexer::isTokenBoundary(char c) const {
             c == '+' || c == '-' || c == '*' || c == '/' ||
             c == ',' || c == ';' || c == ':' ||
             c == '(' || c == ')' || c == '[' || c ==']' ||
-            c == '<' || c == '>' || c == '=';
+            c == '<' || c == '>' || c == '=' ||
+            c == '.';
 }
 
 void Lexer::skipSeparators() {
@@ -140,7 +141,7 @@ Token Lexer::readParenStarComment(int startLine, int startColumn) {
 Token Lexer::readIdentifierOrKeyword(int startLine, int startColumn) {
     std::string result;
 
-    while (std::isalnum(static_cast<unsigned char>(peek()))) {
+    while (std::isalpha(static_cast<unsigned char>(peek()))) {
         result += advance();
     }
 
@@ -185,30 +186,12 @@ Token Lexer::readNumber(int startLine, int startColumn) {
             return makeToken(TokenType::REALCON, result, startLine, startColumn);
         }
 
-        // 1.23abc or 1.23.abc -> malformed sequence
-        if (!isTokenBoundary(peek()) && peek() != '.') {
-            result += consumeUnknownSequence();
-            return makeToken(TokenType::UNKNOWN, result, startLine, startColumn);
-        }
-
-        // 1.23.abc -> consume as unknown, not realcon(1.23), period, ident(abc)
-        if (peek() == '.') {
-            result += consumeUnknownSequence();
-            return makeToken(TokenType::UNKNOWN, result, startLine, startColumn);
-        }
-
         return makeToken(TokenType::REALCON, result, startLine, startColumn);
     }
 
     // 1. -> intcon(1), period
     if (peek() == '.') {
         return makeToken(TokenType::INTCON, result, startLine, startColumn);
-    }
-
-    // 123abc -> malformed sequence
-    if (!isTokenBoundary(peek())) {
-        result += consumeUnknownSequence();
-        return makeToken(TokenType::UNKNOWN, result, startLine, startColumn);
     }
 
     return makeToken(TokenType::INTCON, result, startLine, startColumn);

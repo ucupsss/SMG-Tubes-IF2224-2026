@@ -33,22 +33,26 @@
 │   │   │   │           └── <factor>
 │   │   │   │               └── intcon(1)
 │   │   │   ├── dosy
-│   │   │   └── <assignment-statement>
-│   │   │       ├── <variable>
-│   │   │       │   └── ident(result)
-│   │   │       ├── becomes
-│   │   │       └── <expression>
-│   │   │           └── <simple-expression>
-│   │   │               ├── <term>
-│   │   │               │   └── <factor>
-│   │   │               │       └── <variable>
-│   │   │               │           └── ident(result)
-│   │   │               ├── plus
-│   │   │               └── <term>
-│   │   │                   └── <factor>
-│   │   │                       └── <variable>
-│   │   │                           └── ident(i)
-│   │   ├── semicolon
+│   │   │   ├── <compound-statement>
+│   │   │   │   ├── beginsy
+│   │   │   │   ├── <statement-list>
+│   │   │   │   │   └── <assignment-statement>
+│   │   │   │   │       ├── <variable>
+│   │   │   │   │       │   └── ident(result)
+│   │   │   │   │       ├── becomes
+│   │   │   │   │       └── <expression>
+│   │   │   │   │           └── <simple-expression>
+│   │   │   │   │               ├── <term>
+│   │   │   │   │               │   └── <factor>
+│   │   │   │   │               │       └── <variable>
+│   │   │   │   │               │           └── ident(result)
+│   │   │   │   │               ├── plus
+│   │   │   │   │               └── <term>
+│   │   │   │   │                   └── <factor>
+│   │   │   │   │                       └── <variable>
+│   │   │   │   │                           └── ident(i)
+│   │   │   │   └── endsy
+│   │   │   └── semicolon
 │   │   ├── <case-statement>
 │   │   │   ├── casesy
 │   │   │   ├── <expression>

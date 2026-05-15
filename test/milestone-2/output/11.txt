@@ -1,0 +1,1 @@
+Syntax error at line 7, column 21: expected beginsy, found ident (y)

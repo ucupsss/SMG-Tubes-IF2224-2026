@@ -1,0 +1,8 @@
+program BadLoopBody;
+
+var
+    y: integer;
+
+begin
+    while y < 10 do y := y + 1;
+end.
