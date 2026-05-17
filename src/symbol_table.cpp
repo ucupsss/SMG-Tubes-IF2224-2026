@@ -143,6 +143,11 @@ int SymbolTable::enterTab(const TabEntry& entry) {
     return index;
 }
 
+int SymbolTable::enterBTab(const BTabEntry& entry) {
+    btabEntries.push_back(entry);
+    return static_cast<int>(btabEntries.size()) - 1;
+}
+
 int SymbolTable::enterATab(const ATabEntry& entry) {
     ATabEntry stored = entry;
 
@@ -202,6 +207,22 @@ int SymbolTable::lookupCurrentScope(const std::string& name) const {
     return lookupTab(name, currentBlock());
 }
 
+void SymbolTable::pushScope(int btabIdx) {
+    if (btabIdx < 0 || btabIdx >= static_cast<int>(btabEntries.size())) {
+        throw std::out_of_range("btab index out of range");
+    }
+
+    display.push_back(btabIdx);
+}
+
+void SymbolTable::popScope() {
+    if (display.size() <= 1) {
+        return;
+    }
+
+    display.pop_back();
+}
+
 int SymbolTable::currentLevel() const {
     return display.empty() ? 0 : static_cast<int>(display.size()) - 1;
 }
@@ -230,6 +251,22 @@ const TabEntry& SymbolTable::tabAt(int index) const {
     return tabEntries[static_cast<size_t>(index)];
 }
 
+BTabEntry& SymbolTable::btabAt(int index) {
+    if (index < 0 || index >= static_cast<int>(btabEntries.size())) {
+        throw std::out_of_range("btab index out of range");
+    }
+
+    return btabEntries[static_cast<size_t>(index)];
+}
+
+const BTabEntry& SymbolTable::btabAt(int index) const {
+    if (index < 0 || index >= static_cast<int>(btabEntries.size())) {
+        throw std::out_of_range("btab index out of range");
+    }
+
+    return btabEntries[static_cast<size_t>(index)];
+}
+
 ATabEntry& SymbolTable::atabAt(int index) {
     if (index <= 0 || index >= static_cast<int>(atabEntries.size())) {
         throw std::out_of_range("atab index out of range");
@@ -248,6 +285,10 @@ const ATabEntry& SymbolTable::atabAt(int index) const {
 
 const std::vector<TabEntry>& SymbolTable::tab() const {
     return tabEntries;
+}
+
+const std::vector<BTabEntry>& SymbolTable::btab() const {
+    return btabEntries;
 }
 
 const std::vector<ATabEntry>& SymbolTable::atab() const {
@@ -342,6 +383,28 @@ std::vector<std::string> SymbolTable::formatTab() const {
             << std::setw(4) << entry.nrm
             << std::setw(4) << entry.lev
             << std::setw(4) << entry.adr;
+
+        lines.push_back(row.str());
+    }
+
+    return lines;
+}
+
+std::vector<std::string> SymbolTable::formatBTab() const {
+    std::vector<std::string> lines;
+    lines.push_back("btab:");
+    lines.push_back("idx last lpar psze vsze");
+    lines.push_back("-----------------------");
+
+    for (int i = 0; i < static_cast<int>(btabEntries.size()); ++i) {
+        const BTabEntry& entry = btabEntries[static_cast<size_t>(i)];
+
+        std::ostringstream row;
+        row << std::setw(3) << i
+            << std::setw(5) << entry.last
+            << std::setw(5) << entry.lpar
+            << std::setw(5) << entry.psze
+            << std::setw(5) << entry.vsze;
 
         lines.push_back(row.str());
     }
