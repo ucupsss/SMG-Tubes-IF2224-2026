@@ -74,6 +74,21 @@ std::string objectName(int obj) {
     }
 }
 
+int primitiveTypeSize(int typeCode) {
+    switch (typeCode) {
+        case TYPE_INTEGER:
+        case TYPE_REAL:
+        case TYPE_CHAR:
+        case TYPE_BOOLEAN:
+        case TYPE_STRING:
+        case TYPE_SUBRANGE:
+        case TYPE_ENUM:
+            return 1;
+        default:
+            return 0;
+    }
+}
+
 }
 
 void SymbolTable::init() {
@@ -90,6 +105,7 @@ void SymbolTable::clear() {
 
     tabEntries.push_back(TabEntry{});
     btabEntries.push_back(BTabEntry{});
+    atabEntries.push_back(ATabEntry{});
     display.push_back(0);
 }
 
@@ -125,6 +141,21 @@ int SymbolTable::enterTab(const TabEntry& entry) {
     }
 
     return index;
+}
+
+int SymbolTable::enterATab(const ATabEntry& entry) {
+    ATabEntry stored = entry;
+
+    if (stored.elsz <= 0) {
+        stored.elsz = primitiveTypeSize(stored.etyp);
+    }
+
+    if (stored.size <= 0 && stored.high >= stored.low && stored.elsz > 0) {
+        stored.size = (stored.high - stored.low + 1) * stored.elsz;
+    }
+
+    atabEntries.push_back(stored);
+    return static_cast<int>(atabEntries.size()) - 1;
 }
 
 int SymbolTable::lookupTab(const std::string& name) const {
@@ -199,8 +230,28 @@ const TabEntry& SymbolTable::tabAt(int index) const {
     return tabEntries[static_cast<size_t>(index)];
 }
 
+ATabEntry& SymbolTable::atabAt(int index) {
+    if (index <= 0 || index >= static_cast<int>(atabEntries.size())) {
+        throw std::out_of_range("atab index out of range");
+    }
+
+    return atabEntries[static_cast<size_t>(index)];
+}
+
+const ATabEntry& SymbolTable::atabAt(int index) const {
+    if (index <= 0 || index >= static_cast<int>(atabEntries.size())) {
+        throw std::out_of_range("atab index out of range");
+    }
+
+    return atabEntries[static_cast<size_t>(index)];
+}
+
 const std::vector<TabEntry>& SymbolTable::tab() const {
     return tabEntries;
+}
+
+const std::vector<ATabEntry>& SymbolTable::atab() const {
+    return atabEntries;
 }
 
 TypeInfo SymbolTable::typeOf(int tabIndex) const {
@@ -291,6 +342,39 @@ std::vector<std::string> SymbolTable::formatTab() const {
             << std::setw(4) << entry.nrm
             << std::setw(4) << entry.lev
             << std::setw(4) << entry.adr;
+
+        lines.push_back(row.str());
+    }
+
+    return lines;
+}
+
+std::vector<std::string> SymbolTable::formatATab() const {
+    std::vector<std::string> lines;
+    lines.push_back("atab:");
+    lines.push_back("idx xtyp       etyp       eref  low high elsz size");
+    lines.push_back("---------------------------------------------------");
+
+    for (int i = 1; i < static_cast<int>(atabEntries.size()); ++i) {
+        const ATabEntry& entry = atabEntries[static_cast<size_t>(i)];
+
+        TypeInfo indexType;
+        indexType.code = entry.xtyp;
+        indexType.baseType = entry.xtyp;
+
+        TypeInfo elementType;
+        elementType.code = entry.etyp;
+        elementType.baseType = entry.etyp;
+
+        std::ostringstream row;
+        row << std::setw(3) << i << " "
+            << std::left << std::setw(10) << typeName(indexType)
+            << std::left << std::setw(10) << typeName(elementType)
+            << std::right << std::setw(5) << entry.eref
+            << std::setw(5) << entry.low
+            << std::setw(5) << entry.high
+            << std::setw(5) << entry.elsz
+            << std::setw(5) << entry.size;
 
         lines.push_back(row.str());
     }
