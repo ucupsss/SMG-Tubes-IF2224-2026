@@ -23,6 +23,7 @@ inline constexpr int OBJ_TYPE = 2;
 inline constexpr int OBJ_PROCEDURE = 3;
 inline constexpr int OBJ_FUNCTION = 4;
 inline constexpr int OBJ_PROGRAM = 5;
+inline constexpr int OBJ_RESERVED = 6;
 
 struct TypeInfo {
     int code = TYPE_VOID;
