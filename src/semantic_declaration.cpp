@@ -406,6 +406,10 @@ void SemanticAnalyzer::visitBlock(BlockNode* node) {
 
     node->blockIndex = symbolTable.currentBlock();
     node->lexLevel = symbolTable.currentLevel();
+
+    for (const auto& statement : node->statements) {
+        visitStatement(statement.get());
+    }
 }
 
 void SemanticAnalyzer::visitDeclaration(DeclarationNode* node) {
