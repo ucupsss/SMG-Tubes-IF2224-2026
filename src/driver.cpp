@@ -3,6 +3,7 @@
 #include "formatter.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
+#include "semantic.hpp"
 
 namespace {
 
@@ -61,4 +62,35 @@ std::vector<std::string> runSyntaxAnalyzer(const std::string& source) {
     } catch (const ParseError& error) {
         return {error.what()};
     }
+}
+
+std::vector<std::string> runSemanticAnalyzer(const std::string& source) {
+    Lexer lexer(source);
+    std::vector<Token> tokens;
+
+    while(true) {
+        Token token = lexer.getNextToken();
+
+        if (token.type == TokenType::UNKNOWN) {
+            return {formatLexicalError(token)};
+        }
+
+        if (token.type != TokenType::COMMENT) {
+            tokens.push_back(token);
+        }
+
+        if (token.type == TokenType::END_OF_FILE) {
+            break;
+        }
+    }
+    try {
+        Parser parser(tokens);
+        ParseNode parseTree = parser.parse();
+        SemanticAnalyzer analyzer;
+        analyzer.analyze(parseTree);
+        return analyzer.formatOutput();
+    } catch (const ParseError& error) {
+        return {error.what()};
+    }
+
 }
