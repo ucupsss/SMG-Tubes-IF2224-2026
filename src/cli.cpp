@@ -200,12 +200,19 @@ bool shouldRunLexerOnly(const std::string& selectedFolder) {
     return selectedFolder == "milestone-1";
 }
 
+bool shouldRunSemanticAnalyzer(const std::string& selectedFolder) {
+    return selectedFolder == "milestone-3";
+}
+
 std::vector<std::string> runAnalyzerForFolder(
     const std::string& selectedFolder,
     const std::string& source
 ) {
     if (shouldRunLexerOnly(selectedFolder)) {
         return runLexer(source);
+    }
+    if (shouldRunSemanticAnalyzer(selectedFolder)) {
+        return runSemanticAnalyzer(source);
     }
 
     return runSyntaxAnalyzer(source);
@@ -217,7 +224,11 @@ void printOutputLines(
 ) {
     if (shouldRunLexerOnly(selectedFolder)) {
         std::cout << "\nHasil lexical analyzer:\n";
-    } else {
+    } 
+    else if (shouldRunSemanticAnalyzer(selectedFolder)) {
+        std::cout << "\nHasil semantic analyzer:\n";
+    }
+    else {
         std::cout << "\nHasil syntax analyzer:\n";
     }
 
