@@ -1,24 +1,13 @@
 #include "semantic.hpp"
+#include "semantic_utils.hpp"
 
 #include <utility>
 
 namespace {
 
-TypeInfo makeErrorType() {
-    TypeInfo type;
-    type.code = TYPE_ERROR;
-    type.baseType = TYPE_ERROR;
-    type.name = "Error";
-    return type;
-}
-
-TypeInfo makeVoidType() {
-    TypeInfo type;
-    type.code = TYPE_VOID;
-    type.baseType = TYPE_VOID;
-    type.name = "Void";
-    return type;
-}
+using semantic_util::makeErrorType;
+using semantic_util::makePrimitiveType;
+using semantic_util::makeVoidType;
 
 std::string formatDuplicateMessage(const std::string& name) {
     return "redeclaration of identifier '" + name + "' in the same scope";
@@ -38,15 +27,6 @@ struct ConstValue {
     int integerValue = 0;
 };
 
-TypeInfo typeFromCode(int code, const std::string& name) {
-    TypeInfo type;
-    type.code = code;
-    type.baseType = code;
-    type.name = name;
-    type.isNamed = true;
-    return type;
-}
-
 ConstValue evaluateConstant(
     SymbolTable& symbols,
     ASTNode* node,
@@ -58,25 +38,25 @@ ConstValue evaluateConstant(
     }
 
     if (auto* value = dynamic_cast<IntLiteralNode*>(node)) {
-        return {typeFromCode(TYPE_INTEGER, "Integer"), true, value->value};
+        return {makePrimitiveType(TYPE_INTEGER, "Integer"), true, value->value};
     }
 
     if (dynamic_cast<RealLiteralNode*>(node)) {
-        return {typeFromCode(TYPE_REAL, "Real"), false, 0};
+        return {makePrimitiveType(TYPE_REAL, "Real"), false, 0};
     }
 
     if (auto* value = dynamic_cast<CharLiteralNode*>(node)) {
-        return {typeFromCode(TYPE_CHAR, "Char"), true, static_cast<int>(value->value)};
+        return {makePrimitiveType(TYPE_CHAR, "Char"), true, static_cast<int>(value->value)};
     }
 
     if (auto* value = dynamic_cast<StringLiteralNode*>(node)) {
-        TypeInfo type = typeFromCode(TYPE_STRING, "String");
+        TypeInfo type = makePrimitiveType(TYPE_STRING, "String");
         type.stringLength = static_cast<int>(value->value.size());
         return {type, false, 0};
     }
 
     if (auto* value = dynamic_cast<BoolLiteralNode*>(node)) {
-        return {typeFromCode(TYPE_BOOLEAN, "Boolean"), true, value->value ? 1 : 0};
+        return {makePrimitiveType(TYPE_BOOLEAN, "Boolean"), true, value->value ? 1 : 0};
     }
 
     if (auto* var = dynamic_cast<VarNode*>(node)) {
@@ -190,7 +170,10 @@ void SemanticAnalyzer::visitProgram(ProgramNode* node) {
     }
 
     if (node->body) {
+        const int mainBlockIndex = symbolTable.enterBTab(BTabEntry{});
+        symbolTable.pushScope(mainBlockIndex);
         visitBlock(node->body.get());
+        symbolTable.popScope();
     }
 }
 

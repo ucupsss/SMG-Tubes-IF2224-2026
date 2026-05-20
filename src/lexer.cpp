@@ -1,7 +1,7 @@
 #include "lexer.hpp"
+#include "text_utils.hpp"
 
 #include <cctype>
-#include <algorithm>
 
 Lexer::Lexer(const std::string& source)
     : content(source),
@@ -145,13 +145,7 @@ Token Lexer::readIdentifierOrKeyword(int startLine, int startColumn) {
         result += advance();
     }
 
-    std::string lowerResult = result;
-    std::transform(
-        lowerResult.begin(),
-        lowerResult.end(),
-        lowerResult.begin(),
-        [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); }
-    );
+    std::string lowerResult = text_util::lowercase(result);
 
     auto keyword = keywords.find(lowerResult);
     if (keyword != keywords.end()) {

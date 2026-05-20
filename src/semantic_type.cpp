@@ -1,7 +1,6 @@
 #include "semantic.hpp"
+#include "semantic_utils.hpp"
 
-#include <algorithm>
-#include <cctype>
 #include <functional>
 #include <optional>
 #include <sstream>
@@ -9,33 +8,10 @@
 
 namespace {
 
-std::string lower(std::string text) {
-    std::transform(text.begin(), text.end(), text.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
-    return text;
-}
-
-TypeInfo makeErrorType() {
-    TypeInfo type;
-    type.code = TYPE_ERROR;
-    type.baseType = TYPE_ERROR;
-    type.name = "Error";
-    return type;
-}
-
-TypeInfo makePrimitiveType(int code, const std::string& name) {
-    TypeInfo type;
-    type.code = code;
-    type.baseType = code;
-    type.name = name;
-    type.isNamed = true;
-    return type;
-}
-
-int effectiveCode(const TypeInfo& type) {
-    return type.code == TYPE_SUBRANGE ? type.baseType : type.code;
-}
+using semantic_util::effectiveCode;
+using semantic_util::makeErrorType;
+using semantic_util::makePrimitiveType;
+using text_util::lowercase;
 
 TypeInfo typeFromAnnotatedNode(const TypeNode* node) {
     TypeInfo type;
@@ -247,13 +223,14 @@ TypeInfo SemanticAnalyzer::resolveSubrangeType(SubrangeTypeNode* node) {
                 return {operandType, operandValue};
             }
 
-            if ((lower(unary->op) == "-" || lower(unary->op) == "+") && operandValue.has_value()) {
+            const std::string op = lowercase(unary->op);
+            if ((op == "-" || op == "+") && operandValue.has_value()) {
                 if (effectiveCode(operandType) != TYPE_INTEGER && effectiveCode(operandType) != TYPE_REAL) {
                     semanticError("unary sign requires a numeric constant", unary->location);
                     return {makeErrorType(), std::nullopt};
                 }
 
-                if (lower(unary->op) == "-") {
+                if (op == "-") {
                     operandValue = -operandValue.value();
                 }
                 return {operandType, operandValue};

@@ -1,18 +1,12 @@
 #include "symbol_table.hpp"
+#include "text_utils.hpp"
 
-#include <algorithm>
-#include <cctype>
-#include <iomanip>
-#include <sstream>
 #include <stdexcept>
 
 namespace {
 
 std::string normalizeIdentifier(std::string name) {
-    std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
-    return name;
+    return text_util::lowercase(name);
 }
 
 TypeInfo makeType(int code, const std::string& name) {
@@ -59,19 +53,6 @@ TabEntry makePredefinedProcedure(const std::string& name) {
     entry.type = TYPE_VOID;
     entry.typeInfo = makeType(TYPE_VOID, "void");
     return entry;
-}
-
-std::string objectName(int obj) {
-    switch (obj) {
-        case OBJ_CONSTANT: return "constant";
-        case OBJ_VARIABLE: return "variable";
-        case OBJ_TYPE: return "type";
-        case OBJ_PROCEDURE: return "procedure";
-        case OBJ_FUNCTION: return "function";
-        case OBJ_PROGRAM: return "program";
-        case OBJ_RESERVED: return "reserved";
-        default: return "unknown";
-    }
 }
 
 int primitiveTypeSize(int typeCode) {
@@ -231,10 +212,6 @@ int SymbolTable::currentBlock() const {
     return display.empty() ? 0 : display.back();
 }
 
-const std::vector<int>& SymbolTable::currentDisplay() const {
-    return display;
-}
-
 TabEntry& SymbolTable::tabAt(int index) {
     if (index <= 0 || index >= static_cast<int>(tabEntries.size())) {
         throw std::out_of_range("tab index out of range");
@@ -307,20 +284,6 @@ TypeInfo SymbolTable::typeOf(int tabIndex) const {
     return tabEntries[static_cast<size_t>(tabIndex)].typeInfo;
 }
 
-std::optional<TypeInfo> SymbolTable::predefinedType(const std::string& name) const {
-    const int index = lookupTab(name);
-    if (index == 0) {
-        return std::nullopt;
-    }
-
-    const TabEntry& entry = tabEntries[static_cast<size_t>(index)];
-    if (entry.obj != OBJ_TYPE) {
-        return std::nullopt;
-    }
-
-    return entry.typeInfo;
-}
-
 std::string SymbolTable::typeName(const TypeInfo& type) const {
     if (!type.name.empty()) {
         return type.name;
@@ -358,91 +321,13 @@ int SymbolTable::sizeOf(const TypeInfo& type) const {
             }
             return 0;
         case TYPE_RECORD:
+            if (type.ref > 0 && type.ref < static_cast<int>(btabEntries.size())) {
+                return btabEntries[static_cast<size_t>(type.ref)].vsze;
+            }
             return 0;
         default:
             return 0;
     }
-}
-
-std::vector<std::string> SymbolTable::formatTab() const {
-    std::vector<std::string> lines;
-    lines.push_back("tab:");
-    lines.push_back("idx identifier       link obj        type       ref nrm lev adr");
-    lines.push_back("---------------------------------------------------------------");
-
-    for (int i = 1; i < static_cast<int>(tabEntries.size()); ++i) {
-        const TabEntry& entry = tabEntries[static_cast<size_t>(i)];
-
-        std::ostringstream row;
-        row << std::setw(3) << i << " "
-            << std::left << std::setw(16) << entry.identifier
-            << std::right << std::setw(4) << entry.link << " "
-            << std::left << std::setw(10) << objectName(entry.obj)
-            << std::left << std::setw(11) << typeName(entry.typeInfo)
-            << std::right << std::setw(4) << entry.ref
-            << std::setw(4) << entry.nrm
-            << std::setw(4) << entry.lev
-            << std::setw(4) << entry.adr;
-
-        lines.push_back(row.str());
-    }
-
-    return lines;
-}
-
-std::vector<std::string> SymbolTable::formatBTab() const {
-    std::vector<std::string> lines;
-    lines.push_back("btab:");
-    lines.push_back("idx last lpar psze vsze");
-    lines.push_back("-----------------------");
-
-    for (int i = 0; i < static_cast<int>(btabEntries.size()); ++i) {
-        const BTabEntry& entry = btabEntries[static_cast<size_t>(i)];
-
-        std::ostringstream row;
-        row << std::setw(3) << i
-            << std::setw(5) << entry.last
-            << std::setw(5) << entry.lpar
-            << std::setw(5) << entry.psze
-            << std::setw(5) << entry.vsze;
-
-        lines.push_back(row.str());
-    }
-
-    return lines;
-}
-
-std::vector<std::string> SymbolTable::formatATab() const {
-    std::vector<std::string> lines;
-    lines.push_back("atab:");
-    lines.push_back("idx xtyp       etyp       eref  low high elsz size");
-    lines.push_back("---------------------------------------------------");
-
-    for (int i = 1; i < static_cast<int>(atabEntries.size()); ++i) {
-        const ATabEntry& entry = atabEntries[static_cast<size_t>(i)];
-
-        TypeInfo indexType;
-        indexType.code = entry.xtyp;
-        indexType.baseType = entry.xtyp;
-
-        TypeInfo elementType;
-        elementType.code = entry.etyp;
-        elementType.baseType = entry.etyp;
-
-        std::ostringstream row;
-        row << std::setw(3) << i << " "
-            << std::left << std::setw(10) << typeName(indexType)
-            << std::left << std::setw(10) << typeName(elementType)
-            << std::right << std::setw(5) << entry.eref
-            << std::setw(5) << entry.low
-            << std::setw(5) << entry.high
-            << std::setw(5) << entry.elsz
-            << std::setw(5) << entry.size;
-
-        lines.push_back(row.str());
-    }
-
-    return lines;
 }
 
 void SymbolTable::initReservedWords() {

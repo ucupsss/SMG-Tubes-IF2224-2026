@@ -1,7 +1,6 @@
 #ifndef SYMBOL_TABLE_HPP
 #define SYMBOL_TABLE_HPP
 
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -65,19 +64,6 @@ struct ATabEntry {
     int size = 0;
 };
 
-struct ParameterInfo {
-    std::string name;
-    TypeInfo type;
-    bool byReference = false;
-    int tabIndex = -1;
-};
-
-struct RoutineInfo {
-    std::vector<ParameterInfo> parameters;
-    TypeInfo returnType;
-    int blockIndex = -1;
-};
-
 class SymbolTable {
 public:
     void init();
@@ -96,7 +82,6 @@ public:
 
     int currentLevel() const;
     int currentBlock() const;
-    const std::vector<int>& currentDisplay() const;
 
     TabEntry& tabAt(int index);
     const TabEntry& tabAt(int index) const;
@@ -110,13 +95,8 @@ public:
     const std::vector<ATabEntry>& atab() const;
 
     TypeInfo typeOf(int tabIndex) const;
-    std::optional<TypeInfo> predefinedType(const std::string& name) const;
     std::string typeName(const TypeInfo& type) const;
     int sizeOf(const TypeInfo& type) const;
-
-    std::vector<std::string> formatTab() const;
-    std::vector<std::string> formatBTab() const;
-    std::vector<std::string> formatATab() const;
 
 private:
     void initReservedWords();

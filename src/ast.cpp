@@ -1,8 +1,8 @@
 #include "ast.hpp"
 #include "parser.hpp"
+#include "text_utils.hpp"
 
 #include <algorithm>
-#include <cctype>
 #include <sstream>
 #include <stdexcept>
 #include <utility>
@@ -11,13 +11,6 @@ namespace {
 
 std::string indent(int n) {
     return std::string(static_cast<size_t>(std::max(0, n)), ' ');
-}
-
-std::string lower(std::string s) {
-    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
-    return s;
 }
 
 std::string join(const std::vector<std::string>& values, const std::string& sep = ", ") {
@@ -99,10 +92,10 @@ std::vector<std::string> identifierList(const ParseNode& node) {
 }
 
 std::string opFrom(const ParseNode& node) {
-    if (node.token.has_value()) return lower(node.token->value);
+    if (node.token.has_value()) return text_util::lowercase(node.token->value);
 
     for (const ParseNode& child : node.children) {
-        if (child.token.has_value()) return lower(child.token->value);
+        if (child.token.has_value()) return text_util::lowercase(child.token->value);
     }
 
     return "";
@@ -156,7 +149,7 @@ std::unique_ptr<ExpressionNode> literalFromToken(const ParseNode& node) {
 
     if (isToken(node, TokenType::IDENT)) {
         const std::string name = node.token->value;
-        const std::string lowered = lower(name);
+        const std::string lowered = text_util::lowercase(name);
 
         if (lowered == "true" || lowered == "false") {
             auto lit = std::make_unique<BoolLiteralNode>();
@@ -329,7 +322,7 @@ std::unique_ptr<ExpressionNode> buildVariable(const ParseNode& node) {
     if (!ident) throw std::runtime_error("Variable without identifier");
 
     if (node.children.size() == 1) {
-        const std::string lowered = lower(ident->token->value);
+        const std::string lowered = text_util::lowercase(ident->token->value);
         if (lowered == "true" || lowered == "false") return literalFromToken(*ident);
     }
 
@@ -484,7 +477,10 @@ std::unique_ptr<ExpressionNode> buildSimpleExpression(const ParseNode& node) {
                 bin->location = bin->left->location;
                 current = std::move(bin);
             }
-        } else if (child.label == "<additive-operator>") {
+        } else if (child.label == "<additive-operator>" ||
+                   isToken(child, TokenType::PLUS) ||
+                   isToken(child, TokenType::MINUS) ||
+                   isToken(child, TokenType::ORSY)) {
             pendingOp = opFrom(child);
         }
     }
@@ -666,29 +662,43 @@ std::vector<std::unique_ptr<ParamDeclNode>> buildFormalParameters(const ParseNod
     for (const ParseNode& group : node.children) {
         if (group.label != "<parameter-group>") continue;
 
-        auto param = std::make_unique<ParamDeclNode>();
-        param->location = locOf(group);
-
+        bool byReference = false;
         for (const ParseNode& child : group.children) {
             if (isToken(child, TokenType::VARSY)) {
-                param->byReference = true;
+                byReference = true;
                 break;
             }
         }
 
+        std::vector<std::string> names;
         if (const ParseNode* ids = firstChildLabel(group, "<identifier-list>")) {
-            param->names = identifierList(*ids);
+            names = identifierList(*ids);
         }
 
+        const ParseNode* typeNode = nullptr;
         for (const ParseNode& child : group.children) {
             if (child.label == "<array-type>") {
-                param->type = buildType(child);
+                typeNode = &child;
+                break;
             } else if (isToken(child, TokenType::IDENT)) {
-                param->type = namedTypeFromToken(child);
+                typeNode = &child;
+                break;
             }
         }
 
-        params.push_back(std::move(param));
+        for (const std::string& name : names) {
+            auto param = std::make_unique<ParamDeclNode>();
+            param->location = locOf(group);
+            param->byReference = byReference;
+            param->names.push_back(name);
+            if (typeNode) {
+                param->type = typeNode->label == "<array-type>"
+                    ? buildType(*typeNode)
+                    : namedTypeFromToken(*typeNode);
+            }
+
+            params.push_back(std::move(param));
+        }
     }
 
     return params;
@@ -781,19 +791,26 @@ void appendVarDecls(const ParseNode& node, std::vector<std::unique_ptr<Declarati
     for (size_t i = 0; i < node.children.size(); ++i) {
         if (node.children[i].label != "<identifier-list>") continue;
 
-        auto decl = std::make_unique<VarDeclNode>();
-        decl->names = identifierList(node.children[i]);
-        decl->location = locOf(node.children[i]);
-
+        const std::vector<std::string> names = identifierList(node.children[i]);
+        const ParseNode* typeNode = nullptr;
         for (size_t j = i + 1; j < node.children.size(); ++j) {
             if (node.children[j].label == "<type>") {
-                decl->type = buildType(node.children[j]);
+                typeNode = &node.children[j];
                 break;
             }
             if (isToken(node.children[j], TokenType::SEMICOLON)) break;
         }
 
-        out.push_back(std::move(decl));
+        for (const std::string& name : names) {
+            auto decl = std::make_unique<VarDeclNode>();
+            decl->names.push_back(name);
+            decl->location = locOf(node.children[i]);
+            if (typeNode) {
+                decl->type = buildType(*typeNode);
+            }
+
+            out.push_back(std::move(decl));
+        }
     }
 }
 
