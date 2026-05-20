@@ -1,0 +1,11 @@
+program ConstAssignment;
+
+const
+    Limit == 10;
+
+var
+    x: integer;
+
+begin
+    Limit := x;
+end.

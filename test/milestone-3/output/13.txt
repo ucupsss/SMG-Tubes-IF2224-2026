@@ -1,0 +1,41 @@
+tab (relevant entries only):
+idx  id                  obj         type  ref  nrm  lev  adr  link
+-------------------------------------------------------------------
+...  (reserved words 0-32)
+33   ByReferenceInvalid  program        0    0    1    0    0     0
+34   Reset               procedure      0    1    1    0    0     0
+35   target              variable       1    0    0    1    0     0
+
+btab:
+idx  last  lpar  psze  vsze
+----------------------------
+0       34     0     0     0
+1       35    35     1     0
+2        0     0     0     0
+
+atab: (empty; no arrays declared)
+
+Decorated AST:
+Program(ByReferenceInvalid, block:0) -> tab_index:33, type:void, lev:0
+├─ declarations:
+│   └─ ProcDecl(Reset, block:1) -> tab_index:34, type:void, lev:0
+│       ├─ params:
+│       │   └─ ParamDecl(target, var) -> tab_index:35, type:integer, lev:1
+│       │       └─ type:
+│       │           └─ NamedType(integer) -> type:integer, lev:0
+│       └─ body:
+│           └─ Block(block:1) -> type:void, lev:1
+│               └─ Assign -> type:void, lev:1
+│                   ├─ target:
+│                   │   └─ Var(target) -> tab_index:35, type:integer, lev:1
+│                   └─ value:
+│                       └─ Int(0) -> type:integer, lev:1
+└─ body:
+    └─ Block(block:2) -> type:void, lev:1
+        └─ ProcCall(Reset) -> tab_index:34, type:void, lev:0
+            └─ Int(1) -> type:integer, lev:1
+
+Semantic diagnostics:
+Error at line 9, column 11: argument 1 of procedure 'Reset' must be assignable for by-reference parameter
+
+Status: FAILED

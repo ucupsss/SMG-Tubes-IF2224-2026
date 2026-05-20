@@ -200,6 +200,14 @@ bool shouldRunLexerOnly(const std::string& selectedFolder) {
     return selectedFolder == "milestone-1";
 }
 
+bool shouldRunSyntaxAnalyzer(const std::string& selectedFolder) {
+    return selectedFolder == "milestone-2";
+}
+
+bool shouldRunSemanticAnalyzer(const std::string& selectedFolder) {
+    return selectedFolder == "milestone-3";
+}
+
 std::vector<std::string> runAnalyzerForFolder(
     const std::string& selectedFolder,
     const std::string& source
@@ -208,7 +216,15 @@ std::vector<std::string> runAnalyzerForFolder(
         return runLexer(source);
     }
 
-    return runSyntaxAnalyzer(source);
+    if (shouldRunSyntaxAnalyzer(selectedFolder)) {
+        return runSyntaxAnalyzer(source);
+    }
+
+    if (shouldRunSemanticAnalyzer(selectedFolder)) {
+        return runSemanticAnalyzer(source);
+    }
+
+    return {"Error: unsupported test folder '" + selectedFolder + "'."};
 }
 
 void printOutputLines(
@@ -217,8 +233,15 @@ void printOutputLines(
 ) {
     if (shouldRunLexerOnly(selectedFolder)) {
         std::cout << "\nHasil lexical analyzer:\n";
-    } else {
+    }
+    else if (shouldRunSyntaxAnalyzer(selectedFolder)) {
         std::cout << "\nHasil syntax analyzer:\n";
+    }
+    else if (shouldRunSemanticAnalyzer(selectedFolder)) {
+        std::cout << "\nHasil semantic analyzer:\n";
+    }
+    else {
+        std::cout << "\nHasil analyzer:\n";
     }
 
     for (const std::string& line : outputLines) {

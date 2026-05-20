@@ -1,0 +1,14 @@
+program ProcedureArgumentType;
+
+var
+    s: string;
+
+procedure UseCount(count: integer);
+begin
+    writeln(count);
+end;
+
+begin
+    s := 'hi';
+    UseCount(s);
+end.

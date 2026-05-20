@@ -1,0 +1,11 @@
+# Keep text files normalized as LF across Windows, PowerShell, CMD, and WSL.
+* text=auto eol=lf
+
+# Binary artifacts must never be treated as text.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.exe binary
+*.jar binary

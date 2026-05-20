@@ -1,7 +1,7 @@
 #include "lexer.hpp"
+#include "text_utils.hpp"
 
 #include <cctype>
-#include <algorithm>
 
 Lexer::Lexer(const std::string& source)
     : content(source),
@@ -80,7 +80,8 @@ bool Lexer::isTokenBoundary(char c) const {
             c == '+' || c == '-' || c == '*' || c == '/' ||
             c == ',' || c == ';' || c == ':' ||
             c == '(' || c == ')' || c == '[' || c ==']' ||
-            c == '<' || c == '>' || c == '=';
+            c == '<' || c == '>' || c == '=' ||
+            c == '.';
 }
 
 void Lexer::skipSeparators() {
@@ -140,17 +141,11 @@ Token Lexer::readParenStarComment(int startLine, int startColumn) {
 Token Lexer::readIdentifierOrKeyword(int startLine, int startColumn) {
     std::string result;
 
-    while (std::isalnum(static_cast<unsigned char>(peek()))) {
+    while (std::isalpha(static_cast<unsigned char>(peek()))) {
         result += advance();
     }
 
-    std::string lowerResult = result;
-    std::transform(
-        lowerResult.begin(),
-        lowerResult.end(),
-        lowerResult.begin(),
-        [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); }
-    );
+    std::string lowerResult = text_util::lowercase(result);
 
     auto keyword = keywords.find(lowerResult);
     if (keyword != keywords.end()) {
@@ -185,30 +180,12 @@ Token Lexer::readNumber(int startLine, int startColumn) {
             return makeToken(TokenType::REALCON, result, startLine, startColumn);
         }
 
-        // 1.23abc or 1.23.abc -> malformed sequence
-        if (!isTokenBoundary(peek()) && peek() != '.') {
-            result += consumeUnknownSequence();
-            return makeToken(TokenType::UNKNOWN, result, startLine, startColumn);
-        }
-
-        // 1.23.abc -> consume as unknown, not realcon(1.23), period, ident(abc)
-        if (peek() == '.') {
-            result += consumeUnknownSequence();
-            return makeToken(TokenType::UNKNOWN, result, startLine, startColumn);
-        }
-
         return makeToken(TokenType::REALCON, result, startLine, startColumn);
     }
 
     // 1. -> intcon(1), period
     if (peek() == '.') {
         return makeToken(TokenType::INTCON, result, startLine, startColumn);
-    }
-
-    // 123abc -> malformed sequence
-    if (!isTokenBoundary(peek())) {
-        result += consumeUnknownSequence();
-        return makeToken(TokenType::UNKNOWN, result, startLine, startColumn);
     }
 
     return makeToken(TokenType::INTCON, result, startLine, startColumn);
