@@ -184,10 +184,6 @@ bool constantFitsTarget(const TypeInfo& target, const ExpressionNode* node, cons
     return true;
 }
 
-bool isAssignableEntry(const TabEntry& entry, int currentBlock) {
-    return entry.obj == OBJ_VARIABLE || (entry.obj == OBJ_FUNCTION && entry.ref == currentBlock);
-}
-
 }
 
 void SemanticAnalyzer::visitStatement(StatementNode* node) {
@@ -241,7 +237,7 @@ void SemanticAnalyzer::visitAssign(AssignNode* node) {
         semanticError("left-hand side of assignment must be assignable", node->location);
     } else if (node->target && node->target->tabIndex > 0) {
         const TabEntry& entry = symbolTable.tabAt(node->target->tabIndex);
-        if (!isAssignableEntry(entry, symbolTable.currentBlock())) {
+        if (!isAssignableEntry(entry)) {
             semanticError("left-hand side of assignment is not assignable", node->target->location);
         }
     }
@@ -286,10 +282,7 @@ void SemanticAnalyzer::visitWhile(WhileNode* node) {
         semanticError("while condition must have Boolean type", node->condition ? node->condition->location : node->location);
     }
 
-    const bool previousInsideLoop = insideLoop;
-    insideLoop = true;
     visitStatement(node->body.get());
-    insideLoop = previousInsideLoop;
 
     annotate(node, makeVoidType());
 }
@@ -333,10 +326,7 @@ void SemanticAnalyzer::visitFor(ForNode* node) {
         semanticError("for final value is outside the control variable range", node->endValue ? node->endValue->location : node->location);
     }
 
-    const bool previousInsideLoop = insideLoop;
-    insideLoop = true;
     visitStatement(node->body.get());
-    insideLoop = previousInsideLoop;
 
     annotate(node, makeVoidType());
 }
@@ -347,12 +337,9 @@ void SemanticAnalyzer::visitRepeat(RepeatNode* node) {
         return;
     }
 
-    const bool previousInsideLoop = insideLoop;
-    insideLoop = true;
     for (const auto& statement : node->body) {
         visitStatement(statement.get());
     }
-    insideLoop = previousInsideLoop;
 
     TypeInfo conditionType = visitExpression(node->condition.get());
     if (!isBoolean(conditionType)) {
@@ -434,7 +421,7 @@ void SemanticAnalyzer::visitProcCall(ProcCallNode* node) {
 
             if (argument && argument->tabIndex > 0) {
                 const TabEntry& target = symbolTable.tabAt(argument->tabIndex);
-                if (!isAssignableEntry(target, symbolTable.currentBlock())) {
+                if (!isAssignableEntry(target)) {
                     semanticError(
                         "argument " + std::to_string(i + 1) + " of '" + node->name +
                         "' is not assignable",
@@ -477,7 +464,7 @@ void SemanticAnalyzer::visitProcCall(ProcCallNode* node) {
                     );
                 } else if (argumentNode && argumentNode->tabIndex > 0) {
                     const TabEntry& target = symbolTable.tabAt(argumentNode->tabIndex);
-                    if (!isAssignableEntry(target, symbolTable.currentBlock())) {
+                    if (!isAssignableEntry(target)) {
                         semanticError(
                             "argument " + std::to_string(i + 1) + " of procedure '" + node->name +
                             "' is not assignable",

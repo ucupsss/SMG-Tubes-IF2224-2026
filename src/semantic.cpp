@@ -185,6 +185,25 @@ SemanticAnalyzer::SemanticAnalyzer() {
     symbolTable.init();
 }
 
+void SemanticAnalyzer::annotate(ASTNode* node, const TypeInfo& type, int tabIndex) {
+    if (!node) {
+        return;
+    }
+
+    node->inferredType = type.code;
+    if (tabIndex != -1 || node->tabIndex == -1) {
+        node->tabIndex = tabIndex;
+    }
+    node->lexLevel = symbolTable.currentLevel();
+
+    if (auto* typeNode = dynamic_cast<TypeNode*>(node)) {
+        typeNode->typeCode = type.code;
+        typeNode->ref = type.ref;
+        typeNode->isNamed = type.isNamed;
+        typeNode->typeName = type.name;
+    }
+}
+
 void SemanticAnalyzer::analyze(const ParseNode& root) {
     analyzeAST(buildASTFromParseTree(root));
 }
@@ -194,9 +213,6 @@ void SemanticAnalyzer::analyzeAST(std::unique_ptr<ProgramNode> root) {
     errorList.clear();
     warningList.clear();
     symbolTable.init();
-    currentLevel = symbolTable.currentLevel();
-    currentBlock = symbolTable.currentBlock();
-    insideLoop = false;
 
     if (!rootAst) {
         semanticError("missing AST root");

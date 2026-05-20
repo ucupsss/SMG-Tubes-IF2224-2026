@@ -669,6 +669,13 @@ std::vector<std::unique_ptr<ParamDeclNode>> buildFormalParameters(const ParseNod
         auto param = std::make_unique<ParamDeclNode>();
         param->location = locOf(group);
 
+        for (const ParseNode& child : group.children) {
+            if (isToken(child, TokenType::VARSY)) {
+                param->byReference = true;
+                break;
+            }
+        }
+
         if (const ParseNode* ids = firstChildLabel(group, "<identifier-list>")) {
             param->names = identifierList(*ids);
         }

@@ -75,6 +75,7 @@ private:
     bool isOrdinal(const TypeInfo& type) const;
     bool isNumeric(const TypeInfo& type) const;
     bool isBoolean(const TypeInfo& type) const;
+    bool isAssignableEntry(const TabEntry& entry) const;
 
     void annotate(ASTNode* node, const TypeInfo& type, int tabIndex = -1);
     void semanticError(const std::string& message, const SourceLocation& location = {});
@@ -84,10 +85,6 @@ private:
     std::unique_ptr<ProgramNode> rootAst;
     std::vector<SemanticDiagnostic> errorList;
     std::vector<SemanticDiagnostic> warningList;
-
-    int currentLevel = 0;
-    int currentBlock = 0;
-    bool insideLoop = false;
 };
 
 #endif

@@ -1,0 +1,12 @@
+# Normalize text files in the index so Windows Git and WSL Git do not rewrite
+# unrelated files differently during `git add`.
+* text=auto
+
+# Binary artifacts must never be treated as text.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.exe binary
+*.jar binary

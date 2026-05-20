@@ -1,6 +1,5 @@
 #include "semantic.hpp"
 
-#include <sstream>
 #include <utility>
 
 namespace {
@@ -21,16 +20,16 @@ TypeInfo makeVoidType() {
     return type;
 }
 
+std::string formatDuplicateMessage(const std::string& name) {
+    return "redeclaration of identifier '" + name + "' in the same scope";
+}
+
 void addDiagnostic(
     std::vector<SemanticDiagnostic>& diagnostics,
     const std::string& message,
-    const SourceLocation& location
+    const SourceLocation& location = {}
 ) {
     diagnostics.push_back({message, location.line, location.column});
-}
-
-std::string formatDuplicateMessage(const std::string& name) {
-    return "redeclaration of identifier '" + name + "' in the same scope";
 }
 
 struct ConstValue {
@@ -54,7 +53,7 @@ ConstValue evaluateConstant(
     std::vector<SemanticDiagnostic>& errors
 ) {
     if (!node) {
-        addDiagnostic(errors, "missing constant value", {});
+        addDiagnostic(errors, "missing constant value");
         return {};
     }
 
@@ -123,208 +122,6 @@ ConstValue evaluateConstant(
     return {};
 }
 
-TypeInfo resolveDeclarationType(
-    SymbolTable& symbols,
-    TypeNode* node,
-    std::vector<SemanticDiagnostic>& errors
-);
-
-void annotateTypeNode(TypeNode* node, const TypeInfo& type) {
-    if (!node) {
-        return;
-    }
-
-    node->typeCode = type.code;
-    node->ref = type.ref;
-    node->isNamed = type.isNamed;
-    node->typeName = type.name;
-    node->inferredType = type.code;
-}
-
-TypeInfo resolveNamedType(
-    SymbolTable& symbols,
-    NamedTypeNode* node,
-    std::vector<SemanticDiagnostic>& errors
-) {
-    const int index = symbols.lookupTab(node->name);
-    if (index == 0 || symbols.tabAt(index).obj != OBJ_TYPE) {
-        addDiagnostic(errors, "unknown type '" + node->name + "'", node->location);
-        return makeErrorType();
-    }
-
-    TypeInfo type = symbols.typeOf(index);
-    annotateTypeNode(node, type);
-    node->tabIndex = index;
-    return type;
-}
-
-TypeInfo resolveSubrangeType(
-    SymbolTable& symbols,
-    SubrangeTypeNode* node,
-    std::vector<SemanticDiagnostic>& errors
-) {
-    ConstValue lower = evaluateConstant(symbols, node->lowerBound.get(), errors);
-    ConstValue upper = evaluateConstant(symbols, node->upperBound.get(), errors);
-
-    if (lower.type.code == TYPE_ERROR || upper.type.code == TYPE_ERROR) {
-        annotateTypeNode(node, makeErrorType());
-        return makeErrorType();
-    }
-
-    if (lower.type.code != upper.type.code) {
-        addDiagnostic(errors, "subrange bounds must have the same type", node->location);
-        annotateTypeNode(node, makeErrorType());
-        return makeErrorType();
-    }
-
-    if (lower.type.code == TYPE_REAL) {
-        addDiagnostic(errors, "subrange cannot use Real bounds", node->location);
-        annotateTypeNode(node, makeErrorType());
-        return makeErrorType();
-    }
-
-    if (lower.hasIntegerValue && upper.hasIntegerValue && lower.integerValue > upper.integerValue) {
-        addDiagnostic(errors, "subrange lower bound cannot be greater than upper bound", node->location);
-    }
-
-    TypeInfo type;
-    type.code = TYPE_SUBRANGE;
-    type.baseType = lower.type.code;
-    type.low = lower.hasIntegerValue ? lower.integerValue : 0;
-    type.high = upper.hasIntegerValue ? upper.integerValue : 0;
-
-    std::ostringstream name;
-    name << "Subrange(" << type.low << ".." << type.high << ")";
-    type.name = name.str();
-
-    annotateTypeNode(node, type);
-    return type;
-}
-
-TypeInfo resolveEnumType(EnumTypeNode* node) {
-    TypeInfo type;
-    type.code = TYPE_ENUM;
-    type.baseType = TYPE_ENUM;
-    type.low = 0;
-    type.high = node ? static_cast<int>(node->values.size()) - 1 : 0;
-    type.name = "Enum";
-    annotateTypeNode(node, type);
-    return type;
-}
-
-TypeInfo resolveArrayType(
-    SymbolTable& symbols,
-    ArrayTypeNode* node,
-    std::vector<SemanticDiagnostic>& errors
-) {
-    TypeInfo indexType = resolveDeclarationType(symbols, node->indexType.get(), errors);
-    TypeInfo elementType = resolveDeclarationType(symbols, node->elementType.get(), errors);
-
-    if (indexType.code == TYPE_REAL ||
-        indexType.code == TYPE_ARRAY ||
-        indexType.code == TYPE_RECORD ||
-        indexType.code == TYPE_ERROR) {
-        addDiagnostic(errors, "array index type must be a non-Real simple type", node->location);
-    }
-
-    ATabEntry arrayEntry;
-    arrayEntry.xtyp = indexType.code == TYPE_SUBRANGE ? indexType.baseType : indexType.code;
-    arrayEntry.etyp = elementType.code;
-    arrayEntry.eref = elementType.ref;
-    arrayEntry.low = indexType.code == TYPE_SUBRANGE ? indexType.low : 0;
-    arrayEntry.high = indexType.code == TYPE_SUBRANGE ? indexType.high : 0;
-    arrayEntry.elsz = symbols.sizeOf(elementType);
-
-    const int ref = symbols.enterATab(arrayEntry);
-
-    TypeInfo type;
-    type.code = TYPE_ARRAY;
-    type.baseType = TYPE_ARRAY;
-    type.ref = ref;
-    type.name = "Array";
-
-    annotateTypeNode(node, type);
-    return type;
-}
-
-TypeInfo resolveRecordType(
-    SymbolTable& symbols,
-    RecordTypeNode* node,
-    std::vector<SemanticDiagnostic>& errors
-) {
-    const int blockIndex = symbols.enterBTab(BTabEntry{});
-    symbols.pushScope(blockIndex);
-
-    int fieldOffset = 0;
-    for (const RecordFieldNode& field : node->fields) {
-        TypeInfo fieldType = resolveDeclarationType(symbols, field.type.get(), errors);
-
-        for (const std::string& name : field.names) {
-            if (symbols.lookupCurrentScope(name) != 0) {
-                addDiagnostic(errors, formatDuplicateMessage(name), field.location);
-                continue;
-            }
-
-            TabEntry entry;
-            entry.identifier = name;
-            entry.obj = OBJ_VARIABLE;
-            entry.type = fieldType.code;
-            entry.ref = fieldType.ref;
-            entry.typeInfo = fieldType;
-            entry.adr = fieldOffset;
-
-            symbols.enterTab(entry);
-            fieldOffset += symbols.sizeOf(fieldType);
-        }
-    }
-
-    symbols.btabAt(blockIndex).vsze = fieldOffset;
-    symbols.popScope();
-
-    TypeInfo type;
-    type.code = TYPE_RECORD;
-    type.baseType = TYPE_RECORD;
-    type.ref = blockIndex;
-    type.name = "Record";
-
-    annotateTypeNode(node, type);
-    return type;
-}
-
-TypeInfo resolveDeclarationType(
-    SymbolTable& symbols,
-    TypeNode* node,
-    std::vector<SemanticDiagnostic>& errors
-) {
-    if (!node) {
-        addDiagnostic(errors, "missing type information", {});
-        return makeErrorType();
-    }
-
-    if (auto* named = dynamic_cast<NamedTypeNode*>(node)) {
-        return resolveNamedType(symbols, named, errors);
-    }
-
-    if (auto* subrange = dynamic_cast<SubrangeTypeNode*>(node)) {
-        return resolveSubrangeType(symbols, subrange, errors);
-    }
-
-    if (auto* en = dynamic_cast<EnumTypeNode*>(node)) {
-        return resolveEnumType(en);
-    }
-
-    if (auto* array = dynamic_cast<ArrayTypeNode*>(node)) {
-        return resolveArrayType(symbols, array, errors);
-    }
-
-    if (auto* record = dynamic_cast<RecordTypeNode*>(node)) {
-        return resolveRecordType(symbols, record, errors);
-    }
-
-    addDiagnostic(errors, "unsupported type node in declaration", node->location);
-    return makeErrorType();
-}
-
 void annotateNode(ASTNode* node, const TypeInfo& type, int tabIndex, const SymbolTable& symbols) {
     if (!node) {
         return;
@@ -367,8 +164,6 @@ void registerEnumConstants(
 
 void SemanticAnalyzer::visitProgram(ProgramNode* node) {
     symbolTable.init();
-    currentLevel = symbolTable.currentLevel();
-    currentBlock = symbolTable.currentBlock();
 
     if (!node) {
         semanticError("missing program node");
@@ -447,7 +242,7 @@ void SemanticAnalyzer::visitVarDecl(VarDeclNode* node) {
         return;
     }
 
-    TypeInfo type = resolveDeclarationType(symbolTable, node->type.get(), errorList);
+    TypeInfo type = resolveType(node->type.get());
     int lastIndex = -1;
 
     for (const std::string& name : node->names) {
@@ -507,7 +302,7 @@ void SemanticAnalyzer::visitTypeDecl(TypeDeclNode* node) {
         return;
     }
 
-    TypeInfo type = resolveDeclarationType(symbolTable, node->type.get(), errorList);
+    TypeInfo type = resolveType(node->type.get());
     type.isNamed = true;
     type.name = node->name;
 
@@ -520,7 +315,7 @@ void SemanticAnalyzer::visitTypeDecl(TypeDeclNode* node) {
 
     const int index = symbolTable.enterTab(entry);
     annotateNode(node, type, index, symbolTable);
-    annotateTypeNode(node->type.get(), type);
+    annotate(node->type.get(), type, index);
 
     if (auto* enumNode = dynamic_cast<EnumTypeNode*>(node->type.get())) {
         registerEnumConstants(symbolTable, enumNode, type, errorList);
@@ -532,7 +327,7 @@ void SemanticAnalyzer::visitParamDecl(ParamDeclNode* node) {
         return;
     }
 
-    TypeInfo type = resolveDeclarationType(symbolTable, node->type.get(), errorList);
+    TypeInfo type = resolveType(node->type.get());
     int lastIndex = -1;
 
     for (const std::string& name : node->names) {
@@ -582,8 +377,6 @@ void SemanticAnalyzer::visitProcDecl(ProcDeclNode* node) {
     }
 
     symbolTable.pushScope(blockIndex);
-    currentLevel = symbolTable.currentLevel();
-    currentBlock = symbolTable.currentBlock();
 
     for (const auto& parameter : node->parameters) {
         visitParamDecl(parameter.get());
@@ -598,8 +391,6 @@ void SemanticAnalyzer::visitProcDecl(ProcDeclNode* node) {
     }
 
     symbolTable.popScope();
-    currentLevel = symbolTable.currentLevel();
-    currentBlock = symbolTable.currentBlock();
 }
 
 void SemanticAnalyzer::visitFuncDecl(FuncDeclNode* node) {
@@ -607,7 +398,7 @@ void SemanticAnalyzer::visitFuncDecl(FuncDeclNode* node) {
         return;
     }
 
-    TypeInfo returnType = resolveDeclarationType(symbolTable, node->returnType.get(), errorList);
+    TypeInfo returnType = resolveType(node->returnType.get());
     const int blockIndex = symbolTable.enterBTab(BTabEntry{});
     node->blockIndex = blockIndex;
 
@@ -626,8 +417,6 @@ void SemanticAnalyzer::visitFuncDecl(FuncDeclNode* node) {
     }
 
     symbolTable.pushScope(blockIndex);
-    currentLevel = symbolTable.currentLevel();
-    currentBlock = symbolTable.currentBlock();
 
     for (const auto& parameter : node->parameters) {
         visitParamDecl(parameter.get());
@@ -642,8 +431,6 @@ void SemanticAnalyzer::visitFuncDecl(FuncDeclNode* node) {
     }
 
     symbolTable.popScope();
-    currentLevel = symbolTable.currentLevel();
-    currentBlock = symbolTable.currentBlock();
 }
 
 void SemanticAnalyzer::semanticError(const std::string& message, const SourceLocation& location) {

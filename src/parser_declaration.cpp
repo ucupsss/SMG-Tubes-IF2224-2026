@@ -316,6 +316,10 @@ ParseNode Parser::parseFormalParameterList() {
 ParseNode Parser::parseParameterGroup() {
     ParseNode node("<parameter-group>");
 
+    if (match(TokenType::VARSY)) {
+        node.addChild(makeTerminalNode(tokens[pos - 1]));
+    }
+
     node.addChild(parseIdentifierList());
     node.addChild(makeTerminalNode(consume(TokenType::COLON, "colon")));
 
