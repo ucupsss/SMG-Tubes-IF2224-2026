@@ -1,0 +1,129 @@
+tab (relevant entries only):
+idx  id            obj         type  ref  nrm  lev  adr  link
+-------------------------------------------------------------
+...  (reserved words 0-32)
+33   Declarations  program        0    0    1    0    0     0
+34   Limit         constant       1    0    1    0   10     0
+35   Letter        constant       3    0    1    0  122    34
+36   Title         constant       5    0    1    0    0    35
+37   Index         type           8    0    1    0    0     0
+38   Day           type           9    0    1    0    0    37
+39   Mon           constant       9    0    1    0    0     0
+40   Tue           constant       9    0    1    0    1    39
+41   Wed           constant       9    0    1    0    2    40
+42   Scores        type           6    1    1    0    0     0
+43   age           variable       1    0    1    1    0     0
+44   grade         variable       3    0    1    1    1    43
+45   Person        type           7    1    1    0    0    42
+46   i             variable       8    0    1    0    0     0
+47   today         variable       9    0    1    0    1    46
+48   values        variable       6    1    1    0    2    47
+49   p             variable       7    1    1    0   12    48
+50   writeln       procedure      0    0    1    0    0     0
+
+btab:
+idx  last  lpar  psze  vsze
+----------------------------
+0       49     0     0    14
+1       44     0     0     2
+2        0     0     0     0
+
+atab:
+idx   xtyp  etyp  eref   low  high  elsz  size
+-----------------------------------------------
+1        1     1     0     1    10     1    10
+
+Decorated AST:
+Program(Declarations, block:0) -> tab_index:33, type:void, lev:0
+├─ declarations:
+│   ├─ ConstDecl(Limit) -> tab_index:34, type:integer, lev:0
+│   │   └─ value:
+│   │       └─ Int(10) -> tab_index:34, type:integer, lev:0
+│   ├─ ConstDecl(Letter) -> tab_index:35, type:char, lev:0
+│   │   └─ value:
+│   │       └─ Char('z') -> tab_index:35, type:char, lev:0
+│   ├─ ConstDecl(Title) -> tab_index:36, type:string, lev:0
+│   │   └─ value:
+│   │       └─ String("ok") -> tab_index:36, type:string, lev:0
+│   ├─ TypeDecl(Index) -> tab_index:37, type:subrange, lev:0
+│   │   └─ type:
+│   │       └─ SubrangeType -> tab_index:37, type:subrange, lev:0
+│   │           ├─ lower:
+│   │           │   └─ Int(1) -> type:void, lev:0
+│   │           └─ upper:
+│   │               └─ Int(10) -> type:void, lev:0
+│   ├─ TypeDecl(Day) -> tab_index:38, type:enum, lev:0
+│   │   └─ type:
+│   │       └─ EnumType(Mon, Tue, Wed) -> tab_index:38, type:enum, lev:0
+│   ├─ TypeDecl(Scores) -> tab_index:42, type:array, lev:0
+│   │   └─ type:
+│   │       └─ ArrayType -> tab_index:42, type:array, lev:0
+│   │           ├─ index:
+│   │           │   └─ NamedType(Index) -> tab_index:37, type:subrange, lev:0
+│   │           └─ element:
+│   │               └─ NamedType(integer) -> type:integer, lev:0
+│   ├─ TypeDecl(Person) -> tab_index:45, type:record, lev:0
+│   │   └─ type:
+│   │       └─ RecordType -> tab_index:45, type:record, lev:0
+│   │           ├─ Field(age)
+│   │           │   └─ NamedType(integer) -> type:integer, lev:0
+│   │           └─ Field(grade)
+│   │               └─ NamedType(char) -> type:char, lev:0
+│   ├─ VarDecl(i) -> tab_index:46, type:subrange, lev:0
+│   │   └─ type:
+│   │       └─ NamedType(Index) -> tab_index:37, type:subrange, lev:0
+│   ├─ VarDecl(today) -> tab_index:47, type:enum, lev:0
+│   │   └─ type:
+│   │       └─ NamedType(Day) -> tab_index:38, type:enum, lev:0
+│   ├─ VarDecl(values) -> tab_index:48, type:array, lev:0
+│   │   └─ type:
+│   │       └─ NamedType(Scores) -> tab_index:42, type:array, lev:0
+│   └─ VarDecl(p) -> tab_index:49, type:record, lev:0
+│       └─ type:
+│           └─ NamedType(Person) -> tab_index:45, type:record, lev:0
+└─ body:
+    └─ Block(block:2) -> type:void, lev:1
+        ├─ Assign -> type:void, lev:1
+        │   ├─ target:
+        │   │   └─ Var(i) -> tab_index:46, type:subrange, lev:0
+        │   └─ value:
+        │       └─ Var(Limit) -> tab_index:34, type:integer, lev:0
+        ├─ Assign -> type:void, lev:1
+        │   ├─ target:
+        │   │   └─ Var(today) -> tab_index:47, type:enum, lev:0
+        │   └─ value:
+        │       └─ Var(Tue) -> tab_index:40, type:enum, lev:0
+        ├─ Assign -> type:void, lev:1
+        │   ├─ target:
+        │   │   └─ ArrayAccess -> tab_index:48, type:integer, lev:0
+        │   │       ├─ array:
+        │   │       │   └─ Var(values) -> tab_index:48, type:array, lev:0
+        │   │       └─ indices:
+        │   │           └─ Var(i) -> tab_index:46, type:subrange, lev:0
+        │   └─ value:
+        │       └─ Var(Limit) -> tab_index:34, type:integer, lev:0
+        ├─ Assign -> type:void, lev:1
+        │   ├─ target:
+        │   │   └─ RecordAccess(age) -> tab_index:43, type:integer, lev:1
+        │   │       └─ record:
+        │   │           └─ Var(p) -> tab_index:49, type:record, lev:0
+        │   └─ value:
+        │       └─ ArrayAccess -> tab_index:48, type:integer, lev:0
+        │           ├─ array:
+        │           │   └─ Var(values) -> tab_index:48, type:array, lev:0
+        │           └─ indices:
+        │               └─ Int(1) -> type:integer, lev:1
+        ├─ Assign -> type:void, lev:1
+        │   ├─ target:
+        │   │   └─ RecordAccess(grade) -> tab_index:44, type:char, lev:1
+        │   │       └─ record:
+        │   │           └─ Var(p) -> tab_index:49, type:record, lev:0
+        │   └─ value:
+        │       └─ Var(Letter) -> tab_index:35, type:char, lev:0
+        └─ ProcCall(writeln) -> tab_index:50, type:void, lev:0
+            └─ Var(Title) -> tab_index:36, type:string, lev:0
+
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Status: SUCCESS

@@ -1,0 +1,6 @@
+program UndeclaredIdentifier;
+
+begin
+    x := 1;
+    writeln(y);
+end.

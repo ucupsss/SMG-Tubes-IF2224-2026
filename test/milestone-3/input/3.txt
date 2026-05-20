@@ -1,0 +1,29 @@
+program ControlFlow;
+
+var
+    i, total: integer;
+    ok: boolean;
+
+begin
+    total := 0;
+    ok := True;
+
+    if ok then
+        total := total + 1
+    else
+        total := total - 1;
+
+    while total < 5 do
+    begin
+        total := total + 1
+    end;
+
+    repeat
+        total := total - 1
+    until total < 1;
+
+    for i := 1 to 3 do
+    begin
+        total := total + i;
+    end;
+end.

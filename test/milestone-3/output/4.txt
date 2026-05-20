@@ -1,0 +1,59 @@
+tab (relevant entries only):
+idx  id                obj         type  ref  nrm  lev  adr  link
+-----------------------------------------------------------------
+...  (reserved words 0-32)
+33   ByReferenceValid  program        0    0    1    0    0     0
+34   n                 variable       1    0    1    0    0     0
+35   Increment         procedure      0    1    1    0    0     0
+36   value             variable       1    0    0    1    0     0
+37   delta             variable       1    0    1    1    1    36
+
+btab:
+idx  last  lpar  psze  vsze
+----------------------------
+0       35     0     0     1
+1       37    37     2     0
+2        0     0     0     0
+
+atab: (empty; no arrays declared)
+
+Decorated AST:
+Program(ByReferenceValid, block:0) -> tab_index:33, type:void, lev:0
+├─ declarations:
+│   ├─ VarDecl(n) -> tab_index:34, type:integer, lev:0
+│   │   └─ type:
+│   │       └─ NamedType(integer) -> type:integer, lev:0
+│   └─ ProcDecl(Increment, block:1) -> tab_index:35, type:void, lev:0
+│       ├─ params:
+│       │   ├─ ParamDecl(value, var) -> tab_index:36, type:integer, lev:1
+│       │   │   └─ type:
+│       │   │       └─ NamedType(integer) -> type:integer, lev:0
+│       │   └─ ParamDecl(delta) -> tab_index:37, type:integer, lev:1
+│       │       └─ type:
+│       │           └─ NamedType(integer) -> type:integer, lev:0
+│       └─ body:
+│           └─ Block(block:1) -> type:void, lev:1
+│               └─ Assign -> type:void, lev:1
+│                   ├─ target:
+│                   │   └─ Var(value) -> tab_index:36, type:integer, lev:1
+│                   └─ value:
+│                       └─ BinOp(+) -> type:integer, lev:1
+│                           ├─ left:
+│                           │   └─ Var(value) -> tab_index:36, type:integer, lev:1
+│                           └─ right:
+│                               └─ Var(delta) -> tab_index:37, type:integer, lev:1
+└─ body:
+    └─ Block(block:2) -> type:void, lev:1
+        ├─ Assign -> type:void, lev:1
+        │   ├─ target:
+        │   │   └─ Var(n) -> tab_index:34, type:integer, lev:0
+        │   └─ value:
+        │       └─ Int(1) -> type:integer, lev:1
+        └─ ProcCall(Increment) -> tab_index:35, type:void, lev:0
+            ├─ Var(n) -> tab_index:34, type:integer, lev:0
+            └─ Int(2) -> type:integer, lev:1
+
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Status: SUCCESS

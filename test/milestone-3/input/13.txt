@@ -1,0 +1,10 @@
+program ByReferenceInvalid;
+
+procedure Reset(var target: integer);
+begin
+    target := 0;
+end;
+
+begin
+    Reset(1);
+end.

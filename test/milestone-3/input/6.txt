@@ -1,0 +1,10 @@
+program TypeMismatch;
+
+var
+    x: integer;
+    s: string;
+
+begin
+    x := 'oops';
+    s := 1;
+end.

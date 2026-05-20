@@ -1,0 +1,13 @@
+program RecordField;
+
+type
+    Person == record
+        age: integer;
+    end;
+
+var
+    p: Person;
+
+begin
+    p.name := 1;
+end.

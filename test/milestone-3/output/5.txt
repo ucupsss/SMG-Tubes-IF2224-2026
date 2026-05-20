@@ -1,0 +1,73 @@
+tab (relevant entries only):
+idx  id             obj         type  ref  nrm  lev  adr  link
+--------------------------------------------------------------
+...  (reserved words 0-32)
+33   FunctionValid  program        0    0    1    0    0     0
+34   z              variable       1    0    1    0    0     0
+35   Max            function       1    1    1    0    0     0
+36   a              variable       1    0    1    1    0     0
+37   b              variable       1    0    1    1    1    36
+38   writeln        procedure      0    0    1    0    0     0
+
+btab:
+idx  last  lpar  psze  vsze
+----------------------------
+0       35     0     0     1
+1       37    37     2     0
+2        0     0     0     0
+
+atab: (empty; no arrays declared)
+
+Decorated AST:
+Program(FunctionValid, block:0) -> tab_index:33, type:void, lev:0
+├─ declarations:
+│   ├─ VarDecl(z) -> tab_index:34, type:integer, lev:0
+│   │   └─ type:
+│   │       └─ NamedType(integer) -> type:integer, lev:0
+│   └─ FuncDecl(Max, block:1) -> tab_index:35, type:integer, lev:0
+│       ├─ params:
+│       │   ├─ ParamDecl(a) -> tab_index:36, type:integer, lev:1
+│       │   │   └─ type:
+│       │   │       └─ NamedType(integer) -> type:integer, lev:0
+│       │   └─ ParamDecl(b) -> tab_index:37, type:integer, lev:1
+│       │       └─ type:
+│       │           └─ NamedType(integer) -> type:integer, lev:0
+│       ├─ returnType:
+│       │   └─ NamedType(integer) -> type:integer, lev:0
+│       └─ body:
+│           └─ Block(block:1) -> type:void, lev:1
+│               └─ If -> type:void, lev:1
+│                   ├─ condition:
+│                   │   └─ BinOp(>) -> type:boolean, lev:1
+│                   │       ├─ left:
+│                   │       │   └─ Var(a) -> tab_index:36, type:integer, lev:1
+│                   │       └─ right:
+│                   │           └─ Var(b) -> tab_index:37, type:integer, lev:1
+│                   ├─ then:
+│                   │   └─ Assign -> type:void, lev:1
+│                   │       ├─ target:
+│                   │       │   └─ Var(Max) -> tab_index:35, type:integer, lev:0
+│                   │       └─ value:
+│                   │           └─ Var(a) -> tab_index:36, type:integer, lev:1
+│                   └─ else:
+│                       └─ Assign -> type:void, lev:1
+│                           ├─ target:
+│                           │   └─ Var(Max) -> tab_index:35, type:integer, lev:0
+│                           └─ value:
+│                               └─ Var(b) -> tab_index:37, type:integer, lev:1
+└─ body:
+    └─ Block(block:2) -> type:void, lev:1
+        ├─ Assign -> type:void, lev:1
+        │   ├─ target:
+        │   │   └─ Var(z) -> tab_index:34, type:integer, lev:0
+        │   └─ value:
+        │       └─ FuncCall(Max) -> tab_index:35, type:integer, lev:0
+        │           ├─ Int(3) -> type:integer, lev:1
+        │           └─ Int(5) -> type:integer, lev:1
+        └─ ProcCall(writeln) -> tab_index:38, type:void, lev:0
+            └─ Var(z) -> tab_index:34, type:integer, lev:0
+
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Status: SUCCESS

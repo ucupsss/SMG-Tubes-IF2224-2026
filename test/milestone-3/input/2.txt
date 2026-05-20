@@ -1,0 +1,30 @@
+program Declarations;
+
+const
+    Limit == 10;
+    Letter == 'z';
+    Title == 'ok';
+
+type
+    Index == 1..10;
+    Day == (Mon, Tue, Wed);
+    Scores == array[Index] of integer;
+    Person == record
+        age: integer;
+        grade: char;
+    end;
+
+var
+    i: Index;
+    today: Day;
+    values: Scores;
+    p: Person;
+
+begin
+    i := Limit;
+    today := Tue;
+    values[i] := Limit;
+    p.age := values[1];
+    p.grade := Letter;
+    writeln(Title);
+end.

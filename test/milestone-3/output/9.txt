@@ -1,0 +1,37 @@
+tab (relevant entries only):
+idx  id               obj         type  ref  nrm  lev  adr  link
+----------------------------------------------------------------
+...  (reserved words 0-32)
+33   ConstAssignment  program        0    0    1    0    0     0
+34   Limit            constant       1    0    1    0   10     0
+35   x                variable       1    0    1    0    0     0
+
+btab:
+idx  last  lpar  psze  vsze
+----------------------------
+0       35     0     0     1
+1        0     0     0     0
+
+atab: (empty; no arrays declared)
+
+Decorated AST:
+Program(ConstAssignment, block:0) -> tab_index:33, type:void, lev:0
+├─ declarations:
+│   ├─ ConstDecl(Limit) -> tab_index:34, type:integer, lev:0
+│   │   └─ value:
+│   │       └─ Int(10) -> tab_index:34, type:integer, lev:0
+│   └─ VarDecl(x) -> tab_index:35, type:integer, lev:0
+│       └─ type:
+│           └─ NamedType(integer) -> type:integer, lev:0
+└─ body:
+    └─ Block(block:1) -> type:void, lev:1
+        └─ Assign -> type:void, lev:1
+            ├─ target:
+            │   └─ Var(Limit) -> tab_index:34, type:integer, lev:0
+            └─ value:
+                └─ Var(x) -> tab_index:35, type:integer, lev:0
+
+Semantic diagnostics:
+Error at line 10, column 5: left-hand side of assignment is not assignable
+
+Status: FAILED

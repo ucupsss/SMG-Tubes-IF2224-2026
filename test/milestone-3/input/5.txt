@@ -1,0 +1,17 @@
+program FunctionValid;
+
+var
+    z: integer;
+
+function Max(a, b: integer): integer;
+begin
+    if a > b then
+        Max := a
+    else
+        Max := b;
+end;
+
+begin
+    z := Max(3, 5);
+    writeln(z);
+end.
