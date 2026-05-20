@@ -1,7 +1,5 @@
-# This repository already contains LF, CRLF, and mixed-EOL files.
-# Disable automatic EOL conversion so Windows Git and WSL Git do not rewrite
-# unrelated files during `git add`.
-* -text
+# Keep text files normalized as LF across Windows, PowerShell, CMD, and WSL.
+* text=auto eol=lf
 
 # Binary artifacts must never be treated as text.
 *.pdf binary

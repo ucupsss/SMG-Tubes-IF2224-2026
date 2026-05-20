@@ -233,7 +233,7 @@ void printOutputLines(
 ) {
     if (shouldRunLexerOnly(selectedFolder)) {
         std::cout << "\nHasil lexical analyzer:\n";
-    } 
+    }
     else if (shouldRunSyntaxAnalyzer(selectedFolder)) {
         std::cout << "\nHasil syntax analyzer:\n";
     }
