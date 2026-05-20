@@ -421,7 +421,7 @@ std::vector<std::string> SemanticAnalyzer::formatOutput() const {
 
 std::vector<std::string> SemanticAnalyzer::formatDecoratedAST() const {
     std::vector<std::string> lines;
-    lines.push_back("Decorated AST (contoh anotasi minimal):");
+    lines.push_back("Decorated AST:");
 
     if (rootAst == nullptr) {
         lines.push_back("<empty>");
@@ -439,7 +439,7 @@ std::vector<std::string> SemanticAnalyzer::formatDecoratedAST() const {
 
 std::vector<std::string> SemanticAnalyzer::formatSymbolTables() const {
     std::vector<std::string> lines;
-    lines.push_back("tab (hanya sebagian yang relevan):");
+    lines.push_back("tab (relevant entries only):");
     const TabDisplayInfo tabDisplay = buildTabDisplayInfo(symbolTable.tab(), rootAst.get());
 
     std::ostringstream header;
@@ -493,7 +493,7 @@ std::vector<std::string> SemanticAnalyzer::formatSymbolTables() const {
 
     const std::vector<ATabEntry>& atab = symbolTable.atab();
     if (atab.size() <= 1) {
-        lines.push_back("atab: (kosong karena tidak ada array)");
+        lines.push_back("atab: (empty; no arrays declared)");
     } else {
         lines.push_back("atab:");
         lines.push_back("idx   xtyp  etyp  eref   low  high  elsz  size");
