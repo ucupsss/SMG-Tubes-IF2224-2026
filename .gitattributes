@@ -1,6 +1,7 @@
-# Normalize text files in the index so Windows Git and WSL Git do not rewrite
-# unrelated files differently during `git add`.
-* text=auto
+# This repository already contains LF, CRLF, and mixed-EOL files.
+# Disable automatic EOL conversion so Windows Git and WSL Git do not rewrite
+# unrelated files during `git add`.
+* -text
 
 # Binary artifacts must never be treated as text.
 *.pdf binary
