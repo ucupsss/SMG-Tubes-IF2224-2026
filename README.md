@@ -127,4 +127,4 @@ test/milestone-x/
 | 13524014 | Yusuf Faishal Listyardi | Symbol Table, Semantic Declaration, dan Laporan| 25% |
 | 13524046 | Farrel Limjaya | Semantic Expression, Semantic Statement, dan Laporan | 25% |
 | 13524066 | Nathanael Gunawan | Implementasi Statement, Integrasi Statement, CLI, dan Laporan | 25% |
-| 13524070 | A. Fawwaz Azam Wicaksono | Implementasi AST, Penyusunan Test Cases, Dokumentasi, dan Laporan | 25% |
+| 13524070 | A. Fawwaz Azam Wicaksono | Revisi Milestone 2, Implementasi AST, Test Case, dan Laporan | 25% |
