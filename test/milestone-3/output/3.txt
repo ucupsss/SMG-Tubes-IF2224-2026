@@ -8,7 +8,7 @@ idx  id           obj         type  ref  nrm  lev  adr  link
 36   ok           variable       4    0    1    0    2    35
 
 btab:
-idx  last  lpar  psze  vsze
+idx   last  lpar  psze  vsze
 ----------------------------
 0       36     0     0     3
 1        0     0     0     0
@@ -16,103 +16,58 @@ idx  last  lpar  psze  vsze
 atab: (empty; no arrays declared)
 
 Decorated AST:
-Program(ControlFlow, block:0) -> tab_index:33, type:void, lev:0
-├─ declarations:
-│   ├─ VarDecl(i) -> tab_index:34, type:integer, lev:0
-│   │   └─ type:
-│   │       └─ NamedType(integer) -> type:integer, lev:0
-│   ├─ VarDecl(total) -> tab_index:35, type:integer, lev:0
-│   │   └─ type:
-│   │       └─ NamedType(integer) -> type:integer, lev:0
-│   └─ VarDecl(ok) -> tab_index:36, type:boolean, lev:0
-│       └─ type:
-│           └─ NamedType(boolean) -> type:boolean, lev:0
-└─ body:
-    └─ Block(block:1) -> type:void, lev:1
-        ├─ Assign -> type:void, lev:1
-        │   ├─ target:
-        │   │   └─ Var(total) -> tab_index:35, type:integer, lev:0
-        │   └─ value:
-        │       └─ Int(0) -> type:integer, lev:1
-        ├─ Assign -> type:void, lev:1
-        │   ├─ target:
-        │   │   └─ Var(ok) -> tab_index:36, type:boolean, lev:0
-        │   └─ value:
-        │       └─ Bool(true) -> type:boolean, lev:1
-        ├─ If -> type:void, lev:1
-        │   ├─ condition:
-        │   │   └─ Var(ok) -> tab_index:36, type:boolean, lev:0
-        │   ├─ then:
-        │   │   └─ Assign -> type:void, lev:1
-        │   │       ├─ target:
-        │   │       │   └─ Var(total) -> tab_index:35, type:integer, lev:0
-        │   │       └─ value:
-        │   │           └─ BinOp(+) -> type:integer, lev:1
-        │   │               ├─ left:
-        │   │               │   └─ Var(total) -> tab_index:35, type:integer, lev:0
-        │   │               └─ right:
-        │   │                   └─ Int(1) -> type:integer, lev:1
-        │   └─ else:
-        │       └─ Assign -> type:void, lev:1
-        │           ├─ target:
-        │           │   └─ Var(total) -> tab_index:35, type:integer, lev:0
-        │           └─ value:
-        │               └─ BinOp(-) -> type:integer, lev:1
-        │                   ├─ left:
-        │                   │   └─ Var(total) -> tab_index:35, type:integer, lev:0
-        │                   └─ right:
-        │                       └─ Int(1) -> type:integer, lev:1
-        ├─ While -> type:void, lev:1
-        │   ├─ condition:
-        │   │   └─ BinOp(<) -> type:boolean, lev:1
-        │   │       ├─ left:
-        │   │       │   └─ Var(total) -> tab_index:35, type:integer, lev:0
-        │   │       └─ right:
-        │   │           └─ Int(5) -> type:integer, lev:1
-        │   └─ body:
-        │       └─ Block(block:1) -> type:void, lev:1
-        │           └─ Assign -> type:void, lev:1
-        │               ├─ target:
-        │               │   └─ Var(total) -> tab_index:35, type:integer, lev:0
-        │               └─ value:
-        │                   └─ BinOp(+) -> type:integer, lev:1
-        │                       ├─ left:
-        │                       │   └─ Var(total) -> tab_index:35, type:integer, lev:0
-        │                       └─ right:
-        │                           └─ Int(1) -> type:integer, lev:1
-        ├─ Repeat -> type:void, lev:1
-        │   ├─ body:
-        │   │   └─ Assign -> type:void, lev:1
-        │   │       ├─ target:
-        │   │       │   └─ Var(total) -> tab_index:35, type:integer, lev:0
-        │   │       └─ value:
-        │   │           └─ BinOp(-) -> type:integer, lev:1
-        │   │               ├─ left:
-        │   │               │   └─ Var(total) -> tab_index:35, type:integer, lev:0
-        │   │               └─ right:
-        │   │                   └─ Int(1) -> type:integer, lev:1
-        │   └─ until:
-        │       └─ BinOp(<) -> type:boolean, lev:1
-        │           ├─ left:
-        │           │   └─ Var(total) -> tab_index:35, type:integer, lev:0
-        │           └─ right:
-        │               └─ Int(1) -> type:integer, lev:1
-        └─ For(i, to) -> type:void, lev:1
-            ├─ start:
-            │   └─ Int(1) -> type:integer, lev:1
-            ├─ end:
-            │   └─ Int(3) -> type:integer, lev:1
-            └─ body:
-                └─ Block(block:1) -> type:void, lev:1
-                    └─ Assign -> type:void, lev:1
-                        ├─ target:
-                        │   └─ Var(total) -> tab_index:35, type:integer, lev:0
-                        └─ value:
-                            └─ BinOp(+) -> type:integer, lev:1
-                                ├─ left:
-                                │   └─ Var(total) -> tab_index:35, type:integer, lev:0
-                                └─ right:
-                                    └─ Var(i) -> tab_index:34, type:integer, lev:0
+Program(ControlFlow, block:0)          -> tab_index:33, type:void, lev:0
+├─ Declarations
+│   ├─ VarDecl(i)                      -> tab_index:34, type:integer, lev:0
+│   ├─ VarDecl(total)                  -> tab_index:35, type:integer, lev:0
+│   └─ VarDecl(ok)                     -> tab_index:36, type:boolean, lev:0
+└─ Block(block:1)                      -> type:void, lev:1
+    ├─ Assign                          -> type:void, lev:1
+    │   ├─ Target Var(total)           -> tab_index:35, type:integer, lev:0
+    │   └─ Value Int(0)                -> type:integer, lev:1
+    ├─ Assign                          -> type:void, lev:1
+    │   ├─ Target Var(ok)              -> tab_index:36, type:boolean, lev:0
+    │   └─ Value Bool(true)            -> type:boolean, lev:1
+    ├─ If                              -> type:void, lev:1
+    │   ├─ Condition Var(ok)           -> tab_index:36, type:boolean, lev:0
+    │   ├─ Then Assign                 -> type:void, lev:1
+    │   │   ├─ Target Var(total)       -> tab_index:35, type:integer, lev:0
+    │   │   └─ Value BinOp(+)          -> type:integer, lev:1
+    │   │       ├─ Left Var(total)     -> tab_index:35, type:integer, lev:0
+    │   │       └─ Right Int(1)        -> type:integer, lev:1
+    │   └─ Else Assign                 -> type:void, lev:1
+    │       ├─ Target Var(total)       -> tab_index:35, type:integer, lev:0
+    │       └─ Value BinOp(-)          -> type:integer, lev:1
+    │           ├─ Left Var(total)     -> tab_index:35, type:integer, lev:0
+    │           └─ Right Int(1)        -> type:integer, lev:1
+    ├─ While                           -> type:void, lev:1
+    │   ├─ Condition BinOp(<)          -> type:boolean, lev:1
+    │   │   ├─ Left Var(total)         -> tab_index:35, type:integer, lev:0
+    │   │   └─ Right Int(5)            -> type:integer, lev:1
+    │   └─ Body Block(block:1)         -> type:void, lev:1
+    │       └─ Assign                  -> type:void, lev:1
+    │           ├─ Target Var(total)   -> tab_index:35, type:integer, lev:0
+    │           └─ Value BinOp(+)      -> type:integer, lev:1
+    │               ├─ Left Var(total) -> tab_index:35, type:integer, lev:0
+    │               └─ Right Int(1)    -> type:integer, lev:1
+    ├─ Repeat                          -> type:void, lev:1
+    │   ├─ Body Assign                 -> type:void, lev:1
+    │   │   ├─ Target Var(total)       -> tab_index:35, type:integer, lev:0
+    │   │   └─ Value BinOp(-)          -> type:integer, lev:1
+    │   │       ├─ Left Var(total)     -> tab_index:35, type:integer, lev:0
+    │   │       └─ Right Int(1)        -> type:integer, lev:1
+    │   └─ Until BinOp(<)              -> type:boolean, lev:1
+    │       ├─ Left Var(total)         -> tab_index:35, type:integer, lev:0
+    │       └─ Right Int(1)            -> type:integer, lev:1
+    └─ For(i, to)                      -> type:void, lev:1
+        ├─ Start Int(1)                -> type:integer, lev:1
+        ├─ End Int(3)                  -> type:integer, lev:1
+        └─ Body Block(block:1)         -> type:void, lev:1
+            └─ Assign                  -> type:void, lev:1
+                ├─ Target Var(total)   -> tab_index:35, type:integer, lev:0
+                └─ Value BinOp(+)      -> type:integer, lev:1
+                    ├─ Left Var(total) -> tab_index:35, type:integer, lev:0
+                    └─ Right Var(i)    -> tab_index:34, type:integer, lev:0
 
 Semantic diagnostics:
 No semantic errors or warnings.

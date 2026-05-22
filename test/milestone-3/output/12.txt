@@ -9,7 +9,7 @@ idx  id                     obj         type  ref  nrm  lev  adr  link
 37   writeln                procedure      0    0    1    0    0     0
 
 btab:
-idx  last  lpar  psze  vsze
+idx   last  lpar  psze  vsze
 ----------------------------
 0       35     0     0     1
 1       36    36     1     0
@@ -19,28 +19,20 @@ atab: (empty; no arrays declared)
 
 Decorated AST:
 Program(ProcedureArgumentType, block:0) -> tab_index:33, type:void, lev:0
-├─ declarations:
-│   ├─ VarDecl(s) -> tab_index:34, type:string, lev:0
-│   │   └─ type:
-│   │       └─ NamedType(string) -> type:string, lev:0
-│   └─ ProcDecl(UseCount, block:1) -> tab_index:35, type:void, lev:0
-│       ├─ params:
-│       │   └─ ParamDecl(count) -> tab_index:36, type:integer, lev:1
-│       │       └─ type:
-│       │           └─ NamedType(integer) -> type:integer, lev:0
-│       └─ body:
-│           └─ Block(block:1) -> type:void, lev:1
-│               └─ ProcCall(writeln) -> tab_index:37, type:void, lev:0
-│                   └─ Var(count) -> tab_index:36, type:integer, lev:1
-└─ body:
-    └─ Block(block:2) -> type:void, lev:1
-        ├─ Assign -> type:void, lev:1
-        │   ├─ target:
-        │   │   └─ Var(s) -> tab_index:34, type:string, lev:0
-        │   └─ value:
-        │       └─ String("hi") -> type:string, lev:1
-        └─ ProcCall(UseCount) -> tab_index:35, type:void, lev:0
-            └─ Var(s) -> tab_index:34, type:string, lev:0
+├─ Declarations
+│   ├─ VarDecl(s)                       -> tab_index:34, type:string, lev:0
+│   └─ ProcDecl(UseCount, block:1)      -> tab_index:35, type:void, lev:0
+│       ├─ Parameters
+│       │   └─ ParamDecl(count)         -> tab_index:36, type:integer, lev:1
+│       └─ Body Block(block:1)          -> type:void, lev:1
+│           └─ ProcCall(writeln)        -> tab_index:37, type:void, lev:0
+│               └─ Arg Var(count)       -> tab_index:36, type:integer, lev:1
+└─ Block(block:2)                       -> type:void, lev:1
+    ├─ Assign                           -> type:void, lev:1
+    │   ├─ Target Var(s)                -> tab_index:34, type:string, lev:0
+    │   └─ Value String("hi")           -> type:string, lev:1
+    └─ ProcCall(UseCount)               -> tab_index:35, type:void, lev:0
+        └─ Arg Var(s)                   -> tab_index:34, type:string, lev:0
 
 Semantic diagnostics:
 Error at line 13, column 14: argument 1 of procedure 'UseCount' expects Integer, got String

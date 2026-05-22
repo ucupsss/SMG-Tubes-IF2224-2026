@@ -6,7 +6,7 @@ idx  id                    obj         type  ref  nrm  lev  adr  link
 34   writeln               procedure      0    0    1    0    0     0
 
 btab:
-idx  last  lpar  psze  vsze
+idx   last  lpar  psze  vsze
 ----------------------------
 0       33     0     0     0
 1        0     0     0     0
@@ -15,15 +15,12 @@ atab: (empty; no arrays declared)
 
 Decorated AST:
 Program(UndeclaredIdentifier, block:0) -> tab_index:33, type:void, lev:0
-└─ body:
-    └─ Block(block:1) -> type:void, lev:1
-        ├─ Assign -> type:void, lev:1
-        │   ├─ target:
-        │   │   └─ Var(x) -> type:error, lev:1
-        │   └─ value:
-        │       └─ Int(1) -> type:integer, lev:1
-        └─ ProcCall(writeln) -> tab_index:34, type:void, lev:0
-            └─ Var(y) -> type:error, lev:1
+└─ Block(block:1)                      -> type:void, lev:1
+    ├─ Assign                          -> type:void, lev:1
+    │   ├─ Target Var(x)               -> type:error, lev:1
+    │   └─ Value Int(1)                -> type:integer, lev:1
+    └─ ProcCall(writeln)               -> tab_index:34, type:void, lev:0
+        └─ Arg Var(y)                  -> type:error, lev:1
 
 Semantic diagnostics:
 Error at line 4, column 5: undeclared identifier 'x'

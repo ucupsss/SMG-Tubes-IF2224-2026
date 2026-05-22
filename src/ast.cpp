@@ -30,14 +30,23 @@ std::string ann(const ASTNode& node) {
     return out.str();
 }
 
-void appendNode(std::string& text, const std::string& label, const ASTNode* node, int i) {
-    if (!node) return;
-    text += "\n" + indent(i) + label + ":";
-    text += "\n" + node->toString(i + 2);
+void appendSection(std::string& text, const std::string& label, int i) {
+    text += "\n" + indent(i) + label;
 }
 
-void appendSection(std::string& text, const std::string& label, int i) {
-    text += "\n" + indent(i) + label + ":";
+void appendRoleNode(std::string& text, const std::string& role, const ASTNode* node, int i) {
+    if (!node) return;
+
+    std::string rendered = node->toString(i);
+    const std::string padding = indent(i);
+
+    if (rendered.rfind(padding, 0) == 0) {
+        rendered.insert(padding.size(), role + " ");
+    } else {
+        rendered = padding + role + " " + rendered;
+    }
+
+    text += "\n" + rendered;
 }
 
 SourceLocation locOf(const ParseNode& node) {
@@ -897,8 +906,8 @@ std::string NamedTypeNode::toString(int i) const {
 
 std::string SubrangeTypeNode::toString(int i) const {
     std::string s = indent(i) + "SubrangeType" + ann(*this);
-    appendNode(s, "lower", lowerBound.get(), i + 2);
-    appendNode(s, "upper", upperBound.get(), i + 2);
+    appendRoleNode(s, "Lower", lowerBound.get(), i + 2);
+    appendRoleNode(s, "Upper", upperBound.get(), i + 2);
     return s;
 }
 
@@ -908,62 +917,57 @@ std::string EnumTypeNode::toString(int i) const {
 
 std::string ArrayTypeNode::toString(int i) const {
     std::string s = indent(i) + "ArrayType" + ann(*this);
-    appendNode(s, "index", indexType.get(), i + 2);
-    appendNode(s, "element", elementType.get(), i + 2);
+    appendRoleNode(s, "IndexType", indexType.get(), i + 2);
+    appendRoleNode(s, "ElementType", elementType.get(), i + 2);
     return s;
 }
 
 std::string RecordTypeNode::toString(int i) const {
     std::string s = indent(i) + "RecordType" + ann(*this);
     for (const RecordFieldNode& field : fields) {
-        s += "\n" + indent(i + 2) + "Field(" + join(field.names) + ")";
-        if (field.type) s += "\n" + field.type->toString(i + 4);
+        appendRoleNode(s, "Field(" + join(field.names) + ")", field.type.get(), i + 2);
     }
     return s;
 }
 
 std::string VarDeclNode::toString(int i) const {
-    std::string s = indent(i) + "VarDecl(" + join(names) + ")" + ann(*this);
-    appendNode(s, "type", type.get(), i + 2);
-    return s;
+    return indent(i) + "VarDecl(" + join(names) + ")" + ann(*this);
 }
 
 std::string ConstDeclNode::toString(int i) const {
     std::string s = indent(i) + "ConstDecl(" + name + ")" + ann(*this);
-    appendNode(s, "value", value.get(), i + 2);
+    appendRoleNode(s, "Value", value.get(), i + 2);
     return s;
 }
 
 std::string TypeDeclNode::toString(int i) const {
     std::string s = indent(i) + "TypeDecl(" + name + ")" + ann(*this);
-    appendNode(s, "type", type.get(), i + 2);
+    appendRoleNode(s, "Type", type.get(), i + 2);
     return s;
 }
 
 std::string ParamDeclNode::toString(int i) const {
-    std::string s = indent(i) + "ParamDecl(" + join(names) + (byReference ? ", var" : "") + ")" + ann(*this);
-    appendNode(s, "type", type.get(), i + 2);
-    return s;
+    return indent(i) + "ParamDecl(" + join(names) + (byReference ? ", var" : "") + ")" + ann(*this);
 }
 
 std::string ProcDeclNode::toString(int i) const {
     std::string s = indent(i) + "ProcDecl(" + name + ", block:" + std::to_string(blockIndex) + ")" + ann(*this);
-    if (!parameters.empty()) appendSection(s, "params", i + 2);
+    if (!parameters.empty()) appendSection(s, "Parameters", i + 2);
     for (const auto& param : parameters) if (param) s += "\n" + param->toString(i + 4);
-    if (!declarations.empty()) appendSection(s, "declarations", i + 2);
+    if (!declarations.empty()) appendSection(s, "Declarations", i + 2);
     for (const auto& decl : declarations) if (decl) s += "\n" + decl->toString(i + 4);
-    appendNode(s, "body", body.get(), i + 2);
+    appendRoleNode(s, "Body", body.get(), i + 2);
     return s;
 }
 
 std::string FuncDeclNode::toString(int i) const {
     std::string s = indent(i) + "FuncDecl(" + name + ", block:" + std::to_string(blockIndex) + ")" + ann(*this);
-    if (!parameters.empty()) appendSection(s, "params", i + 2);
+    if (!parameters.empty()) appendSection(s, "Parameters", i + 2);
     for (const auto& param : parameters) if (param) s += "\n" + param->toString(i + 4);
-    appendNode(s, "returnType", returnType.get(), i + 2);
-    if (!declarations.empty()) appendSection(s, "declarations", i + 2);
+    appendRoleNode(s, "ReturnType", returnType.get(), i + 2);
+    if (!declarations.empty()) appendSection(s, "Declarations", i + 2);
     for (const auto& decl : declarations) if (decl) s += "\n" + decl->toString(i + 4);
-    appendNode(s, "body", body.get(), i + 2);
+    appendRoleNode(s, "Body", body.get(), i + 2);
     return s;
 }
 
@@ -975,87 +979,85 @@ std::string BlockNode::toString(int i) const {
 
 std::string ProgramNode::toString(int i) const {
     std::string s = indent(i) + "Program(" + name + ", block:" + std::to_string(blockIndex) + ")" + ann(*this);
-    if (!declarations.empty()) appendSection(s, "declarations", i + 2);
-    for (const auto& decl : declarations) if (decl) s += "\n" + decl->toString(i + 4);
-    appendNode(s, "body", body.get(), i + 2);
+    if (!declarations.empty()) {
+        s += "\n" + indent(i + 2) + "Declarations";
+        for (const auto& decl : declarations) if (decl) s += "\n" + decl->toString(i + 4);
+    }
+    if (body) s += "\n" + body->toString(i + 2);
     return s;
 }
 
 std::string AssignNode::toString(int i) const {
     std::string s = indent(i) + "Assign" + ann(*this);
-    appendNode(s, "target", target.get(), i + 2);
-    appendNode(s, "value", value.get(), i + 2);
+    appendRoleNode(s, "Target", target.get(), i + 2);
+    appendRoleNode(s, "Value", value.get(), i + 2);
     return s;
 }
 
 std::string IfNode::toString(int i) const {
     std::string s = indent(i) + "If" + ann(*this);
-    appendNode(s, "condition", condition.get(), i + 2);
-    appendNode(s, "then", thenBranch.get(), i + 2);
-    appendNode(s, "else", elseBranch.get(), i + 2);
+    appendRoleNode(s, "Condition", condition.get(), i + 2);
+    appendRoleNode(s, "Then", thenBranch.get(), i + 2);
+    appendRoleNode(s, "Else", elseBranch.get(), i + 2);
     return s;
 }
 
 std::string WhileNode::toString(int i) const {
     std::string s = indent(i) + "While" + ann(*this);
-    appendNode(s, "condition", condition.get(), i + 2);
-    appendNode(s, "body", body.get(), i + 2);
+    appendRoleNode(s, "Condition", condition.get(), i + 2);
+    appendRoleNode(s, "Body", body.get(), i + 2);
     return s;
 }
 
 std::string ForNode::toString(int i) const {
     std::string s = indent(i) + "For(" + controlVariable + ", " +
                     (direction == ForDirection::Downto ? "downto" : "to") + ")" + ann(*this);
-    appendNode(s, "start", startValue.get(), i + 2);
-    appendNode(s, "end", endValue.get(), i + 2);
-    appendNode(s, "body", body.get(), i + 2);
+    appendRoleNode(s, "Start", startValue.get(), i + 2);
+    appendRoleNode(s, "End", endValue.get(), i + 2);
+    appendRoleNode(s, "Body", body.get(), i + 2);
     return s;
 }
 
 std::string RepeatNode::toString(int i) const {
     std::string s = indent(i) + "Repeat" + ann(*this);
-    if (!body.empty()) appendSection(s, "body", i + 2);
-    for (const auto& stmt : body) if (stmt) s += "\n" + stmt->toString(i + 4);
-    appendNode(s, "until", condition.get(), i + 2);
+    for (const auto& stmt : body) if (stmt) appendRoleNode(s, "Body", stmt.get(), i + 2);
+    appendRoleNode(s, "Until", condition.get(), i + 2);
     return s;
 }
 
 std::string CaseNode::toString(int i) const {
     std::string s = indent(i) + "Case" + ann(*this);
-    appendNode(s, "selector", selector.get(), i + 2);
+    appendRoleNode(s, "Selector", selector.get(), i + 2);
     for (const CaseBranchNode& branch : branches) {
-        s += "\n" + indent(i + 2) + "Branch:";
-        if (!branch.labels.empty()) {
-            s += "\n" + indent(i + 4) + "labels:";
-            for (const auto& label : branch.labels) if (label) s += "\n" + label->toString(i + 6);
-        }
-        appendNode(s, "statement", branch.statement.get(), i + 4);
+        s += "\n" + indent(i + 2) + "Branch";
+        for (const auto& label : branch.labels) if (label) appendRoleNode(s, "Label", label.get(), i + 4);
+        appendRoleNode(s, "Statement", branch.statement.get(), i + 4);
     }
     return s;
 }
 
 std::string ProcCallNode::toString(int i) const {
     std::string s = indent(i) + "ProcCall(" + name + ")" + ann(*this);
-    for (const auto& arg : arguments) if (arg) s += "\n" + arg->toString(i + 2);
+    for (const auto& arg : arguments) if (arg) appendRoleNode(s, "Arg", arg.get(), i + 2);
     return s;
 }
 
 std::string FuncCallNode::toString(int i) const {
     std::string s = indent(i) + "FuncCall(" + name + ")" + ann(*this);
-    for (const auto& arg : arguments) if (arg) s += "\n" + arg->toString(i + 2);
+    for (const auto& arg : arguments) if (arg) appendRoleNode(s, "Arg", arg.get(), i + 2);
     return s;
 }
 
 std::string BinOpNode::toString(int i) const {
     std::string s = indent(i) + "BinOp(" + op + ")" + ann(*this);
-    appendNode(s, "left", left.get(), i + 2);
-    appendNode(s, "right", right.get(), i + 2);
+    appendRoleNode(s, "Left", left.get(), i + 2);
+    appendRoleNode(s, "Right", right.get(), i + 2);
     return s;
 }
 
 std::string UnaryOpNode::toString(int i) const {
     std::string s = indent(i) + "UnaryOp(" + op + ")" + ann(*this);
-    appendNode(s, "operand", operand.get(), i + 2);
+    appendRoleNode(s, "Operand", operand.get(), i + 2);
     return s;
 }
 
@@ -1088,14 +1090,13 @@ std::string BoolLiteralNode::toString(int i) const {
 
 std::string ArrayAccessNode::toString(int i) const {
     std::string s = indent(i) + "ArrayAccess" + ann(*this);
-    appendNode(s, "array", array.get(), i + 2);
-    if (!indices.empty()) appendSection(s, "indices", i + 2);
-    for (const auto& index : indices) if (index) s += "\n" + index->toString(i + 4);
+    appendRoleNode(s, "Array", array.get(), i + 2);
+    for (const auto& index : indices) if (index) appendRoleNode(s, "Index", index.get(), i + 2);
     return s;
 }
 
 std::string RecordAccessNode::toString(int i) const {
     std::string s = indent(i) + "RecordAccess(" + fieldName + ")" + ann(*this);
-    appendNode(s, "record", record.get(), i + 2);
+    appendRoleNode(s, "Record", record.get(), i + 2);
     return s;
 }

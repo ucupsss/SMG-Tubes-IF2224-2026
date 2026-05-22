@@ -8,7 +8,7 @@ idx  id           obj         type  ref  nrm  lev  adr  link
 36   p            variable       7    1    1    0    0     0
 
 btab:
-idx  last  lpar  psze  vsze
+idx   last  lpar  psze  vsze
 ----------------------------
 0       36     0     0     1
 1       34     0     0     1
@@ -17,25 +17,17 @@ idx  last  lpar  psze  vsze
 atab: (empty; no arrays declared)
 
 Decorated AST:
-Program(RecordField, block:0) -> tab_index:33, type:void, lev:0
-├─ declarations:
-│   ├─ TypeDecl(Person) -> tab_index:35, type:record, lev:0
-│   │   └─ type:
-│   │       └─ RecordType -> tab_index:35, type:record, lev:0
-│   │           └─ Field(age)
-│   │               └─ NamedType(integer) -> type:integer, lev:0
-│   └─ VarDecl(p) -> tab_index:36, type:record, lev:0
-│       └─ type:
-│           └─ NamedType(Person) -> tab_index:35, type:record, lev:0
-└─ body:
-    └─ Block(block:2) -> type:void, lev:1
-        └─ Assign -> type:void, lev:1
-            ├─ target:
-            │   └─ RecordAccess(name) -> type:error, lev:1
-            │       └─ record:
-            │           └─ Var(p) -> tab_index:36, type:record, lev:0
-            └─ value:
-                └─ Int(1) -> type:integer, lev:1
+Program(RecordField, block:0)                -> tab_index:33, type:void, lev:0
+├─ Declarations
+│   ├─ TypeDecl(Person)                      -> tab_index:35, type:record, lev:0
+│   │   └─ Type RecordType                   -> tab_index:35, type:record, lev:0
+│   │       └─ Field(age) NamedType(integer) -> type:integer, lev:0
+│   └─ VarDecl(p)                            -> tab_index:36, type:record, lev:0
+└─ Block(block:2)                            -> type:void, lev:1
+    └─ Assign                                -> type:void, lev:1
+        ├─ Target RecordAccess(name)         -> type:error, lev:1
+        │   └─ Record Var(p)                 -> tab_index:36, type:record, lev:0
+        └─ Value Int(1)                      -> type:integer, lev:1
 
 Semantic diagnostics:
 Error at line 12, column 6: record type does not contain field 'name'

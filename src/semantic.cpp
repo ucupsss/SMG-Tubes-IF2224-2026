@@ -177,6 +177,16 @@ bool hasNextSibling(const std::vector<int>& levels, size_t index, int level) {
     return false;
 }
 
+size_t displayWidth(const std::string& text) {
+    size_t width = 0;
+    for (unsigned char ch : text) {
+        if ((ch & 0xC0) != 0x80) {
+            ++width;
+        }
+    }
+    return width;
+}
+
 std::string convertAnnotation(
     const std::string& label,
     const std::vector<int>& displayIndexByInternal
@@ -209,6 +219,30 @@ std::string convertAnnotation(
     result += "type:" + typeNameFromCode(type) + ", lev:" + std::to_string(level);
 
     return result;
+}
+
+void alignTreeAnnotations(std::vector<std::string>& lines) {
+    const std::string arrow = " -> ";
+    size_t arrowColumn = 0;
+
+    for (const std::string& line : lines) {
+        const size_t arrowPos = line.find(arrow);
+        if (arrowPos == std::string::npos) {
+            continue;
+        }
+
+        arrowColumn = std::max(arrowColumn, displayWidth(line.substr(0, arrowPos)));
+    }
+
+    for (std::string& line : lines) {
+        const size_t arrowPos = line.find(arrow);
+        if (arrowPos == std::string::npos) {
+            continue;
+        }
+
+        const size_t currentColumn = displayWidth(line.substr(0, arrowPos));
+        line.insert(arrowPos, std::string(arrowColumn - currentColumn, ' '));
+    }
 }
 
 std::vector<std::string> formatTreeLines(
@@ -249,6 +283,7 @@ std::vector<std::string> formatTreeLines(
         treeLines.push_back(prefix + label);
     }
 
+    alignTreeAnnotations(treeLines);
     return treeLines;
 }
 
@@ -479,8 +514,16 @@ std::vector<std::string> SemanticAnalyzer::formatSymbolTables() const {
 
     lines.push_back("");
     lines.push_back("btab:");
-    lines.push_back("idx  last  lpar  psze  vsze");
-    lines.push_back("----------------------------");
+    std::ostringstream btabHeader;
+    btabHeader << std::left
+               << std::setw(4) << "idx"
+               << std::right
+               << std::setw(6) << "last"
+               << std::setw(6) << "lpar"
+               << std::setw(6) << "psze"
+               << std::setw(6) << "vsze";
+    lines.push_back(btabHeader.str());
+    lines.push_back(std::string(btabHeader.str().size(), '-'));
 
     const std::vector<BTabEntry>& btab = symbolTable.btab();
     for (size_t i = 0; i < btab.size(); ++i) {

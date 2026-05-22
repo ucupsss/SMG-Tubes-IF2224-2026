@@ -8,7 +8,7 @@ idx  id        obj         type  ref  nrm  lev  adr  link
 36   writeln   procedure      0    0    1    0    0     0
 
 btab:
-idx  last  lpar  psze  vsze
+idx   last  lpar  psze  vsze
 ----------------------------
 0       35     0     0     2
 1        0     0     0     0
@@ -16,33 +16,22 @@ idx  last  lpar  psze  vsze
 atab: (empty; no arrays declared)
 
 Decorated AST:
-Program(Hello, block:0) -> tab_index:33, type:void, lev:0
-├─ declarations:
-│   ├─ VarDecl(a) -> tab_index:34, type:integer, lev:0
-│   │   └─ type:
-│   │       └─ NamedType(integer) -> type:integer, lev:0
-│   └─ VarDecl(b) -> tab_index:35, type:integer, lev:0
-│       └─ type:
-│           └─ NamedType(integer) -> type:integer, lev:0
-└─ body:
-    └─ Block(block:1) -> type:void, lev:1
-        ├─ Assign -> type:void, lev:1
-        │   ├─ target:
-        │   │   └─ Var(a) -> tab_index:34, type:integer, lev:0
-        │   └─ value:
-        │       └─ Int(5) -> type:integer, lev:1
-        ├─ Assign -> type:void, lev:1
-        │   ├─ target:
-        │   │   └─ Var(b) -> tab_index:35, type:integer, lev:0
-        │   └─ value:
-        │       └─ BinOp(+) -> type:integer, lev:1
-        │           ├─ left:
-        │           │   └─ Var(a) -> tab_index:34, type:integer, lev:0
-        │           └─ right:
-        │               └─ Int(10) -> type:integer, lev:1
-        └─ ProcCall(writeln) -> tab_index:36, type:void, lev:0
-            ├─ String("Result = ") -> type:string, lev:1
-            └─ Var(b) -> tab_index:35, type:integer, lev:0
+Program(Hello, block:0)            -> tab_index:33, type:void, lev:0
+├─ Declarations
+│   ├─ VarDecl(a)                  -> tab_index:34, type:integer, lev:0
+│   └─ VarDecl(b)                  -> tab_index:35, type:integer, lev:0
+└─ Block(block:1)                  -> type:void, lev:1
+    ├─ Assign                      -> type:void, lev:1
+    │   ├─ Target Var(a)           -> tab_index:34, type:integer, lev:0
+    │   └─ Value Int(5)            -> type:integer, lev:1
+    ├─ Assign                      -> type:void, lev:1
+    │   ├─ Target Var(b)           -> tab_index:35, type:integer, lev:0
+    │   └─ Value BinOp(+)          -> type:integer, lev:1
+    │       ├─ Left Var(a)         -> tab_index:34, type:integer, lev:0
+    │       └─ Right Int(10)       -> type:integer, lev:1
+    └─ ProcCall(writeln)           -> tab_index:36, type:void, lev:0
+        ├─ Arg String("Result = ") -> type:string, lev:1
+        └─ Arg Var(b)              -> tab_index:35, type:integer, lev:0
 
 Semantic diagnostics:
 No semantic errors or warnings.
