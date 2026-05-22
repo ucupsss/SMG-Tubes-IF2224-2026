@@ -186,19 +186,27 @@ TypeInfo SemanticAnalyzer::resolveSubrangeType(SubrangeTypeNode* node) {
         }
 
         if (auto* literal = dynamic_cast<IntLiteralNode*>(bound)) {
-            return {makePrimitiveType(TYPE_INTEGER, "Integer"), literal->value};
+            TypeInfo type = makePrimitiveType(TYPE_INTEGER, "Integer");
+            annotate(literal, type);
+            return {type, literal->value};
         }
 
-        if (dynamic_cast<RealLiteralNode*>(bound)) {
-            return {makePrimitiveType(TYPE_REAL, "Real"), std::nullopt};
+        if (auto* literal = dynamic_cast<RealLiteralNode*>(bound)) {
+            TypeInfo type = makePrimitiveType(TYPE_REAL, "Real");
+            annotate(literal, type);
+            return {type, std::nullopt};
         }
 
         if (auto* literal = dynamic_cast<CharLiteralNode*>(bound)) {
-            return {makePrimitiveType(TYPE_CHAR, "Char"), static_cast<int>(literal->value)};
+            TypeInfo type = makePrimitiveType(TYPE_CHAR, "Char");
+            annotate(literal, type);
+            return {type, static_cast<int>(literal->value)};
         }
 
         if (auto* literal = dynamic_cast<BoolLiteralNode*>(bound)) {
-            return {makePrimitiveType(TYPE_BOOLEAN, "Boolean"), literal->value ? 1 : 0};
+            TypeInfo type = makePrimitiveType(TYPE_BOOLEAN, "Boolean");
+            annotate(literal, type);
+            return {type, literal->value ? 1 : 0};
         }
 
         if (auto* variable = dynamic_cast<VarNode*>(bound)) {
@@ -214,6 +222,7 @@ TypeInfo SemanticAnalyzer::resolveSubrangeType(SubrangeTypeNode* node) {
                 return {makeErrorType(), std::nullopt};
             }
 
+            annotate(variable, entry.typeInfo, index);
             return {entry.typeInfo, entry.adr};
         }
 
@@ -233,6 +242,7 @@ TypeInfo SemanticAnalyzer::resolveSubrangeType(SubrangeTypeNode* node) {
                 if (op == "-") {
                     operandValue = -operandValue.value();
                 }
+                annotate(unary, operandType);
                 return {operandType, operandValue};
             }
         }
