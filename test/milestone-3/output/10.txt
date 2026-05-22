@@ -8,7 +8,7 @@ idx  id           obj         type  ref  nrm  lev  adr  link
 36   v            variable       6    1    1    0    0     0
 
 btab:
-idx  last  lpar  psze  vsze
+idx   last  lpar  psze  vsze
 ----------------------------
 0       36     0     0     3
 1        0     0     0     0
@@ -19,36 +19,23 @@ idx   xtyp  etyp  eref   low  high  elsz  size
 1        1     1     0     1     3     1     3
 
 Decorated AST:
-Program(ArrayBounds, block:0) -> tab_index:33, type:void, lev:0
-├─ declarations:
-│   ├─ TypeDecl(Index) -> tab_index:34, type:subrange, lev:0
-│   │   └─ type:
-│   │       └─ SubrangeType -> tab_index:34, type:subrange, lev:0
-│   │           ├─ lower:
-│   │           │   └─ Int(1) -> type:void, lev:0
-│   │           └─ upper:
-│   │               └─ Int(3) -> type:void, lev:0
-│   ├─ TypeDecl(Values) -> tab_index:35, type:array, lev:0
-│   │   └─ type:
-│   │       └─ ArrayType -> tab_index:35, type:array, lev:0
-│   │           ├─ index:
-│   │           │   └─ NamedType(Index) -> tab_index:34, type:subrange, lev:0
-│   │           └─ element:
-│   │               └─ NamedType(integer) -> type:integer, lev:0
-│   └─ VarDecl(v) -> tab_index:36, type:array, lev:0
-│       └─ type:
-│           └─ NamedType(Values) -> tab_index:35, type:array, lev:0
-└─ body:
-    └─ Block(block:1) -> type:void, lev:1
-        └─ Assign -> type:void, lev:1
-            ├─ target:
-            │   └─ ArrayAccess -> tab_index:36, type:integer, lev:0
-            │       ├─ array:
-            │       │   └─ Var(v) -> tab_index:36, type:array, lev:0
-            │       └─ indices:
-            │           └─ Int(4) -> type:integer, lev:1
-            └─ value:
-                └─ Int(10) -> type:integer, lev:1
+Program(ArrayBounds, block:0)                 -> tab_index:33, type:void, lev:0
+├─ Declarations
+│   ├─ TypeDecl(Index)                        -> tab_index:34, type:subrange, lev:0
+│   │   └─ Type SubrangeType                  -> tab_index:34, type:subrange, lev:0
+│   │       ├─ Lower Int(1)                   -> type:integer, lev:0
+│   │       └─ Upper Int(3)                   -> type:integer, lev:0
+│   ├─ TypeDecl(Values)                       -> tab_index:35, type:array, lev:0
+│   │   └─ Type ArrayType                     -> tab_index:35, type:array, lev:0
+│   │       ├─ IndexType NamedType(Index)     -> tab_index:34, type:subrange, lev:0
+│   │       └─ ElementType NamedType(integer) -> type:integer, lev:0
+│   └─ VarDecl(v)                             -> tab_index:36, type:array, lev:0
+└─ Block(block:1)                             -> type:void, lev:1
+    └─ Assign                                 -> type:void, lev:1
+        ├─ Target ArrayAccess                 -> tab_index:36, type:integer, lev:0
+        │   ├─ Array Var(v)                   -> tab_index:36, type:array, lev:0
+        │   └─ Index Int(4)                   -> type:integer, lev:1
+        └─ Value Int(10)                      -> type:integer, lev:1
 
 Semantic diagnostics:
 Error at line 11, column 7: array index is outside the declared subrange

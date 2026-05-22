@@ -7,7 +7,7 @@ idx  id            obj         type  ref  nrm  lev  adr  link
 35   s             variable       5    0    1    0    1    34
 
 btab:
-idx  last  lpar  psze  vsze
+idx   last  lpar  psze  vsze
 ----------------------------
 0       35     0     0     2
 1        0     0     0     0
@@ -15,26 +15,17 @@ idx  last  lpar  psze  vsze
 atab: (empty; no arrays declared)
 
 Decorated AST:
-Program(TypeMismatch, block:0) -> tab_index:33, type:void, lev:0
-├─ declarations:
-│   ├─ VarDecl(x) -> tab_index:34, type:integer, lev:0
-│   │   └─ type:
-│   │       └─ NamedType(integer) -> type:integer, lev:0
-│   └─ VarDecl(s) -> tab_index:35, type:string, lev:0
-│       └─ type:
-│           └─ NamedType(string) -> type:string, lev:0
-└─ body:
-    └─ Block(block:1) -> type:void, lev:1
-        ├─ Assign -> type:void, lev:1
-        │   ├─ target:
-        │   │   └─ Var(x) -> tab_index:34, type:integer, lev:0
-        │   └─ value:
-        │       └─ String("oops") -> type:string, lev:1
-        └─ Assign -> type:void, lev:1
-            ├─ target:
-            │   └─ Var(s) -> tab_index:35, type:string, lev:0
-            └─ value:
-                └─ Int(1) -> type:integer, lev:1
+Program(TypeMismatch, block:0)  -> tab_index:33, type:void, lev:0
+├─ Declarations
+│   ├─ VarDecl(x)               -> tab_index:34, type:integer, lev:0
+│   └─ VarDecl(s)               -> tab_index:35, type:string, lev:0
+└─ Block(block:1)               -> type:void, lev:1
+    ├─ Assign                   -> type:void, lev:1
+    │   ├─ Target Var(x)        -> tab_index:34, type:integer, lev:0
+    │   └─ Value String("oops") -> type:string, lev:1
+    └─ Assign                   -> type:void, lev:1
+        ├─ Target Var(s)        -> tab_index:35, type:string, lev:0
+        └─ Value Int(1)         -> type:integer, lev:1
 
 Semantic diagnostics:
 Error at line 8, column 5: cannot assign String to Integer
