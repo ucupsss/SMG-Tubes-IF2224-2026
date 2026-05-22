@@ -923,9 +923,7 @@ std::string RecordTypeNode::toString(int i) const {
 }
 
 std::string VarDeclNode::toString(int i) const {
-    std::string s = indent(i) + "VarDecl(" + join(names) + ")" + ann(*this);
-    appendNode(s, "type", type.get(), i + 2);
-    return s;
+    return indent(i) + "VarDecl(" + join(names) + ")" + ann(*this);
 }
 
 std::string ConstDeclNode::toString(int i) const {
@@ -941,9 +939,7 @@ std::string TypeDeclNode::toString(int i) const {
 }
 
 std::string ParamDeclNode::toString(int i) const {
-    std::string s = indent(i) + "ParamDecl(" + join(names) + (byReference ? ", var" : "") + ")" + ann(*this);
-    appendNode(s, "type", type.get(), i + 2);
-    return s;
+    return indent(i) + "ParamDecl(" + join(names) + (byReference ? ", var" : "") + ")" + ann(*this);
 }
 
 std::string ProcDeclNode::toString(int i) const {
@@ -975,16 +971,18 @@ std::string BlockNode::toString(int i) const {
 
 std::string ProgramNode::toString(int i) const {
     std::string s = indent(i) + "Program(" + name + ", block:" + std::to_string(blockIndex) + ")" + ann(*this);
-    if (!declarations.empty()) appendSection(s, "declarations", i + 2);
-    for (const auto& decl : declarations) if (decl) s += "\n" + decl->toString(i + 4);
-    appendNode(s, "body", body.get(), i + 2);
+    if (!declarations.empty()) {
+        s += "\n" + indent(i + 2) + "Declarations";
+        for (const auto& decl : declarations) if (decl) s += "\n" + decl->toString(i + 4);
+    }
+    if (body) s += "\n" + body->toString(i + 2);
     return s;
 }
 
 std::string AssignNode::toString(int i) const {
     std::string s = indent(i) + "Assign" + ann(*this);
-    appendNode(s, "target", target.get(), i + 2);
-    appendNode(s, "value", value.get(), i + 2);
+    if (target) s += "\n" + target->toString(i + 2);
+    if (value) s += "\n" + value->toString(i + 2);
     return s;
 }
 
@@ -1048,8 +1046,8 @@ std::string FuncCallNode::toString(int i) const {
 
 std::string BinOpNode::toString(int i) const {
     std::string s = indent(i) + "BinOp(" + op + ")" + ann(*this);
-    appendNode(s, "left", left.get(), i + 2);
-    appendNode(s, "right", right.get(), i + 2);
+    if (left) s += "\n" + left->toString(i + 2);
+    if (right) s += "\n" + right->toString(i + 2);
     return s;
 }
 
