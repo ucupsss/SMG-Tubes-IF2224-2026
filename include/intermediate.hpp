@@ -4,8 +4,6 @@
 #include <string>
 #include <vector>
 
-namespace arion::m4 {
-
 enum class RuntimeValueKind {
     Void,
     Integer,
@@ -80,7 +78,5 @@ std::string opcodeName(OpCode opcode);
 std::string operationName(OperationCode operation);
 std::string formatInstruction(const Instruction& instruction, int address);
 std::vector<std::string> formatProgram(const IntermediateProgram& program);
-
-} // namespace arion::m4
 
 #endif

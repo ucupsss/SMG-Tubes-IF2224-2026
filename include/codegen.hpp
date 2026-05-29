@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-namespace arion::m4 {
-
 struct CodegenDiagnostic {
     std::string message;
     int line = -1;
@@ -54,7 +52,5 @@ private:
     const SymbolTable* symbolTable = nullptr;
     CodeGenerationResult result;
 };
-
-} // namespace arion::m4
 
 #endif

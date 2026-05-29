@@ -6,8 +6,6 @@
 #include <string>
 #include <vector>
 
-namespace arion::m4 {
-
 struct RuntimeDiagnostic {
     std::string message;
     int instructionPointer = -1;
@@ -46,7 +44,5 @@ private:
     ExecutionResult result;
     int ip = 0;
 };
-
-} // namespace arion::m4
 
 #endif
