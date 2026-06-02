@@ -35,6 +35,9 @@ private:
     void generateAssignment(const AssignNode& node);
     void generateIf(const IfNode& node);
     void generateWhile(const WhileNode& node);
+    void generateRepeat(const RepeatNode& node);
+    void generateFor(const ForNode& node);
+    void generateCase(const CaseNode& node);
     void generateProcedureCall(const ProcCallNode& node);
     void generateExpression(const ExpressionNode& node);
 
@@ -46,7 +49,7 @@ private:
     void patchOperand(int instructionIndex, int operand);
     int nextAddress() const;
 
-    int variableAddress(const TabEntry& entry) const;
+    int variableAddress(const TabEntry& entry);
     void diagnostic(const std::string& message, const SourceLocation& location = {});
 
     const SymbolTable* symbolTable = nullptr;
