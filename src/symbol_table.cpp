@@ -43,8 +43,6 @@ TabEntry makePredefinedConstant(const std::string& name, int typeCode, int value
     entry.type = typeCode;
     entry.typeInfo = makeType(typeCode, name);
     entry.adr = value;
-    entry.hasConstantOrdinal = true;
-    entry.constantOrdinalValue = value;
     return entry;
 }
 

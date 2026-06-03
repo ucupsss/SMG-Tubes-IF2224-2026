@@ -115,11 +115,8 @@ inline std::optional<ConstantValue> tryEvaluateConstant(
 
         ConstantValue value;
         value.type = entry.typeInfo;
-        value.knownOrdinal = entry.hasConstantOrdinal ||
-            (entry.typeInfo.code != TYPE_REAL && entry.typeInfo.code != TYPE_STRING);
-        value.ordinalValue = entry.hasConstantOrdinal ? entry.constantOrdinalValue : entry.adr;
-        value.knownString = entry.hasConstantString;
-        value.stringValue = entry.constantStringValue;
+        value.knownOrdinal = entry.typeInfo.code != TYPE_REAL && entry.typeInfo.code != TYPE_STRING;
+        value.ordinalValue = entry.adr;
         return value;
     }
 
