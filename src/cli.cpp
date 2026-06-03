@@ -208,6 +208,10 @@ bool shouldRunSemanticAnalyzer(const std::string& selectedFolder) {
     return selectedFolder == "milestone-3";
 }
 
+bool shouldRunIntermediateCodeInterpreter(const std::string& selectedFolder) {
+    return selectedFolder == "milestone-4";
+}
+
 std::vector<std::string> runAnalyzerForFolder(
     const std::string& selectedFolder,
     const std::string& source
@@ -222,6 +226,13 @@ std::vector<std::string> runAnalyzerForFolder(
 
     if (shouldRunSemanticAnalyzer(selectedFolder)) {
         return runSemanticAnalyzer(source);
+    }
+
+    if (shouldRunIntermediateCodeInterpreter(selectedFolder)) {
+        return {
+            "Intermediate code generator and interpreter are not implemented yet.",
+            "Implement runIntermediateCodeInterpreter in driver.cpp to connect the milestone 4 pipeline."
+        };
     }
 
     return {"Error: unsupported test folder '" + selectedFolder + "'."};
@@ -239,6 +250,9 @@ void printOutputLines(
     }
     else if (shouldRunSemanticAnalyzer(selectedFolder)) {
         std::cout << "\nHasil semantic analyzer:\n";
+    }
+    else if (shouldRunIntermediateCodeInterpreter(selectedFolder)) {
+        std::cout << "\nHasil intermediate code dan interpreter:\n";
     }
     else {
         std::cout << "\nHasil analyzer:\n";

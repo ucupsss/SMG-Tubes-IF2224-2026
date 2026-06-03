@@ -23,8 +23,12 @@ void addDiagnostic(
 
 struct ConstValue {
     TypeInfo type = makeErrorType();
-    bool hasIntegerValue = false;
-    int integerValue = 0;
+    bool hasOrdinalValue = false;
+    int ordinalValue = 0;
+    bool hasRealValue = false;
+    double realValue = 0.0;
+    bool hasStringValue = false;
+    std::string stringValue;
 };
 
 ConstValue evaluateConstant(
@@ -38,25 +42,44 @@ ConstValue evaluateConstant(
     }
 
     if (auto* value = dynamic_cast<IntLiteralNode*>(node)) {
-        return {makePrimitiveType(TYPE_INTEGER, "Integer"), true, value->value};
+        ConstValue result;
+        result.type = makePrimitiveType(TYPE_INTEGER, "Integer");
+        result.hasOrdinalValue = true;
+        result.ordinalValue = value->value;
+        return result;
     }
 
-    if (dynamic_cast<RealLiteralNode*>(node)) {
-        return {makePrimitiveType(TYPE_REAL, "Real"), false, 0};
+    if (auto* value = dynamic_cast<RealLiteralNode*>(node)) {
+        ConstValue result;
+        result.type = makePrimitiveType(TYPE_REAL, "Real");
+        result.hasRealValue = true;
+        result.realValue = value->value;
+        return result;
     }
 
     if (auto* value = dynamic_cast<CharLiteralNode*>(node)) {
-        return {makePrimitiveType(TYPE_CHAR, "Char"), true, static_cast<int>(value->value)};
+        ConstValue result;
+        result.type = makePrimitiveType(TYPE_CHAR, "Char");
+        result.hasOrdinalValue = true;
+        result.ordinalValue = static_cast<int>(value->value);
+        return result;
     }
 
     if (auto* value = dynamic_cast<StringLiteralNode*>(node)) {
-        TypeInfo type = makePrimitiveType(TYPE_STRING, "String");
-        type.stringLength = static_cast<int>(value->value.size());
-        return {type, false, 0};
+        ConstValue result;
+        result.type = makePrimitiveType(TYPE_STRING, "String");
+        result.type.stringLength = static_cast<int>(value->value.size());
+        result.hasStringValue = true;
+        result.stringValue = value->value;
+        return result;
     }
 
     if (auto* value = dynamic_cast<BoolLiteralNode*>(node)) {
-        return {makePrimitiveType(TYPE_BOOLEAN, "Boolean"), true, value->value ? 1 : 0};
+        ConstValue result;
+        result.type = makePrimitiveType(TYPE_BOOLEAN, "Boolean");
+        result.hasOrdinalValue = true;
+        result.ordinalValue = value->value ? 1 : 0;
+        return result;
     }
 
     if (auto* var = dynamic_cast<VarNode*>(node)) {
@@ -72,7 +95,16 @@ ConstValue evaluateConstant(
             return {};
         }
 
-        return {entry.typeInfo, true, entry.adr};
+        ConstValue result;
+        result.type = entry.typeInfo;
+        result.hasOrdinalValue = entry.hasConstantOrdinal ||
+            (entry.typeInfo.code != TYPE_REAL && entry.typeInfo.code != TYPE_STRING);
+        result.ordinalValue = entry.hasConstantOrdinal ? entry.constantOrdinalValue : entry.adr;
+        result.hasRealValue = entry.hasConstantReal;
+        result.realValue = entry.constantRealValue;
+        result.hasStringValue = entry.hasConstantString;
+        result.stringValue = entry.constantStringValue;
+        return result;
     }
 
     if (auto* unary = dynamic_cast<UnaryOpNode*>(node)) {
@@ -87,8 +119,11 @@ ConstValue evaluateConstant(
                 return {};
             }
 
-            if (operand.hasIntegerValue) {
-                operand.integerValue = -operand.integerValue;
+            if (operand.hasOrdinalValue) {
+                operand.ordinalValue = -operand.ordinalValue;
+            }
+            if (operand.hasRealValue) {
+                operand.realValue = -operand.realValue;
             }
         } else if (unary->op != "+") {
             addDiagnostic(errors, "unsupported unary operator in constant declaration", unary->location);
@@ -136,6 +171,8 @@ void registerEnumConstants(
         entry.ref = enumType.ref;
         entry.typeInfo = enumType;
         entry.adr = static_cast<int>(i);
+        entry.hasConstantOrdinal = true;
+        entry.constantOrdinalValue = static_cast<int>(i);
         symbols.enterTab(entry);
     }
 }
@@ -268,7 +305,13 @@ void SemanticAnalyzer::visitConstDecl(ConstDeclNode* node) {
     entry.type = value.type.code;
     entry.ref = value.type.ref;
     entry.typeInfo = value.type;
-    entry.adr = value.hasIntegerValue ? value.integerValue : 0;
+    entry.adr = value.hasOrdinalValue ? value.ordinalValue : 0;
+    entry.hasConstantOrdinal = value.hasOrdinalValue;
+    entry.constantOrdinalValue = value.ordinalValue;
+    entry.hasConstantReal = value.hasRealValue;
+    entry.constantRealValue = value.realValue;
+    entry.hasConstantString = value.hasStringValue;
+    entry.constantStringValue = value.stringValue;
 
     const int index = symbolTable.enterTab(entry);
     annotateNode(node, value.type, index, symbolTable);
