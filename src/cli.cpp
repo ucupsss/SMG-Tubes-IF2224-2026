@@ -229,10 +229,7 @@ std::vector<std::string> runAnalyzerForFolder(
     }
 
     if (shouldRunIntermediateCodeInterpreter(selectedFolder)) {
-        return {
-            "Intermediate code generator and interpreter are not implemented yet.",
-            "Implement runIntermediateCodeInterpreter in driver.cpp to connect the milestone 4 pipeline."
-        };
+        return runIntermediateCodeInterpreter(source);
     }
 
     return {"Error: unsupported test folder '" + selectedFolder + "'."};
