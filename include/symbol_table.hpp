@@ -45,12 +45,6 @@ struct TabEntry {
     int lev = 0;
     int adr = 0;
     TypeInfo typeInfo;
-    bool hasConstantOrdinal = false;
-    int constantOrdinalValue = 0;
-    bool hasConstantReal = false;
-    double constantRealValue = 0.0;
-    bool hasConstantString = false;
-    std::string constantStringValue;
 };
 
 struct BTabEntry {

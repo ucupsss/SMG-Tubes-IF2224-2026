@@ -22,7 +22,7 @@ bool isStructured(const TypeInfo& type) {
 }
 
 bool isRelationalOperator(const std::string& op) {
-    return op == "==" || op == "<>" || op == "<" || op == "<=" || op == ">" || op == ">=";
+    return op == "=" || op == "<>" || op == "<" || op == "<=" || op == ">" || op == ">=";
 }
 
 std::optional<TypeInfo> findNamedType(const SymbolTable& symbols, int code, int ref) {
