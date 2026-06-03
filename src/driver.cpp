@@ -372,6 +372,98 @@ std::string formatRuntimeDiagnostic(const RuntimeDiagnostic& diagnostic) {
     return "Runtime error";
 }
 
+std::string formatSemanticDiagnostic(
+    const std::string& label,
+    const SemanticDiagnostic& diagnostic
+) {
+    std::string message = label;
+    if (diagnostic.line >= 0) {
+        message += " at line " + std::to_string(diagnostic.line);
+
+        if (diagnostic.column >= 0) {
+            message += ", column " + std::to_string(diagnostic.column);
+        }
+    }
+
+    message += ": " + diagnostic.message;
+    return message;
+}
+
+void appendSemanticDiagnostics(
+    std::vector<std::string>& lines,
+    const SemanticAnalyzer& analyzer
+) {
+    lines.push_back("Semantic diagnostics:");
+    if (analyzer.warnings().empty() && analyzer.errors().empty()) {
+        lines.push_back("No semantic errors or warnings.");
+        return;
+    }
+
+    for (const SemanticDiagnostic& warning : analyzer.warnings()) {
+        lines.push_back(formatSemanticDiagnostic("Warning", warning));
+    }
+
+    for (const SemanticDiagnostic& error : analyzer.errors()) {
+        lines.push_back(formatSemanticDiagnostic("Error", error));
+    }
+}
+
+void appendIntermediateCode(
+    std::vector<std::string>& lines,
+    const IntermediateProgram& program
+) {
+    lines.push_back("Intermediate Code:");
+
+    std::vector<std::string> codeLines = formatProgram(program);
+    if (codeLines.empty()) {
+        lines.push_back("<empty>");
+    } else {
+        lines.insert(lines.end(), codeLines.begin(), codeLines.end());
+    }
+}
+
+void appendCodegenDiagnostics(
+    std::vector<std::string>& lines,
+    const CodeGenerationResult& codegen
+) {
+    lines.push_back("Codegen diagnostics:");
+    if (codegen.diagnostics.empty()) {
+        lines.push_back("No code generation errors.");
+        return;
+    }
+
+    for (const CodegenDiagnostic& diagnostic : codegen.diagnostics) {
+        lines.push_back(formatCodegenDiagnostic(diagnostic));
+    }
+}
+
+void appendProgramOutput(
+    std::vector<std::string>& lines,
+    const std::vector<std::string>& outputLines
+) {
+    lines.push_back("Program Output:");
+    if (outputLines.empty()) {
+        lines.push_back("<no output>");
+    } else {
+        lines.insert(lines.end(), outputLines.begin(), outputLines.end());
+    }
+}
+
+void appendRuntimeDiagnostics(
+    std::vector<std::string>& lines,
+    const ExecutionResult& execution
+) {
+    lines.push_back("Runtime diagnostics:");
+    if (execution.diagnostics.empty()) {
+        lines.push_back("No runtime errors.");
+        return;
+    }
+
+    for (const RuntimeDiagnostic& diagnostic : execution.diagnostics) {
+        lines.push_back(formatRuntimeDiagnostic(diagnostic));
+    }
+}
+
 }
 
 std::vector<std::string> runLexer(const std::string& source) {
@@ -446,16 +538,21 @@ std::vector<std::string> runIntermediateCodeInterpreter(const std::string& sourc
         analyzer.analyze(parseTree);
 
         std::vector<std::string> lines;
-        if (analyzer.hasErrors()) {
-            std::vector<std::string> semanticLines = analyzer.formatOutput();
-            lines.insert(lines.end(), semanticLines.begin(), semanticLines.end());
+        appendSemanticDiagnostics(lines, analyzer);
+        lines.push_back("");
 
-            lines.push_back("");
+        if (analyzer.hasErrors()) {
             lines.push_back("Intermediate Code:");
             lines.push_back("<not generated because semantic analysis failed>");
             lines.push_back("");
+            lines.push_back("Codegen diagnostics:");
+            lines.push_back("<not run because semantic analysis failed>");
+            lines.push_back("");
             lines.push_back("Program Output:");
             lines.push_back("<not executed>");
+            lines.push_back("");
+            lines.push_back("Runtime diagnostics:");
+            lines.push_back("<not run because semantic analysis failed>");
             lines.push_back("");
             lines.push_back("Status: FAILED");
             return lines;
@@ -464,11 +561,20 @@ std::vector<std::string> runIntermediateCodeInterpreter(const std::string& sourc
         const ProgramNode* ast = analyzer.ast();
         if (ast == nullptr) {
             return {
+                "Semantic diagnostics:",
+                "Error: semantic analyzer did not produce an AST",
+                "",
                 "Intermediate Code:",
                 "<not generated because semantic analyzer did not produce an AST>",
                 "",
+                "Codegen diagnostics:",
+                "<not run because semantic analyzer did not produce an AST>",
+                "",
                 "Program Output:",
                 "<not executed>",
+                "",
+                "Runtime diagnostics:",
+                "<not run because semantic analyzer did not produce an AST>",
                 "",
                 "Status: FAILED"
             };
@@ -477,23 +583,9 @@ std::vector<std::string> runIntermediateCodeInterpreter(const std::string& sourc
         CodeGenerator generator;
         CodeGenerationResult codegen = generator.generate(*ast, analyzer.symbols());
 
-        lines.push_back("Intermediate Code:");
-        std::vector<std::string> codeLines = formatProgram(codegen.program);
-        if (codeLines.empty()) {
-            lines.push_back("<empty>");
-        } else {
-            lines.insert(lines.end(), codeLines.begin(), codeLines.end());
-        }
-
+        appendIntermediateCode(lines, codegen.program);
         lines.push_back("");
-        lines.push_back("Codegen diagnostics:");
-        if (codegen.diagnostics.empty()) {
-            lines.push_back("No code generation errors.");
-        } else {
-            for (const CodegenDiagnostic& diagnostic : codegen.diagnostics) {
-                lines.push_back(formatCodegenDiagnostic(diagnostic));
-            }
-        }
+        appendCodegenDiagnostics(lines, codegen);
 
         if (!codegen.success()) {
             lines.push_back("");
@@ -511,29 +603,26 @@ std::vector<std::string> runIntermediateCodeInterpreter(const std::string& sourc
         ExecutionResult execution = interpreter.execute(codegen.program);
 
         lines.push_back("");
-        lines.push_back("Program Output:");
-        if (execution.outputLines.empty()) {
-            lines.push_back("<no output>");
-        } else {
-            lines.insert(lines.end(), execution.outputLines.begin(), execution.outputLines.end());
-        }
-
+        appendProgramOutput(lines, execution.outputLines);
         lines.push_back("");
-        lines.push_back("Runtime diagnostics:");
-        if (execution.diagnostics.empty()) {
-            lines.push_back("No runtime errors.");
-        } else {
-            for (const RuntimeDiagnostic& diagnostic : execution.diagnostics) {
-                lines.push_back(formatRuntimeDiagnostic(diagnostic));
-            }
-        }
+        appendRuntimeDiagnostics(lines, execution);
 
         lines.push_back("");
         lines.push_back(std::string("Status: ") + (execution.success() ? "SUCCESS" : "FAILED"));
         return lines;
     } catch (const ParseError& error) {
-        return {error.what()};
+        return {
+            "Frontend diagnostics:",
+            error.what(),
+            "",
+            "Status: FAILED"
+        };
     } catch (const std::runtime_error& error) {
-        return {error.what()};
+        return {
+            "Frontend diagnostics:",
+            error.what(),
+            "",
+            "Status: FAILED"
+        };
     }
 }
