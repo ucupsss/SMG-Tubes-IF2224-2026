@@ -61,7 +61,8 @@ enum class OperationCode {
     GTR = 11,
     LEQ = 12,
     WRT = 13,
-    WRTLN = 14
+    WRTLN = 14,
+    RDIV = 15
 };
 
 struct Instruction {

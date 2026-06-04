@@ -33,6 +33,7 @@ bool mapBinaryOperator(const std::string& op, OperationCode& operation) {
     if (lowered == "+") operation = OperationCode::ADD;
     else if (lowered == "-") operation = OperationCode::SUB;
     else if (lowered == "*") operation = OperationCode::MUL;
+    else if (lowered == "/") operation = OperationCode::RDIV;
     else if (lowered == "div") operation = OperationCode::DIV;
     else if (lowered == "mod") operation = OperationCode::MOD;
     else if (lowered == "==") operation = OperationCode::EQL;
@@ -117,15 +118,6 @@ void CodeGenerator::generateExpression(const ExpressionNode& node) {
             }
 
             const std::string op = text_util::lowercase(binary.op);
-
-            if (op == "/") {
-                diagnostic(
-                    "operator '/' is defined by earlier milestones as real division, "
-                    "but milestone 4 does not define a real-division OPR code",
-                    node.location
-                );
-                return;
-            }
 
             if (op == "and") {
                 generateExpression(*binary.left);

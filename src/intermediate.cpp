@@ -161,6 +161,7 @@ std::string operationName(OperationCode operation) {
         case OperationCode::LEQ: return "LEQ";
         case OperationCode::WRT: return "WRT";
         case OperationCode::WRTLN: return "WRTLN";
+        case OperationCode::RDIV: return "RDIV";
     }
 
     return "UNKNOWN";

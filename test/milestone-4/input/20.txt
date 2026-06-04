@@ -1,0 +1,11 @@
+program RealDivisionByZero;
+
+var
+    numerator: real;
+    denominator: integer;
+
+begin
+    numerator := 4.0;
+    denominator := 0;
+    writeln(numerator / denominator);
+end.

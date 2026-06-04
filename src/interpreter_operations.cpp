@@ -64,12 +64,13 @@ bool StackMachineInterpreter::executeOperation(OperationCode operation) {
             }
             break;
         }
-        // ADD (2), SUB (3), MUL (4), DIV (5), MOD (6)
+        // ADD (2), SUB (3), MUL (4), DIV (5), MOD (6), RDIV (15)
         case OperationCode::ADD:
         case OperationCode::SUB:
         case OperationCode::MUL:
         case OperationCode::DIV:
         case OperationCode::MOD:
+        case OperationCode::RDIV:
             return executeBinaryNumeric(operation);
         // EQL (7), NEQ (8), LSS (9), GEQ (10), GTR (11), LEQ (12)
         case OperationCode::EQL:
@@ -193,6 +194,15 @@ bool StackMachineInterpreter::executeBinaryNumeric(OperationCode operation) {
                 return true;
             }
             push(RuntimeValue::integer(ia % ib));
+            break;
+        }
+        case OperationCode::RDIV: {
+            if (vb == 0.0) {
+                runtimeError("division by zero (/)");
+                return false;
+            }
+
+            push(RuntimeValue::real(va / vb));
             break;
         }
         default:

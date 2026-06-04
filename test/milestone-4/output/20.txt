@@ -1,0 +1,25 @@
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Intermediate Code:
+0 INT 0 5
+1 LIT 0 4
+2 STO 0 3
+3 LIT 0 0
+4 STO 0 4
+5 LOD 0 3
+6 LOD 0 4
+7 OPR 0 15
+8 OPR 0 14
+9 RET 0 0
+
+Codegen diagnostics:
+No code generation errors.
+
+Program Output:
+<no output>
+
+Runtime diagnostics:
+Runtime error at instruction 7: division by zero (/)
+
+Status: FAILED
