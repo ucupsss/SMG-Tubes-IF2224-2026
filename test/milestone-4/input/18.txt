@@ -1,0 +1,16 @@
+program OrdinalArrayIndex;
+
+type
+    LetterRange == 'a'..'c';
+    LetterMap == array[LetterRange] of integer;
+
+var
+    table: LetterMap;
+    key: char;
+
+begin
+    key := 'b';
+    table['a'] := 4;
+    table[key] := table['a'] + 1;
+    writeln('ordinal ', table['b']);
+end.

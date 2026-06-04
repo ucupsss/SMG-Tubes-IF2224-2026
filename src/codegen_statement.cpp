@@ -96,16 +96,6 @@ void CodeGenerator::generateAssignment(const AssignNode& node) {
         return;
     }
 
-    if (node.target->kind == ASTNodeKind::ArrayAccess) {
-        diagnostic("array assignment code generation is not implemented yet", node.target->location);
-        return;
-    }
-
-    if (node.target->kind == ASTNodeKind::RecordAccess) {
-        diagnostic("record assignment code generation is not implemented yet", node.target->location);
-        return;
-    }
-
     const size_t diagnosticCount = result.diagnostics.size();
     generateExpression(*node.value);
     if (result.diagnostics.size() != diagnosticCount) {
@@ -116,14 +106,24 @@ void CodeGenerator::generateAssignment(const AssignNode& node) {
 }
 
 bool CodeGenerator::emitStoreAddressable(const ExpressionNode& node) {
-    if (node.kind == ASTNodeKind::ArrayAccess) {
-        diagnostic("array access code generation is not implemented yet", node.location);
-        return false;
-    }
+    if (node.kind == ASTNodeKind::ArrayAccess ||
+        node.kind == ASTNodeKind::RecordAccess) {
+        const TypeInfo targetType = expressionTypeInfo(node);
+        if (isStructuredType(targetType)) {
+            diagnostic("structured assignment is not implemented yet", node.location);
+            return false;
+        }
 
-    if (node.kind == ASTNodeKind::RecordAccess) {
-        diagnostic("record access code generation is not implemented yet", node.location);
-        return false;
+        const size_t diagnosticCount = result.diagnostics.size();
+        emitAddressAddressable(node);
+        if (result.diagnostics.size() != diagnosticCount) {
+            return false;
+        }
+
+        Instruction instruction;
+        instruction.opcode = OpCode::STI;
+        emit(instruction);
+        return true;
     }
 
     if (node.kind != ASTNodeKind::Var) {
@@ -143,6 +143,11 @@ bool CodeGenerator::emitStoreAddressable(const ExpressionNode& node) {
             diagnostic("identifier '" + variable.name + "' is not a variable", node.location);
             return false;
         }
+    }
+
+    if (isStructuredType(entry->typeInfo)) {
+        diagnostic("structured assignment is not implemented yet", node.location);
+        return false;
     }
 
     Instruction instruction;

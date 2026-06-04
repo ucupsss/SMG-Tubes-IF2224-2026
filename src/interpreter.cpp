@@ -119,6 +119,25 @@ void StackMachineInterpreter::store(int level, int address, RuntimeValue value, 
     memory[static_cast<size_t>(absoluteAddress)] = std::move(value);
 }
 
+int StackMachineInterpreter::popAddress(const std::string& instructionName) {
+    RuntimeValue address = pop();
+    if (result.halted) return 0;
+
+    if (address.kind != RuntimeValueKind::Integer) {
+        runtimeError(instructionName + ": address on stack is not an integer");
+        return 0;
+    }
+
+    if (address.integerValue < 0 || address.integerValue >= static_cast<int>(memory.size())) {
+        runtimeError(instructionName + ": out-of-bounds address " +
+                     std::to_string(address.integerValue) +
+                     " (ukuran memori: " + std::to_string(memory.size()) + ")");
+        return 0;
+    }
+
+    return address.integerValue;
+}
+
 const RoutineMetadata* StackMachineInterpreter::findRoutine(
     const IntermediateProgram& program,
     int address
@@ -173,11 +192,27 @@ bool StackMachineInterpreter::executeInstruction(
             push(RuntimeValue::integer(absoluteAddress));
             break;
         }
+        // LDI
+        case OpCode::LDI: {
+            const int absoluteAddress = popAddress("LDI");
+            if (result.halted) return false;
+            push(memory[static_cast<size_t>(absoluteAddress)]);
+            break;
+        }
         // STO a
         case OpCode::STO: {
             RuntimeValue value = pop();
             if (result.halted) return false;
             store(instruction.level, instruction.operand, std::move(value), instruction.indirect);
+            break;
+        }
+        // STI
+        case OpCode::STI: {
+            const int absoluteAddress = popAddress("STI");
+            if (result.halted) return false;
+            RuntimeValue value = pop();
+            if (result.halted) return false;
+            memory[static_cast<size_t>(absoluteAddress)] = std::move(value);
             break;
         }
         // JMP l

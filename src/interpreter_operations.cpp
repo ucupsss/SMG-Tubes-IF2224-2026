@@ -6,13 +6,35 @@
 namespace {
 
 bool isNumericKind(RuntimeValueKind kind) {
-    return kind == RuntimeValueKind::Integer || kind == RuntimeValueKind::Real;
+    return kind == RuntimeValueKind::Integer ||
+           kind == RuntimeValueKind::Real ||
+           kind == RuntimeValueKind::Boolean ||
+           kind == RuntimeValueKind::Char;
+}
+
+bool isIntegerLikeKind(RuntimeValueKind kind) {
+    return kind == RuntimeValueKind::Integer ||
+           kind == RuntimeValueKind::Boolean ||
+           kind == RuntimeValueKind::Char;
+}
+
+int integerLikeValue(const RuntimeValue& value) {
+    switch (value.kind) {
+        case RuntimeValueKind::Integer:
+            return value.integerValue;
+        case RuntimeValueKind::Boolean:
+            return value.booleanValue ? 1 : 0;
+        case RuntimeValueKind::Char:
+            return static_cast<unsigned char>(value.charValue);
+        default:
+            return 0;
+    }
 }
 
 double numericValue(const RuntimeValue& value) {
-    return value.kind == RuntimeValueKind::Integer
-        ? static_cast<double>(value.integerValue)
-        : value.realValue;
+    return value.kind == RuntimeValueKind::Real
+        ? value.realValue
+        : static_cast<double>(integerLikeValue(value));
 }
 
 bool fitsInteger(long long value) {
@@ -88,15 +110,17 @@ bool StackMachineInterpreter::executeBinaryNumeric(OperationCode operation) {
         return false;
     }
 
-    const bool bothInt = (a.kind == RuntimeValueKind::Integer && b.kind == RuntimeValueKind::Integer);
+    const bool bothInt = isIntegerLikeKind(a.kind) && isIntegerLikeKind(b.kind);
     const double va = numericValue(a);
     const double vb = numericValue(b);
+    const int ia = integerLikeValue(a);
+    const int ib = integerLikeValue(b);
 
     switch (operation) {
         case OperationCode::ADD: {
             if (bothInt) {
                 const long long value =
-                    static_cast<long long>(a.integerValue) + static_cast<long long>(b.integerValue);
+                    static_cast<long long>(ia) + static_cast<long long>(ib);
                 if (!fitsInteger(value)) {
                     runtimeError("ADD: integer overflow");
                     return false;
@@ -110,7 +134,7 @@ bool StackMachineInterpreter::executeBinaryNumeric(OperationCode operation) {
         case OperationCode::SUB: {
             if (bothInt) {
                 const long long value =
-                    static_cast<long long>(a.integerValue) - static_cast<long long>(b.integerValue);
+                    static_cast<long long>(ia) - static_cast<long long>(ib);
                 if (!fitsInteger(value)) {
                     runtimeError("SUB: integer overflow");
                     return false;
@@ -124,7 +148,7 @@ bool StackMachineInterpreter::executeBinaryNumeric(OperationCode operation) {
         case OperationCode::MUL: {
             if (bothInt) {
                 const long long value =
-                    static_cast<long long>(a.integerValue) * static_cast<long long>(b.integerValue);
+                    static_cast<long long>(ia) * static_cast<long long>(ib);
                 if (!fitsInteger(value)) {
                     runtimeError("MUL: integer overflow");
                     return false;
@@ -137,15 +161,15 @@ bool StackMachineInterpreter::executeBinaryNumeric(OperationCode operation) {
         }
         case OperationCode::DIV: {
             if (bothInt) {
-                if (b.integerValue == 0) {
+                if (ib == 0) {
                     runtimeError("division by zero (div)");
                     return false;
                 }
-                if (a.integerValue == std::numeric_limits<int>::min() && b.integerValue == -1) {
+                if (ia == std::numeric_limits<int>::min() && ib == -1) {
                     runtimeError("DIV: integer overflow");
                     return false;
                 }
-                push(RuntimeValue::integer(a.integerValue / b.integerValue));
+                push(RuntimeValue::integer(ia / ib));
             } else {
                 if (vb == 0.0) {
                     runtimeError("division by zero (/)");
@@ -160,15 +184,15 @@ bool StackMachineInterpreter::executeBinaryNumeric(OperationCode operation) {
                 runtimeError("MOD: kedua operand harus integer");
                 return false;
             }
-            if (b.integerValue == 0) {
+            if (ib == 0) {
                 runtimeError("modulo by zero (mod)");
                 return false;
             }
-            if (a.integerValue == std::numeric_limits<int>::min() && b.integerValue == -1) {
+            if (ia == std::numeric_limits<int>::min() && ib == -1) {
                 push(RuntimeValue::integer(0));
                 return true;
             }
-            push(RuntimeValue::integer(a.integerValue % b.integerValue));
+            push(RuntimeValue::integer(ia % ib));
             break;
         }
         default:

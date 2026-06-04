@@ -33,6 +33,7 @@ private:
     void store(int level, int address, RuntimeValue value, bool indirect);
     int resolveBase(int level);
     int resolveAddress(int level, int address, bool indirect);
+    int popAddress(const std::string& instructionName);
     const RoutineMetadata* findRoutine(const IntermediateProgram& program, int address) const;
 
     bool executeOperation(OperationCode operation);

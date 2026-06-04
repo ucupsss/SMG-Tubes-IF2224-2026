@@ -232,14 +232,24 @@ void CodeGenerator::generateExpression(const ExpressionNode& node) {
 }
 
 bool CodeGenerator::emitLoadAddressable(const ExpressionNode& node) {
-    if (node.kind == ASTNodeKind::ArrayAccess) {
-        diagnostic("array access code generation is not implemented yet", node.location);
-        return false;
-    }
+    if (node.kind == ASTNodeKind::ArrayAccess ||
+        node.kind == ASTNodeKind::RecordAccess) {
+        const TypeInfo valueType = expressionTypeInfo(node);
+        if (isStructuredType(valueType)) {
+            diagnostic("structured value load is not implemented yet", node.location);
+            return false;
+        }
 
-    if (node.kind == ASTNodeKind::RecordAccess) {
-        diagnostic("record access code generation is not implemented yet", node.location);
-        return false;
+        const size_t diagnosticCount = result.diagnostics.size();
+        emitAddressAddressable(node);
+        if (result.diagnostics.size() != diagnosticCount) {
+            return false;
+        }
+
+        Instruction instruction;
+        instruction.opcode = OpCode::LDI;
+        emit(instruction);
+        return true;
     }
 
     if (node.kind != ASTNodeKind::Var) {
@@ -264,6 +274,11 @@ bool CodeGenerator::emitLoadAddressable(const ExpressionNode& node) {
     }
 
     if (isCurrentFunctionResult(*entry)) {
+        if (isStructuredType(entry->typeInfo)) {
+            diagnostic("structured function result load is not implemented yet", node.location);
+            return false;
+        }
+
         Instruction instruction;
         instruction.opcode = OpCode::LOD;
         instruction.level = 0;
@@ -274,6 +289,11 @@ bool CodeGenerator::emitLoadAddressable(const ExpressionNode& node) {
 
     if (entry->obj != OBJ_VARIABLE) {
         diagnostic("identifier '" + variable.name + "' is not a value", node.location);
+        return false;
+    }
+
+    if (isStructuredType(entry->typeInfo)) {
+        diagnostic("structured value load is not implemented yet", node.location);
         return false;
     }
 
@@ -288,13 +308,87 @@ bool CodeGenerator::emitLoadAddressable(const ExpressionNode& node) {
 
 bool CodeGenerator::emitAddressAddressable(const ExpressionNode& node) {
     if (node.kind == ASTNodeKind::ArrayAccess) {
-        diagnostic("array address code generation is not implemented yet", node.location);
-        return false;
+        const auto& access = static_cast<const ArrayAccessNode&>(node);
+        if (!access.array) {
+            diagnostic("array access is missing its base expression", node.location);
+            return false;
+        }
+
+        TypeInfo currentType = expressionTypeInfo(*access.array);
+        const size_t diagnosticCount = result.diagnostics.size();
+        emitAddressAddressable(*access.array);
+        if (result.diagnostics.size() != diagnosticCount) {
+            return false;
+        }
+
+        for (const auto& index : access.indices) {
+            if (!index) {
+                diagnostic("array access has an empty index expression", node.location);
+                return false;
+            }
+
+            if (currentType.code != TYPE_ARRAY ||
+                currentType.ref <= 0 ||
+                currentType.ref >= static_cast<int>(symbolTable->atab().size())) {
+                diagnostic("subscripted expression is not an array", node.location);
+                return false;
+            }
+
+            const ATabEntry& arrayEntry = symbolTable->atabAt(currentType.ref);
+            generateExpression(*index);
+            if (result.diagnostics.size() != diagnosticCount) {
+                return false;
+            }
+
+            if (arrayEntry.low != 0) {
+                emit(makeLiteral(RuntimeValue::integer(arrayEntry.low)));
+                emit(makeOperation(OperationCode::SUB));
+            }
+
+            if (arrayEntry.elsz != 1) {
+                emit(makeLiteral(RuntimeValue::integer(arrayEntry.elsz)));
+                emit(makeOperation(OperationCode::MUL));
+            }
+
+            emit(makeOperation(OperationCode::ADD));
+            currentType = arrayElementType(arrayEntry);
+        }
+
+        return true;
     }
 
     if (node.kind == ASTNodeKind::RecordAccess) {
-        diagnostic("record address code generation is not implemented yet", node.location);
-        return false;
+        const auto& access = static_cast<const RecordAccessNode&>(node);
+        if (!access.record) {
+            diagnostic("record access is missing its base expression", node.location);
+            return false;
+        }
+
+        TypeInfo recordType = expressionTypeInfo(*access.record);
+        if (recordType.code != TYPE_RECORD || recordType.ref <= 0) {
+            diagnostic("field access requires a record operand", node.location);
+            return false;
+        }
+
+        const int fieldIndex = symbolTable ? symbolTable->lookupTab(access.fieldName, recordType.ref) : 0;
+        if (fieldIndex <= 0) {
+            diagnostic("record type does not contain field '" + access.fieldName + "'", node.location);
+            return false;
+        }
+
+        const size_t diagnosticCount = result.diagnostics.size();
+        emitAddressAddressable(*access.record);
+        if (result.diagnostics.size() != diagnosticCount) {
+            return false;
+        }
+
+        const TabEntry& field = symbolTable->tabAt(fieldIndex);
+        if (field.adr != 0) {
+            emit(makeLiteral(RuntimeValue::integer(field.adr)));
+            emit(makeOperation(OperationCode::ADD));
+        }
+
+        return true;
     }
 
     if (node.kind != ASTNodeKind::Var) {

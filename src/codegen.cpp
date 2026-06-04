@@ -253,6 +253,95 @@ int CodeGenerator::routineAddress(int tabIndex) const {
     return routineAddressesByTabIndex[static_cast<size_t>(tabIndex)];
 }
 
+TypeInfo CodeGenerator::arrayElementType(const ATabEntry& entry) const {
+    TypeInfo type;
+    type.code = entry.etyp;
+    type.baseType = entry.etyp;
+    type.ref = entry.eref;
+    type.name = symbolTable ? symbolTable->typeName(type) : "";
+
+    return type;
+}
+
+bool CodeGenerator::isStructuredType(const TypeInfo& type) const {
+    return type.code == TYPE_ARRAY || type.code == TYPE_RECORD;
+}
+
+TypeInfo CodeGenerator::expressionTypeInfo(const ExpressionNode& node) const {
+    if (!symbolTable) {
+        return {};
+    }
+
+    switch (node.kind) {
+        case ASTNodeKind::Var: {
+            if (node.tabIndex > 0 && node.tabIndex < static_cast<int>(symbolTable->tab().size())) {
+                return symbolTable->tabAt(node.tabIndex).typeInfo;
+            }
+
+            const auto& variable = static_cast<const VarNode&>(node);
+            const int index = symbolTable->lookupTab(variable.name);
+            if (index > 0) {
+                return symbolTable->tabAt(index).typeInfo;
+            }
+            break;
+        }
+        case ASTNodeKind::ArrayAccess: {
+            const auto& access = static_cast<const ArrayAccessNode&>(node);
+            if (!access.array) {
+                break;
+            }
+
+            TypeInfo currentType = expressionTypeInfo(*access.array);
+            for (size_t i = 0; i < access.indices.size(); ++i) {
+                if (currentType.code != TYPE_ARRAY ||
+                    currentType.ref <= 0 ||
+                    currentType.ref >= static_cast<int>(symbolTable->atab().size())) {
+                    return {};
+                }
+
+                currentType = arrayElementType(symbolTable->atabAt(currentType.ref));
+            }
+
+            return currentType;
+        }
+        case ASTNodeKind::RecordAccess: {
+            const auto& access = static_cast<const RecordAccessNode&>(node);
+            if (!access.record) {
+                break;
+            }
+
+            TypeInfo recordType = expressionTypeInfo(*access.record);
+            if (recordType.code != TYPE_RECORD || recordType.ref <= 0) {
+                break;
+            }
+
+            const int fieldIndex = symbolTable->lookupTab(access.fieldName, recordType.ref);
+            if (fieldIndex > 0) {
+                return symbolTable->tabAt(fieldIndex).typeInfo;
+            }
+            break;
+        }
+        case ASTNodeKind::IntLiteral:
+            return symbolTable->tabAt(symbolTable->lookupTab("Integer")).typeInfo;
+        case ASTNodeKind::RealLiteral:
+            return symbolTable->tabAt(symbolTable->lookupTab("Real")).typeInfo;
+        case ASTNodeKind::CharLiteral:
+            return symbolTable->tabAt(symbolTable->lookupTab("Char")).typeInfo;
+        case ASTNodeKind::StringLiteral:
+            return symbolTable->tabAt(symbolTable->lookupTab("String")).typeInfo;
+        case ASTNodeKind::BoolLiteral:
+            return symbolTable->tabAt(symbolTable->lookupTab("Boolean")).typeInfo;
+        default:
+            break;
+    }
+
+    TypeInfo fallback;
+    fallback.code = node.inferredType;
+    fallback.baseType = node.inferredType;
+    fallback.name = symbolTable->typeName(fallback);
+    return fallback;
+}
+
 std::vector<int> CodeGenerator::routineParameterIndices(int blockIndex) const {
     std::vector<int> indices;
     if (!symbolTable || blockIndex <= 0 || blockIndex >= static_cast<int>(symbolTable->btab().size())) {

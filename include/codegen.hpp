@@ -51,6 +51,9 @@ private:
     bool emitStoreAddressable(const ExpressionNode& node);
     bool emitAddressAddressable(const ExpressionNode& node);
     bool emitConstant(const TabEntry& entry);
+    TypeInfo expressionTypeInfo(const ExpressionNode& node) const;
+    TypeInfo arrayElementType(const ATabEntry& entry) const;
+    bool isStructuredType(const TypeInfo& type) const;
 
     int emit(Instruction instruction);
     void patchOperand(int instructionIndex, int operand);

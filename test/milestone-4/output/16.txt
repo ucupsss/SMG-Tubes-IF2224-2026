@@ -1,0 +1,75 @@
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Intermediate Code:
+0 INT 0 7
+1 LIT 0 2
+2 LDA 0 3
+3 LIT 0 1
+4 LIT 0 1
+5 OPR 0 3
+6 LIT 0 2
+7 OPR 0 4
+8 OPR 0 2
+9 STI 0 0
+10 LIT 0 5
+11 LDA 0 3
+12 LIT 0 1
+13 LIT 0 1
+14 OPR 0 3
+15 LIT 0 2
+16 OPR 0 4
+17 OPR 0 2
+18 LIT 0 1
+19 OPR 0 2
+20 STI 0 0
+21 LDA 0 3
+22 LIT 0 1
+23 LIT 0 1
+24 OPR 0 3
+25 LIT 0 2
+26 OPR 0 4
+27 OPR 0 2
+28 LDI 0 0
+29 LDA 0 3
+30 LIT 0 1
+31 LIT 0 1
+32 OPR 0 3
+33 LIT 0 2
+34 OPR 0 4
+35 OPR 0 2
+36 LIT 0 1
+37 OPR 0 2
+38 LDI 0 0
+39 OPR 0 2
+40 LDA 0 3
+41 LIT 0 2
+42 LIT 0 1
+43 OPR 0 3
+44 LIT 0 2
+45 OPR 0 4
+46 OPR 0 2
+47 STI 0 0
+48 LIT 0 "point "
+49 OPR 0 13
+50 LDA 0 3
+51 LIT 0 2
+52 LIT 0 1
+53 OPR 0 3
+54 LIT 0 2
+55 OPR 0 4
+56 OPR 0 2
+57 LDI 0 0
+58 OPR 0 14
+59 RET 0 0
+
+Codegen diagnostics:
+No code generation errors.
+
+Program Output:
+point 7
+
+Runtime diagnostics:
+No runtime errors.
+
+Status: SUCCESS

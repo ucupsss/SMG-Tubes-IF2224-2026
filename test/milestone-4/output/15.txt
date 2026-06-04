@@ -1,0 +1,35 @@
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Intermediate Code:
+0 INT 0 5
+1 LIT 0 4
+2 LDA 0 3
+3 STI 0 0
+4 LDA 0 3
+5 LDI 0 0
+6 LIT 0 6
+7 OPR 0 2
+8 LDA 0 3
+9 LIT 0 1
+10 OPR 0 2
+11 STI 0 0
+12 LIT 0 "record "
+13 OPR 0 13
+14 LDA 0 3
+15 LIT 0 1
+16 OPR 0 2
+17 LDI 0 0
+18 OPR 0 14
+19 RET 0 0
+
+Codegen diagnostics:
+No code generation errors.
+
+Program Output:
+record 10
+
+Runtime diagnostics:
+No runtime errors.
+
+Status: SUCCESS
