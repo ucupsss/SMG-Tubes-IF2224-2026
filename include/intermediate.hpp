@@ -70,8 +70,17 @@ struct Instruction {
     std::string comment;
 };
 
+struct RoutineMetadata {
+    int address = 0;
+    int parameterCount = 0;
+    int frameSize = 0;
+    bool returnsValue = false;
+    int returnValueOffset = 0;
+};
+
 struct IntermediateProgram {
     std::vector<Instruction> instructions;
+    std::vector<RoutineMetadata> routines;
 };
 
 std::string opcodeName(OpCode opcode);

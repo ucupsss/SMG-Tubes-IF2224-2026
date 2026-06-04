@@ -55,11 +55,21 @@ private:
     void patchOperand(int instructionIndex, int operand);
     int nextAddress() const;
 
+    int lexicalLevelOffset(const TabEntry& entry) const;
     int variableAddress(const TabEntry& entry);
+    bool isCurrentFunctionResult(const TabEntry& entry) const;
+    void registerRoutine(int tabIndex, int address, const BTabEntry& block, bool returnsValue);
+    int routineAddress(int tabIndex) const;
+    bool hasByReferenceParameter(int blockIndex) const;
     void diagnostic(const std::string& message, const SourceLocation& location = {});
 
     const SymbolTable* symbolTable = nullptr;
     CodeGenerationResult result;
+    std::vector<int> routineAddressesByTabIndex;
+    int currentBlockIndex = 0;
+    int currentLexLevel = 0;
+    int currentFunctionTabIndex = 0;
+    int currentFunctionReturnOffset = 0;
 };
 
 #endif

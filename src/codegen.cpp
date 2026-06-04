@@ -24,6 +24,11 @@ CodeGenerationResult CodeGenerator::generate(const ProgramNode& root, const Symb
 void CodeGenerator::reset(const SymbolTable& symbols) {
     symbolTable = &symbols;
     result = {};
+    routineAddressesByTabIndex.assign(symbols.tab().size(), -1);
+    currentBlockIndex = 0;
+    currentLexLevel = 0;
+    currentFunctionTabIndex = 0;
+    currentFunctionReturnOffset = 0;
 }
 
 void CodeGenerator::generateProgram(const ProgramNode& node) {
@@ -44,10 +49,25 @@ void CodeGenerator::generateProgram(const ProgramNode& node) {
         variableCount = 0;
     }
 
-    Instruction init;
-    init.opcode = OpCode::INT;
-    init.operand = frameHeaderSize + variableCount;
-    emit(init);
+    int mainJump = -1;
+    bool hasRoutineDeclarations = false;
+    for (const auto& declaration : node.declarations) {
+        if (!declaration) {
+            continue;
+        }
+
+        if (declaration->kind == ASTNodeKind::ProcDecl ||
+            declaration->kind == ASTNodeKind::FuncDecl) {
+            hasRoutineDeclarations = true;
+            break;
+        }
+    }
+
+    if (hasRoutineDeclarations) {
+        Instruction jump;
+        jump.opcode = OpCode::JMP;
+        mainJump = emit(jump);
+    }
 
     for (const auto& declaration : node.declarations) {
         if (!declaration) {
@@ -56,6 +76,20 @@ void CodeGenerator::generateProgram(const ProgramNode& node) {
 
         generateDeclaration(*declaration);
     }
+
+    if (mainJump >= 0) {
+        patchOperand(mainJump, nextAddress());
+    }
+
+    currentBlockIndex = node.blockIndex;
+    currentLexLevel = 0;
+    currentFunctionTabIndex = 0;
+    currentFunctionReturnOffset = 0;
+
+    Instruction init;
+    init.opcode = OpCode::INT;
+    init.operand = frameHeaderSize + variableCount;
+    emit(init);
 
     if (node.body) {
         generateBlock(*node.body);
@@ -97,7 +131,31 @@ int CodeGenerator::nextAddress() const {
     return static_cast<int>(result.program.instructions.size());
 }
 
+int CodeGenerator::lexicalLevelOffset(const TabEntry& entry) const {
+    if (entry.lev > currentLexLevel) {
+        return 0;
+    }
+
+    return currentLexLevel - entry.lev;
+}
+
+bool CodeGenerator::isCurrentFunctionResult(const TabEntry& entry) const {
+    return entry.obj == OBJ_FUNCTION &&
+           currentFunctionTabIndex > 0 &&
+           entry.ref == currentBlockIndex &&
+           entry.identifier == symbolTable->tabAt(currentFunctionTabIndex).identifier;
+}
+
 int CodeGenerator::variableAddress(const TabEntry& entry) {
+    if (!symbolTable) {
+        diagnostic("missing symbol table for variable address calculation");
+        return 0;
+    }
+
+    if (isCurrentFunctionResult(entry)) {
+        return currentFunctionReturnOffset;
+    }
+
     if (entry.obj != OBJ_VARIABLE) {
         diagnostic("identifier '" + entry.identifier + "' is not stored as a variable");
         return 0;
@@ -112,15 +170,88 @@ int CodeGenerator::variableAddress(const TabEntry& entry) {
         diagnostic(
             "by-reference parameter addressing is not implemented yet for '" + entry.identifier + "'"
         );
+        return 0;
     }
 
-    if (entry.lev != 0) {
+    if (entry.lev == 0) {
+        return frameHeaderSize + entry.adr;
+    }
+
+    if (entry.lev != currentLexLevel) {
         diagnostic(
             "non-global variable addressing is not implemented yet for '" + entry.identifier + "'"
         );
+        return 0;
     }
 
-    return frameHeaderSize + entry.adr;
+    if (currentBlockIndex < 0 || currentBlockIndex >= static_cast<int>(symbolTable->btab().size())) {
+        diagnostic("current block index is out of range while addressing '" + entry.identifier + "'");
+        return 0;
+    }
+
+    const BTabEntry& block = symbolTable->btabAt(currentBlockIndex);
+    int parameterIndex = block.lpar;
+    while (parameterIndex != 0) {
+        const TabEntry& parameter = symbolTable->tabAt(parameterIndex);
+        if (parameter.identifier == entry.identifier &&
+            parameter.lev == entry.lev &&
+            parameter.adr == entry.adr) {
+            return frameHeaderSize + entry.adr;
+        }
+
+        parameterIndex = parameter.link;
+    }
+
+    return frameHeaderSize + block.psze + entry.adr;
+}
+
+void CodeGenerator::registerRoutine(
+    int tabIndex,
+    int address,
+    const BTabEntry& block,
+    bool returnsValue
+) {
+    if (tabIndex <= 0 || tabIndex >= static_cast<int>(routineAddressesByTabIndex.size())) {
+        diagnostic("cannot register routine with invalid tab index " + std::to_string(tabIndex));
+        return;
+    }
+
+    const int returnValueOffset = frameHeaderSize + block.psze + block.vsze;
+    RoutineMetadata metadata;
+    metadata.address = address;
+    metadata.parameterCount = block.psze;
+    metadata.frameSize = frameHeaderSize + block.psze + block.vsze + (returnsValue ? 1 : 0);
+    metadata.returnsValue = returnsValue;
+    metadata.returnValueOffset = returnsValue ? returnValueOffset : 0;
+
+    routineAddressesByTabIndex[static_cast<size_t>(tabIndex)] = address;
+    result.program.routines.push_back(metadata);
+}
+
+int CodeGenerator::routineAddress(int tabIndex) const {
+    if (tabIndex <= 0 || tabIndex >= static_cast<int>(routineAddressesByTabIndex.size())) {
+        return -1;
+    }
+
+    return routineAddressesByTabIndex[static_cast<size_t>(tabIndex)];
+}
+
+bool CodeGenerator::hasByReferenceParameter(int blockIndex) const {
+    if (!symbolTable || blockIndex <= 0 || blockIndex >= static_cast<int>(symbolTable->btab().size())) {
+        return false;
+    }
+
+    int parameterIndex = symbolTable->btabAt(blockIndex).lpar;
+    while (parameterIndex != 0) {
+        const TabEntry& parameter = symbolTable->tabAt(parameterIndex);
+        if (parameter.nrm == 0) {
+            return true;
+        }
+
+        parameterIndex = parameter.link;
+    }
+
+    return false;
 }
 
 void CodeGenerator::diagnostic(const std::string& message, const SourceLocation& location) {

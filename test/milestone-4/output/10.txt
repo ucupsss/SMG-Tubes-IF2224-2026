@@ -1,0 +1,37 @@
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Intermediate Code:
+0 JMP 0 12
+1 INT 0 6
+2 LOD 0 3
+3 LOD 0 4
+4 OPR 0 11
+5 JPC 0 9
+6 LOD 0 3
+7 STO 0 5
+8 JMP 0 11
+9 LOD 0 4
+10 STO 0 5
+11 RET 0 0
+12 INT 0 4
+13 LIT 0 3
+14 LIT 0 5
+15 CAL 0 1
+16 STO 0 3
+17 LIT 0 "max "
+18 OPR 0 13
+19 LOD 0 3
+20 OPR 0 14
+21 RET 0 0
+
+Codegen diagnostics:
+No code generation errors.
+
+Program Output:
+max 5
+
+Runtime diagnostics:
+No runtime errors.
+
+Status: SUCCESS

@@ -171,9 +171,43 @@ void CodeGenerator::generateExpression(const ExpressionNode& node) {
             emit(makeOperation(operation));
             break;
         }
-        case ASTNodeKind::FuncCall:
-            diagnostic("function call expressions are not implemented yet", node.location);
+        case ASTNodeKind::FuncCall: {
+            const auto& call = static_cast<const FuncCallNode&>(node);
+            const TabEntry* entry = entryAt(symbolTable, node.tabIndex);
+            int functionIndex = node.tabIndex;
+
+            if (!entry && symbolTable) {
+                functionIndex = symbolTable->lookupTab(call.name);
+                entry = entryAt(symbolTable, functionIndex);
+            }
+
+            if (!entry || entry->obj != OBJ_FUNCTION) {
+                diagnostic("unknown function '" + call.name + "'", node.location);
+                return;
+            }
+
+            const int address = routineAddress(functionIndex);
+            if (address < 0) {
+                diagnostic("function '" + call.name + "' does not have a generated entry address", node.location);
+                return;
+            }
+
+            for (const auto& argument : call.arguments) {
+                if (!argument) {
+                    diagnostic("function '" + call.name + "' has an empty argument", node.location);
+                    return;
+                }
+
+                generateExpression(*argument);
+            }
+
+            Instruction instruction;
+            instruction.opcode = OpCode::CAL;
+            instruction.level = lexicalLevelOffset(*entry);
+            instruction.operand = address;
+            emit(instruction);
             break;
+        }
         default:
             diagnostic("unsupported expression node", node.location);
             break;
@@ -212,6 +246,15 @@ bool CodeGenerator::emitLoadAddressable(const ExpressionNode& node) {
         return emitConstant(*entry);
     }
 
+    if (isCurrentFunctionResult(*entry)) {
+        Instruction instruction;
+        instruction.opcode = OpCode::LOD;
+        instruction.level = 0;
+        instruction.operand = variableAddress(*entry);
+        emit(instruction);
+        return true;
+    }
+
     if (entry->obj != OBJ_VARIABLE) {
         diagnostic("identifier '" + variable.name + "' is not a value", node.location);
         return false;
@@ -219,6 +262,7 @@ bool CodeGenerator::emitLoadAddressable(const ExpressionNode& node) {
 
     Instruction instruction;
     instruction.opcode = OpCode::LOD;
+    instruction.level = lexicalLevelOffset(*entry);
     instruction.operand = variableAddress(*entry);
     emit(instruction);
     return true;

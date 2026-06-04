@@ -139,12 +139,15 @@ bool CodeGenerator::emitStoreAddressable(const ExpressionNode& node) {
     }
 
     if (entry->obj != OBJ_VARIABLE) {
-        diagnostic("identifier '" + variable.name + "' is not a variable", node.location);
-        return false;
+        if (!isCurrentFunctionResult(*entry)) {
+            diagnostic("identifier '" + variable.name + "' is not a variable", node.location);
+            return false;
+        }
     }
 
     Instruction instruction;
     instruction.opcode = OpCode::STO;
+    instruction.level = isCurrentFunctionResult(*entry) ? 0 : lexicalLevelOffset(*entry);
     instruction.operand = variableAddress(*entry);
     emit(instruction);
     return true;
@@ -249,6 +252,7 @@ void CodeGenerator::generateFor(const ForNode& node) {
 
     Instruction initStore;
     initStore.opcode = OpCode::STO;
+    initStore.level = lexicalLevelOffset(control);
     initStore.operand = variableAddress(control);
     emit(initStore);
 
@@ -256,6 +260,7 @@ void CodeGenerator::generateFor(const ForNode& node) {
 
     Instruction loadControl;
     loadControl.opcode = OpCode::LOD;
+    loadControl.level = lexicalLevelOffset(control);
     loadControl.operand = variableAddress(control);
     emit(loadControl);
 
@@ -273,6 +278,7 @@ void CodeGenerator::generateFor(const ForNode& node) {
     generateBlock(*node.body);
 
     loadControl.operand = variableAddress(control);
+    loadControl.level = lexicalLevelOffset(control);
     emit(loadControl);
     emit(makeLiteral(RuntimeValue::integer(1)));
     emit(makeOperation(
@@ -368,5 +374,44 @@ void CodeGenerator::generateProcedureCall(const ProcCallNode& node) {
         return;
     }
 
-    diagnostic("procedure calls for user-defined routines are not implemented yet", node.location);
+    const int procedureIndex = symbolTable ? symbolTable->lookupTab(node.name) : node.tabIndex;
+    if (procedureIndex <= 0 || !symbolTable) {
+        diagnostic("unknown procedure '" + node.name + "'", node.location);
+        return;
+    }
+
+    const TabEntry& entry = symbolTable->tabAt(procedureIndex);
+    if (entry.obj != OBJ_PROCEDURE) {
+        diagnostic("identifier '" + node.name + "' is not a procedure", node.location);
+        return;
+    }
+
+    const int address = routineAddress(procedureIndex);
+    if (address < 0) {
+        diagnostic("procedure '" + node.name + "' does not have a generated entry address", node.location);
+        return;
+    }
+
+    if (hasByReferenceParameter(entry.ref)) {
+        diagnostic(
+            "procedure '" + node.name + "' has by-reference parameter(s), which are not implemented yet",
+            node.location
+        );
+        return;
+    }
+
+    for (const auto& argument : node.arguments) {
+        if (!argument) {
+            diagnostic("procedure '" + node.name + "' has an empty argument", node.location);
+            return;
+        }
+
+        generateExpression(*argument);
+    }
+
+    Instruction instruction;
+    instruction.opcode = OpCode::CAL;
+    instruction.level = lexicalLevelOffset(entry);
+    instruction.operand = address;
+    emit(instruction);
 }

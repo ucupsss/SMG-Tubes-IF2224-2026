@@ -29,8 +29,10 @@ private:
 
     RuntimeValue pop();
     void push(RuntimeValue value);
-    RuntimeValue load(int address);
-    void store(int address, RuntimeValue value);
+    RuntimeValue load(int level, int address);
+    void store(int level, int address, RuntimeValue value);
+    int resolveBase(int level);
+    const RoutineMetadata* findRoutine(const IntermediateProgram& program, int address) const;
 
     bool executeOperation(OperationCode operation);
     bool executeBinaryNumeric(OperationCode operation);
@@ -40,9 +42,11 @@ private:
 
     std::vector<RuntimeValue> memory;
     std::vector<RuntimeValue> stack;
+    std::vector<int> routineStack;
     std::string currentOutput;
     ExecutionResult result;
     int ip = 0;
+    int base = 0;
 };
 
 #endif
