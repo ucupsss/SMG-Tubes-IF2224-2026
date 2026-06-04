@@ -31,6 +31,12 @@ private:
     void reset(const SymbolTable& symbols);
     void generateProgram(const ProgramNode& node);
     void generateBlock(const BlockNode& node);
+    void generateDeclaration(const DeclarationNode& node);
+    void generateVarDecl(const VarDeclNode& node);
+    void generateConstDecl(const ConstDeclNode& node);
+    void generateTypeDecl(const TypeDeclNode& node);
+    void generateProcDecl(const ProcDeclNode& node);
+    void generateFuncDecl(const FuncDeclNode& node);
     void generateStatement(const StatementNode& node);
     void generateAssignment(const AssignNode& node);
     void generateIf(const IfNode& node);

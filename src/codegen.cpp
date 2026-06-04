@@ -54,13 +54,7 @@ void CodeGenerator::generateProgram(const ProgramNode& node) {
             continue;
         }
 
-        if (declaration->kind == ASTNodeKind::ProcDecl ||
-            declaration->kind == ASTNodeKind::FuncDecl) {
-            diagnostic(
-                "procedure/function code generation is not implemented yet",
-                declaration->location
-            );
-        }
+        generateDeclaration(*declaration);
     }
 
     if (node.body) {
