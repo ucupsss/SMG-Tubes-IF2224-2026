@@ -1,0 +1,43 @@
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Intermediate Code:
+0 JMP 0 22
+1 INT 0 5
+2 JMP 0 13
+3 INT 0 4
+4 LOD 1 4
+5 LOD 0 3
+6 OPR 0 2
+7 STO 1 4
+8 LOD 2 3
+9 LOD 1 4
+10 OPR 0 2
+11 STO 2 3
+12 RET 0 0
+13 LOD 0 3
+14 STO 0 4
+15 LIT 0 2
+16 CAL 0 3
+17 LIT 0 "nested "
+18 OPR 0 13
+19 LOD 1 3
+20 OPR 0 14
+21 RET 0 0
+22 INT 0 4
+23 LIT 0 1
+24 STO 0 3
+25 LIT 0 3
+26 CAL 0 1
+27 RET 0 0
+
+Codegen diagnostics:
+No code generation errors.
+
+Program Output:
+nested 6
+
+Runtime diagnostics:
+No runtime errors.
+
+Status: SUCCESS

@@ -130,6 +130,7 @@ std::string opcodeName(OpCode opcode) {
     switch (opcode) {
         case OpCode::LIT: return "LIT";
         case OpCode::LOD: return "LOD";
+        case OpCode::LDA: return "LDA";
         case OpCode::STO: return "STO";
         case OpCode::CAL: return "CAL";
         case OpCode::INT: return "INT";
@@ -177,6 +178,8 @@ std::string formatInstruction(const Instruction& instruction, int address) {
 
     if (!instruction.comment.empty()) {
         output << " ; " << instruction.comment;
+    } else if (instruction.indirect) {
+        output << " ; indirect";
     }
 
     return output.str();

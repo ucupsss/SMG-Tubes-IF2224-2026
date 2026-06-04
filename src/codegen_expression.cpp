@@ -192,13 +192,30 @@ void CodeGenerator::generateExpression(const ExpressionNode& node) {
                 return;
             }
 
-            for (const auto& argument : call.arguments) {
+            const std::vector<int> parameterIndices = routineParameterIndices(entry->ref);
+            if (parameterIndices.size() != call.arguments.size()) {
+                diagnostic("function '" + call.name + "' argument count does not match metadata", node.location);
+                return;
+            }
+
+            for (size_t i = 0; i < call.arguments.size(); ++i) {
+                const auto& argument = call.arguments[i];
                 if (!argument) {
                     diagnostic("function '" + call.name + "' has an empty argument", node.location);
                     return;
                 }
 
-                generateExpression(*argument);
+                const size_t diagnosticCount = result.diagnostics.size();
+                const TabEntry& parameter = symbolTable->tabAt(parameterIndices[i]);
+                if (parameter.nrm == 0) {
+                    emitAddressAddressable(*argument);
+                } else {
+                    generateExpression(*argument);
+                }
+
+                if (result.diagnostics.size() != diagnosticCount) {
+                    return;
+                }
             }
 
             Instruction instruction;
@@ -264,6 +281,55 @@ bool CodeGenerator::emitLoadAddressable(const ExpressionNode& node) {
     instruction.opcode = OpCode::LOD;
     instruction.level = lexicalLevelOffset(*entry);
     instruction.operand = variableAddress(*entry);
+    instruction.indirect = entry->nrm == 0;
+    emit(instruction);
+    return true;
+}
+
+bool CodeGenerator::emitAddressAddressable(const ExpressionNode& node) {
+    if (node.kind == ASTNodeKind::ArrayAccess) {
+        diagnostic("array address code generation is not implemented yet", node.location);
+        return false;
+    }
+
+    if (node.kind == ASTNodeKind::RecordAccess) {
+        diagnostic("record address code generation is not implemented yet", node.location);
+        return false;
+    }
+
+    if (node.kind != ASTNodeKind::Var) {
+        diagnostic("expression is not addressable", node.location);
+        return false;
+    }
+
+    const auto& variable = static_cast<const VarNode&>(node);
+    const TabEntry* entry = entryAt(symbolTable, node.tabIndex);
+
+    if (!entry && symbolTable) {
+        entry = entryAt(symbolTable, symbolTable->lookupTab(variable.name));
+    }
+
+    if (!entry) {
+        diagnostic("unknown identifier '" + variable.name + "'", node.location);
+        return false;
+    }
+
+    if (entry->obj != OBJ_VARIABLE) {
+        diagnostic("identifier '" + variable.name + "' is not addressable", node.location);
+        return false;
+    }
+
+    Instruction instruction;
+    if (entry->nrm == 0) {
+        instruction.opcode = OpCode::LOD;
+        instruction.level = lexicalLevelOffset(*entry);
+        instruction.operand = variableAddress(*entry);
+    } else {
+        instruction.opcode = OpCode::LDA;
+        instruction.level = lexicalLevelOffset(*entry);
+        instruction.operand = variableAddress(*entry);
+    }
+
     emit(instruction);
     return true;
 }

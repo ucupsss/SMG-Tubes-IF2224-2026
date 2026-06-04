@@ -29,9 +29,10 @@ private:
 
     RuntimeValue pop();
     void push(RuntimeValue value);
-    RuntimeValue load(int level, int address);
-    void store(int level, int address, RuntimeValue value);
+    RuntimeValue load(int level, int address, bool indirect);
+    void store(int level, int address, RuntimeValue value, bool indirect);
     int resolveBase(int level);
+    int resolveAddress(int level, int address, bool indirect);
     const RoutineMetadata* findRoutine(const IntermediateProgram& program, int address) const;
 
     bool executeOperation(OperationCode operation);

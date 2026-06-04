@@ -1,5 +1,24 @@
 #include "codegen.hpp"
 
+namespace {
+
+bool hasRoutineDeclaration(const std::vector<std::unique_ptr<DeclarationNode>>& declarations) {
+    for (const auto& declaration : declarations) {
+        if (!declaration) {
+            continue;
+        }
+
+        if (declaration->kind == ASTNodeKind::ProcDecl ||
+            declaration->kind == ASTNodeKind::FuncDecl) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+} // namespace
+
 void CodeGenerator::generateDeclaration(const DeclarationNode& node) {
     switch (node.kind) {
         case ASTNodeKind::VarDecl:
@@ -47,14 +66,6 @@ void CodeGenerator::generateProcDecl(const ProcDeclNode& node) {
         return;
     }
 
-    if (hasByReferenceParameter(node.blockIndex)) {
-        diagnostic(
-            "procedure '" + node.name + "' has by-reference parameter(s), which are not implemented yet",
-            node.location
-        );
-        return;
-    }
-
     const BTabEntry& block = symbolTable->btabAt(node.blockIndex);
     const int address = nextAddress();
     registerRoutine(node.tabIndex, address, block, false);
@@ -74,10 +85,21 @@ void CodeGenerator::generateProcDecl(const ProcDeclNode& node) {
     init.operand = frameHeaderSize + block.psze + block.vsze;
     emit(init);
 
+    int bodyJump = -1;
+    if (hasRoutineDeclaration(node.declarations)) {
+        Instruction jump;
+        jump.opcode = OpCode::JMP;
+        bodyJump = emit(jump);
+    }
+
     for (const auto& declaration : node.declarations) {
         if (declaration) {
             generateDeclaration(*declaration);
         }
+    }
+
+    if (bodyJump >= 0) {
+        patchOperand(bodyJump, nextAddress());
     }
 
     if (node.body) {
@@ -107,14 +129,6 @@ void CodeGenerator::generateFuncDecl(const FuncDeclNode& node) {
         return;
     }
 
-    if (hasByReferenceParameter(node.blockIndex)) {
-        diagnostic(
-            "function '" + node.name + "' has by-reference parameter(s), which are not implemented yet",
-            node.location
-        );
-        return;
-    }
-
     const BTabEntry& block = symbolTable->btabAt(node.blockIndex);
     const int address = nextAddress();
     registerRoutine(node.tabIndex, address, block, true);
@@ -134,10 +148,21 @@ void CodeGenerator::generateFuncDecl(const FuncDeclNode& node) {
     init.operand = frameHeaderSize + block.psze + block.vsze + 1;
     emit(init);
 
+    int bodyJump = -1;
+    if (hasRoutineDeclaration(node.declarations)) {
+        Instruction jump;
+        jump.opcode = OpCode::JMP;
+        bodyJump = emit(jump);
+    }
+
     for (const auto& declaration : node.declarations) {
         if (declaration) {
             generateDeclaration(*declaration);
         }
+    }
+
+    if (bodyJump >= 0) {
+        patchOperand(bodyJump, nextAddress());
     }
 
     if (node.body) {

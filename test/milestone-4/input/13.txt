@@ -1,0 +1,18 @@
+program FunctionByReferenceParameter;
+
+var
+    value: integer;
+    result: integer;
+
+function AddAndReturn(var target: integer; amount: integer): integer;
+begin
+    target := target + amount;
+    AddAndReturn := target;
+end;
+
+begin
+    value := 4;
+    result := AddAndReturn(value, 3);
+    writeln('value ', value);
+    writeln('result ', result);
+end.

@@ -73,29 +73,49 @@ int StackMachineInterpreter::resolveBase(int level) {
     return resolvedBase;
 }
 
-RuntimeValue StackMachineInterpreter::load(int level, int address) {
+int StackMachineInterpreter::resolveAddress(int level, int address, bool indirect) {
     const int resolvedBase = resolveBase(level);
-    if (result.halted) return RuntimeValue::voidValue();
+    if (result.halted) return 0;
 
     const int absoluteAddress = resolvedBase + address;
     if (absoluteAddress < 0 || absoluteAddress >= static_cast<int>(memory.size())) {
-        runtimeError("out-of-bounds read di address " + std::to_string(absoluteAddress) +
+        runtimeError("out-of-bounds access di address " + std::to_string(absoluteAddress) +
                      " (ukuran memori: " + std::to_string(memory.size()) + ")");
+        return 0;
+    }
+
+    if (!indirect) {
+        return absoluteAddress;
+    }
+
+    const RuntimeValue& pointer = memory[static_cast<size_t>(absoluteAddress)];
+    if (pointer.kind != RuntimeValueKind::Integer) {
+        runtimeError("indirect address cell does not contain an integer address");
+        return 0;
+    }
+
+    if (pointer.integerValue < 0 || pointer.integerValue >= static_cast<int>(memory.size())) {
+        runtimeError("out-of-bounds indirect access di address " +
+                     std::to_string(pointer.integerValue) +
+                     " (ukuran memori: " + std::to_string(memory.size()) + ")");
+        return 0;
+    }
+
+    return pointer.integerValue;
+}
+
+RuntimeValue StackMachineInterpreter::load(int level, int address, bool indirect) {
+    const int absoluteAddress = resolveAddress(level, address, indirect);
+    if (result.halted) {
         return RuntimeValue::voidValue();
     }
     return memory[static_cast<size_t>(absoluteAddress)];
 }
 
-void StackMachineInterpreter::store(int level, int address, RuntimeValue value) {
-    const int resolvedBase = resolveBase(level);
+void StackMachineInterpreter::store(int level, int address, RuntimeValue value, bool indirect) {
+    const int absoluteAddress = resolveAddress(level, address, indirect);
     if (result.halted) return;
 
-    const int absoluteAddress = resolvedBase + address;
-    if (absoluteAddress < 0 || absoluteAddress >= static_cast<int>(memory.size())) {
-        runtimeError("out-of-bounds write di address " + std::to_string(absoluteAddress) +
-                     " (ukuran memori: " + std::to_string(memory.size()) + ")");
-        return;
-    }
     memory[static_cast<size_t>(absoluteAddress)] = std::move(value);
 }
 
@@ -141,16 +161,23 @@ bool StackMachineInterpreter::executeInstruction(
         }
         // LOD a
         case OpCode::LOD: {
-            RuntimeValue value = load(instruction.level, instruction.operand);
+            RuntimeValue value = load(instruction.level, instruction.operand, instruction.indirect);
             if (result.halted) return false;
             push(std::move(value));
+            break;
+        }
+        // LDA a
+        case OpCode::LDA: {
+            const int absoluteAddress = resolveAddress(instruction.level, instruction.operand, false);
+            if (result.halted) return false;
+            push(RuntimeValue::integer(absoluteAddress));
             break;
         }
         // STO a
         case OpCode::STO: {
             RuntimeValue value = pop();
             if (result.halted) return false;
-            store(instruction.level, instruction.operand, std::move(value));
+            store(instruction.level, instruction.operand, std::move(value), instruction.indirect);
             break;
         }
         // JMP l

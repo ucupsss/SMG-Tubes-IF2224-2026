@@ -49,6 +49,7 @@ private:
 
     bool emitLoadAddressable(const ExpressionNode& node);
     bool emitStoreAddressable(const ExpressionNode& node);
+    bool emitAddressAddressable(const ExpressionNode& node);
     bool emitConstant(const TabEntry& entry);
 
     int emit(Instruction instruction);
@@ -56,11 +57,13 @@ private:
     int nextAddress() const;
 
     int lexicalLevelOffset(const TabEntry& entry) const;
+    int blockIndexForEntry(const TabEntry& entry) const;
+    bool isParameterEntry(const TabEntry& entry, int blockIndex) const;
     int variableAddress(const TabEntry& entry);
     bool isCurrentFunctionResult(const TabEntry& entry) const;
     void registerRoutine(int tabIndex, int address, const BTabEntry& block, bool returnsValue);
     int routineAddress(int tabIndex) const;
-    bool hasByReferenceParameter(int blockIndex) const;
+    std::vector<int> routineParameterIndices(int blockIndex) const;
     void diagnostic(const std::string& message, const SourceLocation& location = {});
 
     const SymbolTable* symbolTable = nullptr;

@@ -1,5 +1,6 @@
 #include "codegen.hpp"
 
+#include <algorithm>
 #include <exception>
 #include <string>
 
@@ -139,6 +140,43 @@ int CodeGenerator::lexicalLevelOffset(const TabEntry& entry) const {
     return currentLexLevel - entry.lev;
 }
 
+int CodeGenerator::blockIndexForEntry(const TabEntry& entry) const {
+    if (!symbolTable) {
+        return -1;
+    }
+
+    const auto& blocks = symbolTable->btab();
+    for (int blockIndex = 0; blockIndex < static_cast<int>(blocks.size()); ++blockIndex) {
+        int entryIndex = blocks[static_cast<size_t>(blockIndex)].last;
+        while (entryIndex != 0) {
+            const TabEntry& candidate = symbolTable->tabAt(entryIndex);
+            if (&candidate == &entry) {
+                return blockIndex;
+            }
+            entryIndex = candidate.link;
+        }
+    }
+
+    return -1;
+}
+
+bool CodeGenerator::isParameterEntry(const TabEntry& entry, int blockIndex) const {
+    if (!symbolTable || blockIndex < 0 || blockIndex >= static_cast<int>(symbolTable->btab().size())) {
+        return false;
+    }
+
+    int parameterIndex = symbolTable->btabAt(blockIndex).lpar;
+    while (parameterIndex != 0) {
+        const TabEntry& parameter = symbolTable->tabAt(parameterIndex);
+        if (&parameter == &entry) {
+            return true;
+        }
+        parameterIndex = parameter.link;
+    }
+
+    return false;
+}
+
 bool CodeGenerator::isCurrentFunctionResult(const TabEntry& entry) const {
     return entry.obj == OBJ_FUNCTION &&
            currentFunctionTabIndex > 0 &&
@@ -166,42 +204,17 @@ int CodeGenerator::variableAddress(const TabEntry& entry) {
         return 0;
     }
 
-    if (entry.nrm == 0) {
-        diagnostic(
-            "by-reference parameter addressing is not implemented yet for '" + entry.identifier + "'"
-        );
+    const int blockIndex = blockIndexForEntry(entry);
+    if (blockIndex < 0) {
+        diagnostic("cannot resolve declaring block for '" + entry.identifier + "'");
         return 0;
     }
 
-    if (entry.lev == 0) {
+    if (isParameterEntry(entry, blockIndex)) {
         return frameHeaderSize + entry.adr;
     }
 
-    if (entry.lev != currentLexLevel) {
-        diagnostic(
-            "non-global variable addressing is not implemented yet for '" + entry.identifier + "'"
-        );
-        return 0;
-    }
-
-    if (currentBlockIndex < 0 || currentBlockIndex >= static_cast<int>(symbolTable->btab().size())) {
-        diagnostic("current block index is out of range while addressing '" + entry.identifier + "'");
-        return 0;
-    }
-
-    const BTabEntry& block = symbolTable->btabAt(currentBlockIndex);
-    int parameterIndex = block.lpar;
-    while (parameterIndex != 0) {
-        const TabEntry& parameter = symbolTable->tabAt(parameterIndex);
-        if (parameter.identifier == entry.identifier &&
-            parameter.lev == entry.lev &&
-            parameter.adr == entry.adr) {
-            return frameHeaderSize + entry.adr;
-        }
-
-        parameterIndex = parameter.link;
-    }
-
+    const BTabEntry& block = symbolTable->btabAt(blockIndex);
     return frameHeaderSize + block.psze + entry.adr;
 }
 
@@ -224,6 +237,10 @@ void CodeGenerator::registerRoutine(
     metadata.returnsValue = returnsValue;
     metadata.returnValueOffset = returnsValue ? returnValueOffset : 0;
 
+    for (int parameterIndex : routineParameterIndices(symbolTable->tabAt(tabIndex).ref)) {
+        metadata.byReferenceParameters.push_back(symbolTable->tabAt(parameterIndex).nrm == 0);
+    }
+
     routineAddressesByTabIndex[static_cast<size_t>(tabIndex)] = address;
     result.program.routines.push_back(metadata);
 }
@@ -236,22 +253,21 @@ int CodeGenerator::routineAddress(int tabIndex) const {
     return routineAddressesByTabIndex[static_cast<size_t>(tabIndex)];
 }
 
-bool CodeGenerator::hasByReferenceParameter(int blockIndex) const {
+std::vector<int> CodeGenerator::routineParameterIndices(int blockIndex) const {
+    std::vector<int> indices;
     if (!symbolTable || blockIndex <= 0 || blockIndex >= static_cast<int>(symbolTable->btab().size())) {
-        return false;
+        return indices;
     }
 
     int parameterIndex = symbolTable->btabAt(blockIndex).lpar;
     while (parameterIndex != 0) {
+        indices.push_back(parameterIndex);
         const TabEntry& parameter = symbolTable->tabAt(parameterIndex);
-        if (parameter.nrm == 0) {
-            return true;
-        }
-
         parameterIndex = parameter.link;
     }
 
-    return false;
+    std::reverse(indices.begin(), indices.end());
+    return indices;
 }
 
 void CodeGenerator::diagnostic(const std::string& message, const SourceLocation& location) {

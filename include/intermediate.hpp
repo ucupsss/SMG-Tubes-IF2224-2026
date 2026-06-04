@@ -35,6 +35,7 @@ struct RuntimeValue {
 enum class OpCode {
     LIT,
     LOD,
+    LDA,
     STO,
     CAL,
     INT,
@@ -67,6 +68,7 @@ struct Instruction {
     int operand = 0;
     RuntimeValue literal;
     bool hasLiteral = false;
+    bool indirect = false;
     std::string comment;
 };
 
@@ -76,6 +78,7 @@ struct RoutineMetadata {
     int frameSize = 0;
     bool returnsValue = false;
     int returnValueOffset = 0;
+    std::vector<bool> byReferenceParameters;
 };
 
 struct IntermediateProgram {

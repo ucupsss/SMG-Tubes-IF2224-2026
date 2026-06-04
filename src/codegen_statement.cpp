@@ -149,6 +149,7 @@ bool CodeGenerator::emitStoreAddressable(const ExpressionNode& node) {
     instruction.opcode = OpCode::STO;
     instruction.level = isCurrentFunctionResult(*entry) ? 0 : lexicalLevelOffset(*entry);
     instruction.operand = variableAddress(*entry);
+    instruction.indirect = entry->nrm == 0 && !isCurrentFunctionResult(*entry);
     emit(instruction);
     return true;
 }
@@ -254,6 +255,7 @@ void CodeGenerator::generateFor(const ForNode& node) {
     initStore.opcode = OpCode::STO;
     initStore.level = lexicalLevelOffset(control);
     initStore.operand = variableAddress(control);
+    initStore.indirect = control.nrm == 0;
     emit(initStore);
 
     const int loopStart = nextAddress();
@@ -262,6 +264,7 @@ void CodeGenerator::generateFor(const ForNode& node) {
     loadControl.opcode = OpCode::LOD;
     loadControl.level = lexicalLevelOffset(control);
     loadControl.operand = variableAddress(control);
+    loadControl.indirect = control.nrm == 0;
     emit(loadControl);
 
     diagnosticCount = result.diagnostics.size();
@@ -374,7 +377,11 @@ void CodeGenerator::generateProcedureCall(const ProcCallNode& node) {
         return;
     }
 
-    const int procedureIndex = symbolTable ? symbolTable->lookupTab(node.name) : node.tabIndex;
+    int procedureIndex = node.tabIndex;
+    if (procedureIndex <= 0 && symbolTable) {
+        procedureIndex = symbolTable->lookupTab(node.name);
+    }
+
     if (procedureIndex <= 0 || !symbolTable) {
         diagnostic("unknown procedure '" + node.name + "'", node.location);
         return;
@@ -392,21 +399,30 @@ void CodeGenerator::generateProcedureCall(const ProcCallNode& node) {
         return;
     }
 
-    if (hasByReferenceParameter(entry.ref)) {
-        diagnostic(
-            "procedure '" + node.name + "' has by-reference parameter(s), which are not implemented yet",
-            node.location
-        );
+    const std::vector<int> parameterIndices = routineParameterIndices(entry.ref);
+    if (parameterIndices.size() != node.arguments.size()) {
+        diagnostic("procedure '" + node.name + "' argument count does not match metadata", node.location);
         return;
     }
 
-    for (const auto& argument : node.arguments) {
+    for (size_t i = 0; i < node.arguments.size(); ++i) {
+        const auto& argument = node.arguments[i];
         if (!argument) {
             diagnostic("procedure '" + node.name + "' has an empty argument", node.location);
             return;
         }
 
-        generateExpression(*argument);
+        const size_t diagnosticCount = result.diagnostics.size();
+        const TabEntry& parameter = symbolTable->tabAt(parameterIndices[i]);
+        if (parameter.nrm == 0) {
+            emitAddressAddressable(*argument);
+        } else {
+            generateExpression(*argument);
+        }
+
+        if (result.diagnostics.size() != diagnosticCount) {
+            return;
+        }
     }
 
     Instruction instruction;
