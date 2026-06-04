@@ -1,0 +1,10 @@
+program RuntimeDivisionByZero;
+
+var
+    x, y: integer;
+
+begin
+    x := 10;
+    y := 0;
+    writeln(x div y);
+end.

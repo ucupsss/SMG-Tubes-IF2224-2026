@@ -1,0 +1,13 @@
+program ShortCircuit;
+
+var
+    ok: boolean;
+
+begin
+    ok := true or (1 div 0 > 0);
+
+    if ok then
+        writeln('short')
+    else
+        writeln('bad');
+end.
