@@ -336,6 +336,7 @@ void CodeGenerator::generateProcedureCall(const ProcCallNode& node) {
     if (isBuiltinOutput(lowered)) {
         if (node.arguments.empty()) {
             if (lowered == "writeln") {
+                emit(makeLiteral(RuntimeValue::string("")));
                 emit(makeOperation(OperationCode::WRTLN));
             }
             return;

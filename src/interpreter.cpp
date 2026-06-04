@@ -2,6 +2,14 @@
 #include <string>
 #include <vector>
 
+namespace {
+
+bool isValidInstructionAddress(const IntermediateProgram& program, int address) {
+    return address >= 0 && address < static_cast<int>(program.instructions.size());
+}
+
+}
+
 bool ExecutionResult::success() const {
     return diagnostics.empty();
 }
@@ -57,7 +65,7 @@ void StackMachineInterpreter::store(int address, RuntimeValue value) {
 }
 
 bool StackMachineInterpreter::executeInstruction(
-    const IntermediateProgram& /*program*/,
+    const IntermediateProgram& program,
     const Instruction& instruction) {
     switch (instruction.opcode) {
         // INT m
@@ -98,6 +106,10 @@ bool StackMachineInterpreter::executeInstruction(
         }
         // JMP l
         case OpCode::JMP: {
+            if (!isValidInstructionAddress(program, instruction.operand)) {
+                runtimeError("JMP: invalid jump target " + std::to_string(instruction.operand));
+                return false;
+            }
             ip = instruction.operand;
             break;
         }
@@ -105,6 +117,10 @@ bool StackMachineInterpreter::executeInstruction(
             RuntimeValue condition = pop();
             if (result.halted) return false;
             if (!condition.isTruthy()) {
+                if (!isValidInstructionAddress(program, instruction.operand)) {
+                    runtimeError("JPC: invalid jump target " + std::to_string(instruction.operand));
+                    return false;
+                }
                 ip = instruction.operand;
             }
             break;
@@ -144,6 +160,13 @@ ExecutionResult StackMachineInterpreter::execute(const IntermediateProgram& prog
         ++ip;
         // Decode + Execute
         executeInstruction(program, instruction);
+    }
+    if (!result.halted) {
+        result.diagnostics.push_back({
+            "Runtime error: instruction pointer left program without RET at " + std::to_string(ip),
+            ip
+        });
+        result.halted = true;
     }
     return result;
 }

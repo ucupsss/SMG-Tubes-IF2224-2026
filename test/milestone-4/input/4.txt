@@ -1,0 +1,7 @@
+program EmptyWriteln;
+
+begin
+    write('A');
+    writeln;
+    writeln('B');
+end.

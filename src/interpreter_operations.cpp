@@ -1,5 +1,26 @@
 #include "interpreter.hpp"
+
+#include <limits>
 #include <string>
+
+namespace {
+
+bool isNumericKind(RuntimeValueKind kind) {
+    return kind == RuntimeValueKind::Integer || kind == RuntimeValueKind::Real;
+}
+
+double numericValue(const RuntimeValue& value) {
+    return value.kind == RuntimeValueKind::Integer
+        ? static_cast<double>(value.integerValue)
+        : value.realValue;
+}
+
+bool fitsInteger(long long value) {
+    return value >= std::numeric_limits<int>::min() &&
+           value <= std::numeric_limits<int>::max();
+}
+
+}
 
 bool StackMachineInterpreter::executeOperation(OperationCode operation) {
     switch (operation) {
@@ -8,6 +29,10 @@ bool StackMachineInterpreter::executeOperation(OperationCode operation) {
             RuntimeValue a = pop();
             if (result.halted) return false;
             if (a.kind == RuntimeValueKind::Integer) {
+                if (a.integerValue == std::numeric_limits<int>::min()) {
+                    runtimeError("NEG: integer overflow");
+                    return false;
+                }
                 push(RuntimeValue::integer(-a.integerValue));
             } else if (a.kind == RuntimeValueKind::Real) {
                 push(RuntimeValue::real(-a.realValue));
@@ -57,37 +82,67 @@ bool StackMachineInterpreter::executeBinaryNumeric(OperationCode operation) {
     if (result.halted) return false;
     RuntimeValue a = pop();
     if (result.halted) return false;
-    // integer atau real
+
+    if (!isNumericKind(a.kind) || !isNumericKind(b.kind)) {
+        runtimeError("numeric operation requires integer or real operands");
+        return false;
+    }
+
     const bool bothInt = (a.kind == RuntimeValueKind::Integer && b.kind == RuntimeValueKind::Integer);
-    // kalkulasi
-    const double va = (a.kind == RuntimeValueKind::Integer) ? static_cast<double>(a.integerValue) : a.realValue;
-    const double vb = (b.kind == RuntimeValueKind::Integer) ? static_cast<double>(b.integerValue) : b.realValue;
+    const double va = numericValue(a);
+    const double vb = numericValue(b);
+
     switch (operation) {
         case OperationCode::ADD: {
-            if (bothInt)
-                push(RuntimeValue::integer(a.integerValue + b.integerValue));
-            else
+            if (bothInt) {
+                const long long value =
+                    static_cast<long long>(a.integerValue) + static_cast<long long>(b.integerValue);
+                if (!fitsInteger(value)) {
+                    runtimeError("ADD: integer overflow");
+                    return false;
+                }
+                push(RuntimeValue::integer(static_cast<int>(value)));
+            } else {
                 push(RuntimeValue::real(va + vb));
+            }
             break;
         }
         case OperationCode::SUB: {
-            if (bothInt)
-                push(RuntimeValue::integer(a.integerValue - b.integerValue));
-            else
+            if (bothInt) {
+                const long long value =
+                    static_cast<long long>(a.integerValue) - static_cast<long long>(b.integerValue);
+                if (!fitsInteger(value)) {
+                    runtimeError("SUB: integer overflow");
+                    return false;
+                }
+                push(RuntimeValue::integer(static_cast<int>(value)));
+            } else {
                 push(RuntimeValue::real(va - vb));
+            }
             break;
         }
         case OperationCode::MUL: {
-            if (bothInt)
-                push(RuntimeValue::integer(a.integerValue * b.integerValue));
-            else
+            if (bothInt) {
+                const long long value =
+                    static_cast<long long>(a.integerValue) * static_cast<long long>(b.integerValue);
+                if (!fitsInteger(value)) {
+                    runtimeError("MUL: integer overflow");
+                    return false;
+                }
+                push(RuntimeValue::integer(static_cast<int>(value)));
+            } else {
                 push(RuntimeValue::real(va * vb));
+            }
             break;
         }
         case OperationCode::DIV: {
             if (bothInt) {
                 if (b.integerValue == 0) {
                     runtimeError("division by zero (div)");
+                    return false;
+                }
+                if (a.integerValue == std::numeric_limits<int>::min() && b.integerValue == -1) {
+                    runtimeError("DIV: integer overflow");
                     return false;
                 }
                 push(RuntimeValue::integer(a.integerValue / b.integerValue));
@@ -108,6 +163,10 @@ bool StackMachineInterpreter::executeBinaryNumeric(OperationCode operation) {
             if (b.integerValue == 0) {
                 runtimeError("modulo by zero (mod)");
                 return false;
+            }
+            if (a.integerValue == std::numeric_limits<int>::min() && b.integerValue == -1) {
+                push(RuntimeValue::integer(0));
+                return true;
             }
             push(RuntimeValue::integer(a.integerValue % b.integerValue));
             break;
