@@ -132,6 +132,7 @@ std::string opcodeName(OpCode opcode) {
         case OpCode::LOD: return "LOD";
         case OpCode::LDA: return "LDA";
         case OpCode::LDI: return "LDI";
+        case OpCode::LDR: return "LDR";
         case OpCode::STO: return "STO";
         case OpCode::STI: return "STI";
         case OpCode::CPY: return "CPY";

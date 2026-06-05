@@ -50,6 +50,7 @@ private:
     bool emitLoadAddressable(const ExpressionNode& node);
     bool emitStoreAddressable(const ExpressionNode& node);
     bool emitAddressAddressable(const ExpressionNode& node);
+    bool emitArgumentValue(const ExpressionNode& argument, const TabEntry& parameter);
     bool emitConstant(const TabEntry& entry);
     TypeInfo expressionTypeInfo(const ExpressionNode& node) const;
     TypeInfo arrayElementType(const ATabEntry& entry) const;

@@ -199,11 +199,7 @@ void CodeGenerator::generateExpression(const ExpressionNode& node) {
 
                 const size_t diagnosticCount = result.diagnostics.size();
                 const TabEntry& parameter = symbolTable->tabAt(parameterIndices[i]);
-                if (parameter.nrm == 0) {
-                    emitAddressAddressable(*argument);
-                } else {
-                    generateExpression(*argument);
-                }
+                emitArgumentValue(*argument, parameter);
 
                 if (result.diagnostics.size() != diagnosticCount) {
                     return;
@@ -228,7 +224,7 @@ bool CodeGenerator::emitLoadAddressable(const ExpressionNode& node) {
         node.kind == ASTNodeKind::RecordAccess) {
         const TypeInfo valueType = expressionTypeInfo(node);
         if (isStructuredType(valueType)) {
-            diagnostic("structured value load is not implemented yet", node.location);
+            diagnostic("structured value cannot be loaded in this expression context", node.location);
             return false;
         }
 
@@ -267,7 +263,7 @@ bool CodeGenerator::emitLoadAddressable(const ExpressionNode& node) {
 
     if (isCurrentFunctionResult(*entry)) {
         if (isStructuredType(entry->typeInfo)) {
-            diagnostic("structured function result load is not implemented yet", node.location);
+            diagnostic("structured function result cannot be loaded as a scalar value", node.location);
             return false;
         }
 
@@ -285,7 +281,7 @@ bool CodeGenerator::emitLoadAddressable(const ExpressionNode& node) {
     }
 
     if (isStructuredType(entry->typeInfo)) {
-        diagnostic("structured value load is not implemented yet", node.location);
+        diagnostic("structured value cannot be loaded in this expression context", node.location);
         return false;
     }
 
@@ -417,6 +413,40 @@ bool CodeGenerator::emitAddressAddressable(const ExpressionNode& node) {
     }
 
     emit(instruction);
+    return true;
+}
+
+bool CodeGenerator::emitArgumentValue(const ExpressionNode& argument, const TabEntry& parameter) {
+    if (parameter.nrm == 0) {
+        return emitAddressAddressable(argument);
+    }
+
+    if (isStructuredType(parameter.typeInfo)) {
+        if (!symbolTable) {
+            diagnostic("missing symbol table for aggregate argument", argument.location);
+            return false;
+        }
+
+        const int argumentSize = symbolTable->sizeOf(parameter.typeInfo);
+        if (argumentSize <= 0) {
+            diagnostic("aggregate argument has invalid size", argument.location);
+            return false;
+        }
+
+        const size_t diagnosticCount = result.diagnostics.size();
+        emitAddressAddressable(argument);
+        if (result.diagnostics.size() != diagnosticCount) {
+            return false;
+        }
+
+        Instruction instruction;
+        instruction.opcode = OpCode::LDR;
+        instruction.operand = argumentSize;
+        emit(instruction);
+        return true;
+    }
+
+    generateExpression(argument);
     return true;
 }
 

@@ -259,6 +259,17 @@ void SemanticAnalyzer::visitProcCall(ProcCallNode* node) {
 
     const TabEntry& entry = symbolTable.tabAt(index);
     if (isBuiltinOutput(node->name)) {
+        for (size_t i = 0; i < argumentTypes.size(); ++i) {
+            const TypeInfo& argumentType = argumentTypes[i];
+            if (argumentType.code == TYPE_ARRAY || argumentType.code == TYPE_RECORD) {
+                semanticError(
+                    "argument " + std::to_string(i + 1) + " of '" + node->name +
+                    "' cannot be a structured value",
+                    node->arguments[i] ? node->arguments[i]->location : node->location
+                );
+            }
+        }
+
         annotate(node, makeVoidType(), index);
         return;
     }
@@ -270,6 +281,15 @@ void SemanticAnalyzer::visitProcCall(ProcCallNode* node) {
                 semanticError(
                     "argument " + std::to_string(i + 1) + " of '" + node->name +
                     "' must be assignable",
+                    argument ? argument->location : node->location
+                );
+                continue;
+            }
+
+            if (argumentTypes[i].code == TYPE_ARRAY || argumentTypes[i].code == TYPE_RECORD) {
+                semanticError(
+                    "argument " + std::to_string(i + 1) + " of '" + node->name +
+                    "' cannot be a structured target",
                     argument ? argument->location : node->location
                 );
                 continue;

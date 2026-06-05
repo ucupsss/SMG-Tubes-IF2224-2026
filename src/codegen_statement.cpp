@@ -148,7 +148,7 @@ bool CodeGenerator::emitStoreAddressable(const ExpressionNode& node) {
         node.kind == ASTNodeKind::RecordAccess) {
         const TypeInfo targetType = expressionTypeInfo(node);
         if (isStructuredType(targetType)) {
-            diagnostic("structured assignment is not implemented yet", node.location);
+            diagnostic("structured target cannot be stored with a scalar store", node.location);
             return false;
         }
 
@@ -184,7 +184,7 @@ bool CodeGenerator::emitStoreAddressable(const ExpressionNode& node) {
     }
 
     if (isStructuredType(entry->typeInfo)) {
-        diagnostic("structured assignment is not implemented yet", node.location);
+        diagnostic("structured target cannot be stored with a scalar store", node.location);
         return false;
     }
 
@@ -486,11 +486,7 @@ void CodeGenerator::generateProcedureCall(const ProcCallNode& node) {
 
         const size_t diagnosticCount = result.diagnostics.size();
         const TabEntry& parameter = symbolTable->tabAt(parameterIndices[i]);
-        if (parameter.nrm == 0) {
-            emitAddressAddressable(*argument);
-        } else {
-            generateExpression(*argument);
-        }
+        emitArgumentValue(*argument, parameter);
 
         if (result.diagnostics.size() != diagnosticCount) {
             return;

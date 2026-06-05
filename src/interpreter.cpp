@@ -305,6 +305,27 @@ bool StackMachineInterpreter::executeInstruction(
             push(memory[static_cast<size_t>(absoluteAddress)]);
             break;
         }
+        // LDR n
+        case OpCode::LDR: {
+            const int size = instruction.operand;
+            if (size < 0) {
+                runtimeError("LDR: ukuran load tidak valid: " + std::to_string(size));
+                return false;
+            }
+
+            const int sourceAddress = popAddress("LDR");
+            if (result.halted) return false;
+
+            if (sourceAddress + size > static_cast<int>(memory.size())) {
+                runtimeError("LDR: out-of-bounds aggregate load");
+                return false;
+            }
+
+            for (int offset = 0; offset < size; ++offset) {
+                push(memory[static_cast<size_t>(sourceAddress + offset)]);
+            }
+            break;
+        }
         // STO a
         case OpCode::STO: {
             RuntimeValue value = pop();

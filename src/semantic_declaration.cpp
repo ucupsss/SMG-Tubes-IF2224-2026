@@ -147,6 +147,10 @@ void annotateNode(ASTNode* node, const TypeInfo& type, int tabIndex, const Symbo
     node->lexLevel = symbols.currentLevel();
 }
 
+bool isStructuredType(const TypeInfo& type) {
+    return type.code == TYPE_ARRAY || type.code == TYPE_RECORD;
+}
+
 void registerEnumConstants(
     SymbolTable& symbols,
     EnumTypeNode* enumNode,
@@ -426,6 +430,13 @@ void SemanticAnalyzer::visitFuncDecl(FuncDeclNode* node) {
     }
 
     TypeInfo returnType = resolveType(node->returnType.get());
+    if (isStructuredType(returnType)) {
+        semanticError(
+            "function return type cannot be an array or record",
+            node->returnType ? node->returnType->location : node->location
+        );
+    }
+
     const int blockIndex = symbolTable.enterBTab(BTabEntry{});
     node->blockIndex = blockIndex;
 
