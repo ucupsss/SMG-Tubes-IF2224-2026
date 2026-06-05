@@ -39,6 +39,7 @@ enum class OpCode {
     LDI,
     STO,
     STI,
+    CPY,
     CAL,
     INT,
     JMP,

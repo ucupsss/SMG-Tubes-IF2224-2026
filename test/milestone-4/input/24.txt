@@ -1,0 +1,24 @@
+program AggregateByReferenceCopy;
+
+type
+    Point == record
+        x: integer;
+        y: integer;
+    end;
+
+var
+    source: Point;
+    target: Point;
+
+procedure CopyPoint(var destination: Point; var origin: Point);
+begin
+    destination := origin;
+end;
+
+begin
+    source.x := 2;
+    source.y := 9;
+    CopyPoint(target, source);
+    source.y := 100;
+    writeln('ref aggregate ', target.x + target.y);
+end.

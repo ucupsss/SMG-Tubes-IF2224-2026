@@ -373,7 +373,8 @@ void SemanticAnalyzer::visitParamDecl(ParamDeclNode* node) {
 
         const int index = symbolTable.enterTab(entry);
         symbolTable.btabAt(symbolTable.currentBlock()).lpar = index;
-        symbolTable.btabAt(symbolTable.currentBlock()).psze += symbolTable.sizeOf(type);
+        symbolTable.btabAt(symbolTable.currentBlock()).psze +=
+            node->byReference ? 1 : symbolTable.sizeOf(type);
         lastIndex = index;
     }
 

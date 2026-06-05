@@ -1,0 +1,19 @@
+program RecordCopy;
+
+type
+    Point == record
+        x: integer;
+        y: integer;
+    end;
+
+var
+    source: Point;
+    target: Point;
+
+begin
+    source.x := 3;
+    source.y := 4;
+    target := source;
+    source.x := 9;
+    writeln('record copy ', target.x + target.y);
+end.

@@ -96,6 +96,44 @@ void CodeGenerator::generateAssignment(const AssignNode& node) {
         return;
     }
 
+    const TypeInfo targetType = expressionTypeInfo(*node.target);
+    if (isStructuredType(targetType)) {
+        if (!symbolTable) {
+            diagnostic("missing symbol table for structured assignment", node.location);
+            return;
+        }
+
+        const TypeInfo valueType = expressionTypeInfo(*node.value);
+        if (!isStructuredType(valueType)) {
+            diagnostic("structured assignment source is not an array or record", node.value->location);
+            return;
+        }
+
+        const int copySize = symbolTable->sizeOf(targetType);
+        if (copySize <= 0) {
+            diagnostic("structured assignment has invalid copy size", node.location);
+            return;
+        }
+
+        size_t diagnosticCount = result.diagnostics.size();
+        emitAddressAddressable(*node.value);
+        if (result.diagnostics.size() != diagnosticCount) {
+            return;
+        }
+
+        diagnosticCount = result.diagnostics.size();
+        emitAddressAddressable(*node.target);
+        if (result.diagnostics.size() != diagnosticCount) {
+            return;
+        }
+
+        Instruction instruction;
+        instruction.opcode = OpCode::CPY;
+        instruction.operand = copySize;
+        emit(instruction);
+        return;
+    }
+
     const size_t diagnosticCount = result.diagnostics.size();
     generateExpression(*node.value);
     if (result.diagnostics.size() != diagnosticCount) {

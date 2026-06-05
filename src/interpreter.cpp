@@ -215,6 +215,37 @@ bool StackMachineInterpreter::executeInstruction(
             memory[static_cast<size_t>(absoluteAddress)] = std::move(value);
             break;
         }
+        // CPY n
+        case OpCode::CPY: {
+            const int size = instruction.operand;
+            if (size < 0) {
+                runtimeError("CPY: ukuran copy tidak valid: " + std::to_string(size));
+                return false;
+            }
+
+            const int destinationAddress = popAddress("CPY");
+            if (result.halted) return false;
+            const int sourceAddress = popAddress("CPY");
+            if (result.halted) return false;
+
+            if (sourceAddress + size > static_cast<int>(memory.size()) ||
+                destinationAddress + size > static_cast<int>(memory.size())) {
+                runtimeError("CPY: out-of-bounds aggregate copy");
+                return false;
+            }
+
+            std::vector<RuntimeValue> copiedValues;
+            copiedValues.reserve(static_cast<size_t>(size));
+            for (int offset = 0; offset < size; ++offset) {
+                copiedValues.push_back(memory[static_cast<size_t>(sourceAddress + offset)]);
+            }
+
+            for (int offset = 0; offset < size; ++offset) {
+                memory[static_cast<size_t>(destinationAddress + offset)] =
+                    std::move(copiedValues[static_cast<size_t>(offset)]);
+            }
+            break;
+        }
         // JMP l
         case OpCode::JMP: {
             if (!isValidInstructionAddress(program, instruction.operand)) {
