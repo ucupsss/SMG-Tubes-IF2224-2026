@@ -135,6 +135,8 @@ std::string opcodeName(OpCode opcode) {
         case OpCode::STO: return "STO";
         case OpCode::STI: return "STI";
         case OpCode::CPY: return "CPY";
+        case OpCode::INP: return "INP";
+        case OpCode::INL: return "INL";
         case OpCode::CAL: return "CAL";
         case OpCode::INT: return "INT";
         case OpCode::JMP: return "JMP";

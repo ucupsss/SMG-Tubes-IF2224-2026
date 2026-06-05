@@ -416,7 +416,36 @@ void CodeGenerator::generateProcedureCall(const ProcCallNode& node) {
     }
 
     if (isBuiltinInput(lowered)) {
-        diagnostic("input procedures are not implemented yet", node.location);
+        for (const auto& argument : node.arguments) {
+            if (!argument) {
+                diagnostic("procedure '" + node.name + "' has an empty argument", node.location);
+                return;
+            }
+
+            const TypeInfo targetType = expressionTypeInfo(*argument);
+            if (isStructuredType(targetType)) {
+                diagnostic("input procedures do not support structured targets", argument->location);
+                return;
+            }
+
+            const size_t diagnosticCount = result.diagnostics.size();
+            emitAddressAddressable(*argument);
+            if (result.diagnostics.size() != diagnosticCount) {
+                return;
+            }
+
+            Instruction instruction;
+            instruction.opcode = OpCode::INP;
+            instruction.operand = targetType.code;
+            emit(instruction);
+        }
+
+        if (lowered == "readln") {
+            Instruction instruction;
+            instruction.opcode = OpCode::INL;
+            instruction.operand = node.arguments.empty() ? 1 : 0;
+            emit(instruction);
+        }
         return;
     }
 

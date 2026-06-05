@@ -1,0 +1,10 @@
+program ReadlnSkipsLine;
+
+var
+    n: integer;
+
+begin
+    readln;
+    readln(n);
+    writeln('after skip ', n);
+end.

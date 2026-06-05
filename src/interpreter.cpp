@@ -1,4 +1,11 @@
 #include "interpreter.hpp"
+
+#include "symbol_table.hpp"
+
+#include <cctype>
+#include <exception>
+#include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -6,6 +13,13 @@ namespace {
 
 bool isValidInstructionAddress(const IntermediateProgram& program, int address) {
     return address >= 0 && address < static_cast<int>(program.instructions.size());
+}
+
+std::string lowercase(std::string text) {
+    for (char& ch : text) {
+        ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+    }
+    return text;
 }
 
 }
@@ -20,8 +34,10 @@ void StackMachineInterpreter::reset() {
     memory.clear();
     stack.clear();
     routineStack.clear();
+    inputTokens.clear();
     currentOutput.clear();
     result = {};
+    nextInputToken = 0;
     ip = 0;
     base = 0;
 }
@@ -138,6 +154,96 @@ int StackMachineInterpreter::popAddress(const std::string& instructionName) {
     return address.integerValue;
 }
 
+bool StackMachineInterpreter::readInputToken(std::string& token) {
+    while (nextInputToken >= inputTokens.size()) {
+        inputTokens.clear();
+        nextInputToken = 0;
+
+        std::string line;
+        if (!std::getline(std::cin, line)) {
+            runtimeError("input exhausted while reading value");
+            return false;
+        }
+
+        std::istringstream tokenizer(line);
+        std::string value;
+        while (tokenizer >> value) {
+            inputTokens.push_back(value);
+        }
+    }
+
+    token = inputTokens[nextInputToken++];
+    return true;
+}
+
+void StackMachineInterpreter::discardInputLine(bool consumeWhenNoBuffered) {
+    const bool hasBufferedTokens = nextInputToken < inputTokens.size();
+    inputTokens.clear();
+    nextInputToken = 0;
+
+    if (!hasBufferedTokens && consumeWhenNoBuffered) {
+        std::string ignored;
+        if (!std::getline(std::cin, ignored)) {
+            runtimeError("input exhausted while reading line");
+        }
+    }
+}
+
+RuntimeValue StackMachineInterpreter::parseInputValue(const std::string& token, int typeCode) {
+    try {
+        switch (typeCode) {
+            case TYPE_INTEGER:
+            case TYPE_SUBRANGE:
+            case TYPE_ENUM: {
+                size_t used = 0;
+                const int value = std::stoi(token, &used);
+                if (used != token.size()) {
+                    runtimeError("invalid integer input '" + token + "'");
+                    return RuntimeValue::voidValue();
+                }
+                return RuntimeValue::integer(value);
+            }
+            case TYPE_REAL: {
+                size_t used = 0;
+                const double value = std::stod(token, &used);
+                if (used != token.size()) {
+                    runtimeError("invalid real input '" + token + "'");
+                    return RuntimeValue::voidValue();
+                }
+                return RuntimeValue::real(value);
+            }
+            case TYPE_BOOLEAN: {
+                const std::string normalized = lowercase(token);
+                if (normalized == "true" || normalized == "1") {
+                    return RuntimeValue::boolean(true);
+                }
+                if (normalized == "false" || normalized == "0") {
+                    return RuntimeValue::boolean(false);
+                }
+                runtimeError("invalid boolean input '" + token + "'");
+                return RuntimeValue::voidValue();
+            }
+            case TYPE_CHAR:
+                if (token.size() == 1) {
+                    return RuntimeValue::character(token[0]);
+                }
+                if (token.size() == 3 && token.front() == '\'' && token.back() == '\'') {
+                    return RuntimeValue::character(token[1]);
+                }
+                runtimeError("invalid char input '" + token + "'");
+                return RuntimeValue::voidValue();
+            case TYPE_STRING:
+                return RuntimeValue::string(token);
+            default:
+                runtimeError("unsupported input target type code " + std::to_string(typeCode));
+                return RuntimeValue::voidValue();
+        }
+    } catch (const std::exception&) {
+        runtimeError("invalid input token '" + token + "'");
+        return RuntimeValue::voidValue();
+    }
+}
+
 const RoutineMetadata* StackMachineInterpreter::findRoutine(
     const IntermediateProgram& program,
     int address
@@ -244,6 +350,27 @@ bool StackMachineInterpreter::executeInstruction(
                 memory[static_cast<size_t>(destinationAddress + offset)] =
                     std::move(copiedValues[static_cast<size_t>(offset)]);
             }
+            break;
+        }
+        // INP type
+        case OpCode::INP: {
+            const int absoluteAddress = popAddress("INP");
+            if (result.halted) return false;
+
+            std::string token;
+            if (!readInputToken(token)) {
+                return false;
+            }
+
+            RuntimeValue value = parseInputValue(token, instruction.operand);
+            if (result.halted) return false;
+            memory[static_cast<size_t>(absoluteAddress)] = std::move(value);
+            break;
+        }
+        // INL
+        case OpCode::INL: {
+            discardInputLine(instruction.operand != 0);
+            if (result.halted) return false;
             break;
         }
         // JMP l

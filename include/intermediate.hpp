@@ -40,6 +40,8 @@ enum class OpCode {
     STO,
     STI,
     CPY,
+    INP,
+    INL,
     CAL,
     INT,
     JMP,
