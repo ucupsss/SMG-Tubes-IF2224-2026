@@ -1,0 +1,21 @@
+program AggregateElementCopy;
+
+type
+    Index == 1..2;
+    Point == record
+        x: integer;
+        y: integer;
+    end;
+    PointArray == array[Index] of Point;
+
+var
+    source: PointArray;
+    target: PointArray;
+
+begin
+    source[1].x := 6;
+    source[1].y := 7;
+    target[2] := source[1];
+    source[1].y := 100;
+    writeln('element copy ', target[2].x + target[2].y);
+end.

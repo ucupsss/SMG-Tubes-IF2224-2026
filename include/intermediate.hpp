@@ -35,7 +35,14 @@ struct RuntimeValue {
 enum class OpCode {
     LIT,
     LOD,
+    LDA,
+    LDI,
+    LDR,
     STO,
+    STI,
+    CPY,
+    INP,
+    INL,
     CAL,
     INT,
     JMP,
@@ -58,7 +65,8 @@ enum class OperationCode {
     GTR = 11,
     LEQ = 12,
     WRT = 13,
-    WRTLN = 14
+    WRTLN = 14,
+    RDIV = 15
 };
 
 struct Instruction {
@@ -67,11 +75,22 @@ struct Instruction {
     int operand = 0;
     RuntimeValue literal;
     bool hasLiteral = false;
+    bool indirect = false;
     std::string comment;
+};
+
+struct RoutineMetadata {
+    int address = 0;
+    int parameterCount = 0;
+    int frameSize = 0;
+    bool returnsValue = false;
+    int returnValueOffset = 0;
+    std::vector<bool> byReferenceParameters;
 };
 
 struct IntermediateProgram {
     std::vector<Instruction> instructions;
+    std::vector<RoutineMetadata> routines;
 };
 
 std::string opcodeName(OpCode opcode);

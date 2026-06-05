@@ -1,0 +1,19 @@
+program ArrayOfRecordAccess;
+
+type
+    Index == 1..2;
+    Point == record
+        x: integer;
+        y: integer;
+    end;
+    PointArray == array[Index] of Point;
+
+var
+    plist: PointArray;
+
+begin
+    plist[1].x := 2;
+    plist[1].y := 5;
+    plist[2].x := plist[1].x + plist[1].y;
+    writeln('point ', plist[2].x);
+end.

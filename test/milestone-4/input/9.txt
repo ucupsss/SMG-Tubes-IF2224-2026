@@ -1,0 +1,15 @@
+program ProcedureByValue;
+
+var
+    total: integer;
+
+procedure Add(delta: integer);
+begin
+    total := total + delta;
+end;
+
+begin
+    total := 1;
+    Add(4);
+    writeln('total ', total);
+end.

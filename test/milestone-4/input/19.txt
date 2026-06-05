@@ -1,0 +1,12 @@
+program RealDivision;
+
+var
+    half: real;
+    mixed: real;
+
+begin
+    half := 5 / 2;
+    mixed := 7.5 / 3;
+    writeln('half ', half);
+    writeln('mixed ', mixed);
+end.

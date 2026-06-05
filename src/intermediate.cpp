@@ -130,7 +130,14 @@ std::string opcodeName(OpCode opcode) {
     switch (opcode) {
         case OpCode::LIT: return "LIT";
         case OpCode::LOD: return "LOD";
+        case OpCode::LDA: return "LDA";
+        case OpCode::LDI: return "LDI";
+        case OpCode::LDR: return "LDR";
         case OpCode::STO: return "STO";
+        case OpCode::STI: return "STI";
+        case OpCode::CPY: return "CPY";
+        case OpCode::INP: return "INP";
+        case OpCode::INL: return "INL";
         case OpCode::CAL: return "CAL";
         case OpCode::INT: return "INT";
         case OpCode::JMP: return "JMP";
@@ -158,6 +165,7 @@ std::string operationName(OperationCode operation) {
         case OperationCode::LEQ: return "LEQ";
         case OperationCode::WRT: return "WRT";
         case OperationCode::WRTLN: return "WRTLN";
+        case OperationCode::RDIV: return "RDIV";
     }
 
     return "UNKNOWN";
@@ -177,6 +185,8 @@ std::string formatInstruction(const Instruction& instruction, int address) {
 
     if (!instruction.comment.empty()) {
         output << " ; " << instruction.comment;
+    } else if (instruction.indirect) {
+        output << " ; indirect";
     }
 
     return output.str();

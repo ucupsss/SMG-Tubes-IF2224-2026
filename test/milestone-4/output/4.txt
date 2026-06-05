@@ -1,0 +1,24 @@
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Intermediate Code:
+0 INT 0 3
+1 LIT 0 'A'
+2 OPR 0 13
+3 LIT 0 ""
+4 OPR 0 14
+5 LIT 0 'B'
+6 OPR 0 14
+7 RET 0 0
+
+Codegen diagnostics:
+No code generation errors.
+
+Program Output:
+A
+B
+
+Runtime diagnostics:
+No runtime errors.
+
+Status: SUCCESS

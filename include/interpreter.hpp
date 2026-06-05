@@ -3,6 +3,7 @@
 
 #include "intermediate.hpp"
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -29,8 +30,15 @@ private:
 
     RuntimeValue pop();
     void push(RuntimeValue value);
-    RuntimeValue load(int address);
-    void store(int address, RuntimeValue value);
+    RuntimeValue load(int level, int address, bool indirect);
+    void store(int level, int address, RuntimeValue value, bool indirect);
+    int resolveBase(int level);
+    int resolveAddress(int level, int address, bool indirect);
+    int popAddress(const std::string& instructionName);
+    const RoutineMetadata* findRoutine(const IntermediateProgram& program, int address) const;
+    bool readInputToken(std::string& token);
+    void discardInputLine(bool consumeWhenNoBuffered);
+    RuntimeValue parseInputValue(const std::string& token, int typeCode);
 
     bool executeOperation(OperationCode operation);
     bool executeBinaryNumeric(OperationCode operation);
@@ -40,9 +48,13 @@ private:
 
     std::vector<RuntimeValue> memory;
     std::vector<RuntimeValue> stack;
+    std::vector<int> routineStack;
+    std::vector<std::string> inputTokens;
     std::string currentOutput;
     ExecutionResult result;
+    size_t nextInputToken = 0;
     int ip = 0;
+    int base = 0;
 };
 
 #endif

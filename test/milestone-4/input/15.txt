@@ -1,0 +1,16 @@
+program RecordScalarAccess;
+
+type
+    Point == record
+        x: integer;
+        y: integer;
+    end;
+
+var
+    p: Point;
+
+begin
+    p.x := 4;
+    p.y := p.x + 6;
+    writeln('record ', p.y);
+end.

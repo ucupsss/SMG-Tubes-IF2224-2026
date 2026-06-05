@@ -1,0 +1,23 @@
+program AggregateByValueParameter;
+
+type
+    Point == record
+        x: integer;
+        y: integer;
+    end;
+
+var
+    p: Point;
+
+procedure Show(value: Point);
+begin
+    value.x := value.x + 10;
+    writeln('record param ', value.x + value.y);
+end;
+
+begin
+    p.x := 3;
+    p.y := 4;
+    Show(p);
+    writeln('record original ', p.x + p.y);
+end.

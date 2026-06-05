@@ -96,13 +96,41 @@ void CodeGenerator::generateAssignment(const AssignNode& node) {
         return;
     }
 
-    if (node.target->kind == ASTNodeKind::ArrayAccess) {
-        diagnostic("array assignment code generation is not implemented yet", node.target->location);
-        return;
-    }
+    const TypeInfo targetType = expressionTypeInfo(*node.target);
+    if (isStructuredType(targetType)) {
+        if (!symbolTable) {
+            diagnostic("missing symbol table for structured assignment", node.location);
+            return;
+        }
 
-    if (node.target->kind == ASTNodeKind::RecordAccess) {
-        diagnostic("record assignment code generation is not implemented yet", node.target->location);
+        const TypeInfo valueType = expressionTypeInfo(*node.value);
+        if (!isStructuredType(valueType)) {
+            diagnostic("structured assignment source is not an array or record", node.value->location);
+            return;
+        }
+
+        const int copySize = symbolTable->sizeOf(targetType);
+        if (copySize <= 0) {
+            diagnostic("structured assignment has invalid copy size", node.location);
+            return;
+        }
+
+        size_t diagnosticCount = result.diagnostics.size();
+        emitAddressAddressable(*node.value);
+        if (result.diagnostics.size() != diagnosticCount) {
+            return;
+        }
+
+        diagnosticCount = result.diagnostics.size();
+        emitAddressAddressable(*node.target);
+        if (result.diagnostics.size() != diagnosticCount) {
+            return;
+        }
+
+        Instruction instruction;
+        instruction.opcode = OpCode::CPY;
+        instruction.operand = copySize;
+        emit(instruction);
         return;
     }
 
@@ -116,14 +144,24 @@ void CodeGenerator::generateAssignment(const AssignNode& node) {
 }
 
 bool CodeGenerator::emitStoreAddressable(const ExpressionNode& node) {
-    if (node.kind == ASTNodeKind::ArrayAccess) {
-        diagnostic("array access code generation is not implemented yet", node.location);
-        return false;
-    }
+    if (node.kind == ASTNodeKind::ArrayAccess ||
+        node.kind == ASTNodeKind::RecordAccess) {
+        const TypeInfo targetType = expressionTypeInfo(node);
+        if (isStructuredType(targetType)) {
+            diagnostic("structured target cannot be stored with a scalar store", node.location);
+            return false;
+        }
 
-    if (node.kind == ASTNodeKind::RecordAccess) {
-        diagnostic("record access code generation is not implemented yet", node.location);
-        return false;
+        const size_t diagnosticCount = result.diagnostics.size();
+        emitAddressAddressable(node);
+        if (result.diagnostics.size() != diagnosticCount) {
+            return false;
+        }
+
+        Instruction instruction;
+        instruction.opcode = OpCode::STI;
+        emit(instruction);
+        return true;
     }
 
     if (node.kind != ASTNodeKind::Var) {
@@ -139,13 +177,22 @@ bool CodeGenerator::emitStoreAddressable(const ExpressionNode& node) {
     }
 
     if (entry->obj != OBJ_VARIABLE) {
-        diagnostic("identifier '" + variable.name + "' is not a variable", node.location);
+        if (!isCurrentFunctionResult(*entry)) {
+            diagnostic("identifier '" + variable.name + "' is not a variable", node.location);
+            return false;
+        }
+    }
+
+    if (isStructuredType(entry->typeInfo)) {
+        diagnostic("structured target cannot be stored with a scalar store", node.location);
         return false;
     }
 
     Instruction instruction;
     instruction.opcode = OpCode::STO;
+    instruction.level = isCurrentFunctionResult(*entry) ? 0 : lexicalLevelOffset(*entry);
     instruction.operand = variableAddress(*entry);
+    instruction.indirect = entry->nrm == 0 && !isCurrentFunctionResult(*entry);
     emit(instruction);
     return true;
 }
@@ -249,14 +296,18 @@ void CodeGenerator::generateFor(const ForNode& node) {
 
     Instruction initStore;
     initStore.opcode = OpCode::STO;
+    initStore.level = lexicalLevelOffset(control);
     initStore.operand = variableAddress(control);
+    initStore.indirect = control.nrm == 0;
     emit(initStore);
 
     const int loopStart = nextAddress();
 
     Instruction loadControl;
     loadControl.opcode = OpCode::LOD;
+    loadControl.level = lexicalLevelOffset(control);
     loadControl.operand = variableAddress(control);
+    loadControl.indirect = control.nrm == 0;
     emit(loadControl);
 
     diagnosticCount = result.diagnostics.size();
@@ -273,6 +324,7 @@ void CodeGenerator::generateFor(const ForNode& node) {
     generateBlock(*node.body);
 
     loadControl.operand = variableAddress(control);
+    loadControl.level = lexicalLevelOffset(control);
     emit(loadControl);
     emit(makeLiteral(RuntimeValue::integer(1)));
     emit(makeOperation(
@@ -336,6 +388,7 @@ void CodeGenerator::generateProcedureCall(const ProcCallNode& node) {
     if (isBuiltinOutput(lowered)) {
         if (node.arguments.empty()) {
             if (lowered == "writeln") {
+                emit(makeLiteral(RuntimeValue::string("")));
                 emit(makeOperation(OperationCode::WRTLN));
             }
             return;
@@ -363,9 +416,86 @@ void CodeGenerator::generateProcedureCall(const ProcCallNode& node) {
     }
 
     if (isBuiltinInput(lowered)) {
-        diagnostic("input procedures are not implemented yet", node.location);
+        for (const auto& argument : node.arguments) {
+            if (!argument) {
+                diagnostic("procedure '" + node.name + "' has an empty argument", node.location);
+                return;
+            }
+
+            const TypeInfo targetType = expressionTypeInfo(*argument);
+            if (isStructuredType(targetType)) {
+                diagnostic("input procedures do not support structured targets", argument->location);
+                return;
+            }
+
+            const size_t diagnosticCount = result.diagnostics.size();
+            emitAddressAddressable(*argument);
+            if (result.diagnostics.size() != diagnosticCount) {
+                return;
+            }
+
+            Instruction instruction;
+            instruction.opcode = OpCode::INP;
+            instruction.operand = targetType.code;
+            emit(instruction);
+        }
+
+        if (lowered == "readln") {
+            Instruction instruction;
+            instruction.opcode = OpCode::INL;
+            instruction.operand = node.arguments.empty() ? 1 : 0;
+            emit(instruction);
+        }
         return;
     }
 
-    diagnostic("procedure calls for user-defined routines are not implemented yet", node.location);
+    int procedureIndex = node.tabIndex;
+    if (procedureIndex <= 0 && symbolTable) {
+        procedureIndex = symbolTable->lookupTab(node.name);
+    }
+
+    if (procedureIndex <= 0 || !symbolTable) {
+        diagnostic("unknown procedure '" + node.name + "'", node.location);
+        return;
+    }
+
+    const TabEntry& entry = symbolTable->tabAt(procedureIndex);
+    if (entry.obj != OBJ_PROCEDURE) {
+        diagnostic("identifier '" + node.name + "' is not a procedure", node.location);
+        return;
+    }
+
+    const int address = routineAddress(procedureIndex);
+    if (address < 0) {
+        diagnostic("procedure '" + node.name + "' does not have a generated entry address", node.location);
+        return;
+    }
+
+    const std::vector<int> parameterIndices = routineParameterIndices(entry.ref);
+    if (parameterIndices.size() != node.arguments.size()) {
+        diagnostic("procedure '" + node.name + "' argument count does not match metadata", node.location);
+        return;
+    }
+
+    for (size_t i = 0; i < node.arguments.size(); ++i) {
+        const auto& argument = node.arguments[i];
+        if (!argument) {
+            diagnostic("procedure '" + node.name + "' has an empty argument", node.location);
+            return;
+        }
+
+        const size_t diagnosticCount = result.diagnostics.size();
+        const TabEntry& parameter = symbolTable->tabAt(parameterIndices[i]);
+        emitArgumentValue(*argument, parameter);
+
+        if (result.diagnostics.size() != diagnosticCount) {
+            return;
+        }
+    }
+
+    Instruction instruction;
+    instruction.opcode = OpCode::CAL;
+    instruction.level = lexicalLevelOffset(entry);
+    instruction.operand = address;
+    emit(instruction);
 }

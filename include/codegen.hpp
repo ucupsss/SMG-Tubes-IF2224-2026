@@ -31,6 +31,12 @@ private:
     void reset(const SymbolTable& symbols);
     void generateProgram(const ProgramNode& node);
     void generateBlock(const BlockNode& node);
+    void generateDeclaration(const DeclarationNode& node);
+    void generateVarDecl(const VarDeclNode& node);
+    void generateConstDecl(const ConstDeclNode& node);
+    void generateTypeDecl(const TypeDeclNode& node);
+    void generateProcDecl(const ProcDeclNode& node);
+    void generateFuncDecl(const FuncDeclNode& node);
     void generateStatement(const StatementNode& node);
     void generateAssignment(const AssignNode& node);
     void generateIf(const IfNode& node);
@@ -43,17 +49,34 @@ private:
 
     bool emitLoadAddressable(const ExpressionNode& node);
     bool emitStoreAddressable(const ExpressionNode& node);
+    bool emitAddressAddressable(const ExpressionNode& node);
+    bool emitArgumentValue(const ExpressionNode& argument, const TabEntry& parameter);
     bool emitConstant(const TabEntry& entry);
+    TypeInfo expressionTypeInfo(const ExpressionNode& node) const;
+    TypeInfo arrayElementType(const ATabEntry& entry) const;
+    bool isStructuredType(const TypeInfo& type) const;
 
     int emit(Instruction instruction);
     void patchOperand(int instructionIndex, int operand);
     int nextAddress() const;
 
+    int lexicalLevelOffset(const TabEntry& entry) const;
+    int blockIndexForEntry(const TabEntry& entry) const;
+    bool isParameterEntry(const TabEntry& entry, int blockIndex) const;
     int variableAddress(const TabEntry& entry);
+    bool isCurrentFunctionResult(const TabEntry& entry) const;
+    void registerRoutine(int tabIndex, int address, const BTabEntry& block, bool returnsValue);
+    int routineAddress(int tabIndex) const;
+    std::vector<int> routineParameterIndices(int blockIndex) const;
     void diagnostic(const std::string& message, const SourceLocation& location = {});
 
     const SymbolTable* symbolTable = nullptr;
     CodeGenerationResult result;
+    std::vector<int> routineAddressesByTabIndex;
+    int currentBlockIndex = 0;
+    int currentLexLevel = 0;
+    int currentFunctionTabIndex = 0;
+    int currentFunctionReturnOffset = 0;
 };
 
 #endif

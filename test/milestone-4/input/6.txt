@@ -1,0 +1,13 @@
+program ElseBranch;
+
+var
+    x: integer;
+
+begin
+    x := 1;
+
+    if x > 2 then
+        writeln('then')
+    else
+        writeln('else ', x);
+end.

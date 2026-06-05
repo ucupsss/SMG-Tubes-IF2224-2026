@@ -1,4 +1,4 @@
-# Arion Compiler - Milestone 3
+# Arion Compiler - Milestone 4
 
 Tugas Besar IF2224 Teori Bahasa Formal dan Otomata 2026.
 
@@ -15,32 +15,94 @@ Tugas Besar IF2224 Teori Bahasa Formal dan Otomata 2026.
 
 ## Deskripsi Program
 
-Program ini merupakan compiler sederhana untuk bahasa Arion yang sudah mencakup lexical analysis, syntax analysis, dan semantic analysis.
+Program ini merupakan compiler dan interpreter sederhana untuk bahasa Arion. Sampai Milestone 4, program sudah mencakup:
 
-Pada milestone 3, program melakukan analisis semantik terhadap program Arion. Input akan diproses melalui lexer dan parser untuk membentuk parse tree, lalu parse tree tersebut dibangun menjadi AST dan dianotasi oleh semantic analyzer. Untuk kebutuhan integrasi milestone, semantic analyzer juga dapat menerima parse tree terformat dari keluaran milestone 2.
+- lexical analysis;
+- syntax analysis;
+- AST construction;
+- semantic analysis dan decorated AST;
+- intermediate code generation;
+- eksekusi intermediate code dengan stack machine interpreter.
 
-Keluaran utama milestone 3 meliputi:
+Pada Milestone 4, source code Arion diproses dari lexer sampai semantic analyzer untuk menghasilkan decorated AST dan symbol table. Hasil tersebut kemudian digunakan oleh code generator untuk menghasilkan intermediate code linear. Intermediate code ini dijalankan oleh stack machine interpreter untuk menghasilkan output akhir program.
 
-- `tab`, yaitu tabel identifier untuk reserved words, predefined identifiers, program, deklarasi, variabel, konstanta, tipe, prosedur, dan fungsi.
-- `btab`, yaitu tabel blok yang menyimpan informasi scope, parameter, dan ukuran variabel.
-- `atab`, yaitu tabel array untuk menyimpan informasi indeks dan elemen array.
-- Decorated AST, yaitu AST yang sudah diberi anotasi semantik seperti `tab_index`, `type`, dan `lev`.
-- Semantic diagnostics, yaitu daftar error atau warning semantik.
-- Status analisis, yaitu `SUCCESS` jika tidak ada error semantik dan `FAILED` jika ditemukan error.
+Keluaran utama Milestone 4 meliputi:
 
-Program melakukan pemeriksaan semantik sesuai kebutuhan milestone 3, antara lain:
+- semantic diagnostics;
+- intermediate code;
+- code generation diagnostics;
+- program output;
+- runtime diagnostics;
+- status eksekusi.
 
-- pengelolaan scope dan lexical level;
-- deteksi redeklarasi identifier dalam scope yang sama;
-- pengecekan identifier yang belum dideklarasikan;
-- resolusi tipe primitif, named type, subrange, enum, array, dan record;
-- pengecekan kompatibilitas tipe pada assignment dan ekspresi;
-- validasi operator aritmetika, relasional, Boolean, unary, `div`, dan `mod`;
-- validasi akses array dan field record;
-- validasi pemanggilan procedure dan function, termasuk jumlah dan tipe argumen;
-- validasi parameter by-value dan by-reference;
-- validasi statement `if`, `while`, `repeat`, `for`, dan `case`;
-- dukungan predefined identifiers seperti `True`, `False`, `Read`, `Readln`, `Write`, dan `Writeln`.
+## Fitur Milestone 4
+
+### Intermediate Code
+
+Program menghasilkan instruksi intermediate berbasis stack machine, antara lain:
+
+- `INT` untuk alokasi frame;
+- `LIT` untuk literal;
+- `LOD` dan `STO` untuk load/store scalar;
+- `LDA`, `LDI`, dan `STI` untuk alamat, indirect load, dan indirect store;
+- `CPY` untuk copy array/record;
+- `LDR` untuk load aggregate by-value sebagai argumen routine;
+- `CAL` dan `RET` untuk pemanggilan dan return procedure/function;
+- `JMP` dan `JPC` untuk control flow;
+- `OPR` untuk operasi aritmetika, relasional, Boolean, dan output;
+- `INP` dan `INL` untuk `read` dan `readln`.
+
+### Stack Machine Interpreter
+
+Interpreter menjalankan intermediate code dengan model frame stack yang memuat:
+
+- static link;
+- dynamic link;
+- return address;
+- parameter;
+- variabel lokal;
+- slot return value untuk function scalar.
+
+Interpreter juga memiliki runtime diagnostics untuk error seperti division by zero, stack underflow, invalid jump target, akses memori di luar batas, dan input yang tidak sesuai tipe target.
+
+### Statement dan Ekspresi yang Didukung
+
+Implementasi Milestone 4 mendukung:
+
+- assignment scalar;
+- assignment array/record dengan copy aggregate;
+- ekspresi aritmetika `+`, `-`, `*`, `/`, `div`, dan `mod`;
+- ekspresi relasional `==`, `<>`, `<`, `<=`, `>`, dan `>=`;
+- ekspresi Boolean `and`, `or`, dan `not`;
+- short-circuit evaluation untuk `and` dan `or`;
+- `if-else`;
+- `while`;
+- `repeat-until`;
+- `for-to` dan `for-downto`;
+- `case`;
+- procedure dan function call;
+- parameter by-value dan by-reference;
+- nested routine dengan static link;
+- akses array dan record, termasuk array of record;
+- `write`, `writeln`, `read`, dan `readln`.
+
+### Array, Record, dan Parameter
+
+Array dan record direpresentasikan sebagai beberapa slot memori berurutan. Implementasi mendukung:
+
+- read/write field record scalar;
+- read/write element array scalar;
+- assignment antar array/record kompatibel;
+- copy array/record sebagai parameter by-value;
+- passing array/record by-reference.
+
+Untuk menjaga kontrak backend tetap jelas, compiler menolak beberapa konteks structured value yang tidak dieksekusi sebagai scalar:
+
+- function dengan return type array atau record;
+- `write` atau `writeln` terhadap whole array/record;
+- `read` atau `readln` terhadap whole array/record.
+
+Kasus tersebut dihentikan di semantic analysis dengan diagnostic yang eksplisit.
 
 ## Requirements
 
@@ -57,6 +119,12 @@ Jalankan perintah berikut dari root repository:
 make
 ```
 
+atau:
+
+```bash
+make build
+```
+
 Executable akan dibuat di:
 
 - Windows: `bin/windows/arion_compiler.exe`
@@ -68,20 +136,28 @@ Executable akan dibuat di:
 make run
 ```
 
+Pada Windows, executable juga dapat dijalankan langsung:
+
+```powershell
+.\bin\windows\arion_compiler.exe
+```
+
 Program akan menampilkan folder test yang tersedia:
 
 - `milestone-1` untuk lexical analyzer;
 - `milestone-2` untuk syntax analyzer;
-- `milestone-3` untuk semantic analyzer.
+- `milestone-3` untuk semantic analyzer;
+- `milestone-4` untuk intermediate code dan interpreter.
 
 ### 3. Pilih input dan output
 
-Untuk pengujian milestone 3:
+Untuk pengujian Milestone 4:
 
-1. Pilih folder `milestone-3`.
-2. Masukkan nama file input dari `test/milestone-3/input`, misalnya `1.txt`.
-3. Program akan menampilkan hasil semantic analyzer di terminal.
-4. Masukkan nama file output tujuan di `test/milestone-3/output`, misalnya `1.txt`.
+1. Pilih folder `milestone-4`.
+2. Masukkan nama file input dari `test/milestone-4/input`, misalnya `1.txt`.
+3. Jika program Arion membutuhkan input runtime, masukkan input ketika diminta oleh interpreter.
+4. Program akan menampilkan semantic diagnostics, intermediate code, codegen diagnostics, program output, runtime diagnostics, dan status.
+5. Masukkan nama file output tujuan di `test/milestone-4/output`, misalnya `1.txt`.
 
 Gunakan `0` untuk kembali dan `q` untuk keluar dari program.
 
@@ -101,30 +177,61 @@ make clean-all
 
 ```text
 .
-├── include/                 Header file program
-├── src/                     Implementasi lexer, parser, AST, semantic analyzer, CLI, dan driver
-├── test/
-│   ├── milestone-1/         Test lexical analyzer
-│   ├── milestone-2/         Test syntax analyzer
-│   └── milestone-3/         Test semantic analyzer
-├── doc/                     Laporan milestone sebelumnya
-├── Makefile
-└── README.md
+|-- include/                 Header file program
+|-- src/                     Implementasi lexer, parser, AST, semantic analyzer, codegen, interpreter, CLI, dan driver
+|-- test/
+|   |-- milestone-1/         Test lexical analyzer
+|   |-- milestone-2/         Test syntax analyzer
+|   |-- milestone-3/         Test semantic analyzer
+|   `-- milestone-4/         Test intermediate code dan interpreter
+|-- doc/                     Laporan milestone
+|-- Makefile
+`-- README.md
 ```
 
 Setiap folder milestone di dalam `test` memiliki struktur:
 
 ```text
 test/milestone-x/
-├── input/
-└── output/
+|-- input/
+`-- output/
 ```
 
-## Pembagian Tugas Milestone 3
+## Pengujian Milestone 4
 
-| NIM | Nama | Tugas | Kontribusi |
-| --- | --- | --- | --- |
-| 13524014 | Yusuf Faishal Listyardi | Symbol Table, Semantic Declaration, dan Laporan| 25% |
-| 13524046 | Farrel Limjaya | Semantic Expression, Semantic Statement, dan Laporan | 25% |
-| 13524066 | Nathanael Gunawan | Implementasi Statement, Integrasi Statement, CLI, dan Laporan | 25% |
-| 13524070 | A. Fawwaz Azam Wicaksono | Revisi Milestone 2, Implementasi AST, Test Case, dan Laporan | 25% |
+Test Milestone 4 berada di:
+
+```text
+test/milestone-4/input/
+test/milestone-4/output/
+```
+
+Cakupan test meliputi:
+
+- ekspresi dan assignment scalar;
+- control flow;
+- procedure/function call;
+- nested routine dan lexical scope;
+- parameter by-value dan by-reference;
+- akses array dan record;
+- aggregate assignment;
+- real division;
+- input `read/readln`;
+- error handling runtime seperti division by zero;
+- semantic rejection untuk konteks structured value yang tidak didukung.
+
+Catatan pengujian:
+
+- `8.txt` dan `20.txt` sengaja menghasilkan runtime error division by zero.
+- `30.txt` sengaja menghasilkan semantic error untuk return array/record dan I/O whole record.
+
+## Pembagian Tugas Milestone 4
+
+Rincian kontribusi resmi dicantumkan pada laporan Milestone 4. Ringkasan area implementasi:
+
+| NIM | Nama | Area |
+| --- | --- | --- |
+| 13524014 | Yusuf Faishal Listyardi | Intermediate representation, symbol table integration, dan dokumentasi |
+| 13524046 | Farrel Limjaya | Expression code generation, operation handling, dan runtime behavior |
+| 13524066 | Nathanael Gunawan | Statement code generation, control flow, routine frame, dan CLI integration |
+| 13524070 | A. Fawwaz Azam Wicaksono | Aggregate handling, input procedures, hardening, test case, dan README |

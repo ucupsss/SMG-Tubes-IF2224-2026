@@ -1,0 +1,46 @@
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Intermediate Code:
+0 JMP 0 7
+1 INT 0 4
+2 LOD 0 3 ; indirect
+3 LIT 0 1
+4 OPR 0 2
+5 STO 0 3 ; indirect
+6 RET 0 0
+7 INT 0 5
+8 LIT 0 8
+9 LDA 0 3
+10 LIT 0 2
+11 LIT 0 1
+12 OPR 0 3
+13 OPR 0 2
+14 STI 0 0
+15 LDA 0 3
+16 LIT 0 2
+17 LIT 0 1
+18 OPR 0 3
+19 OPR 0 2
+20 CAL 0 1
+21 LIT 0 "bump "
+22 OPR 0 13
+23 LDA 0 3
+24 LIT 0 2
+25 LIT 0 1
+26 OPR 0 3
+27 OPR 0 2
+28 LDI 0 0
+29 OPR 0 14
+30 RET 0 0
+
+Codegen diagnostics:
+No code generation errors.
+
+Program Output:
+bump 9
+
+Runtime diagnostics:
+No runtime errors.
+
+Status: SUCCESS

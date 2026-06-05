@@ -33,6 +33,7 @@ bool mapBinaryOperator(const std::string& op, OperationCode& operation) {
     if (lowered == "+") operation = OperationCode::ADD;
     else if (lowered == "-") operation = OperationCode::SUB;
     else if (lowered == "*") operation = OperationCode::MUL;
+    else if (lowered == "/") operation = OperationCode::RDIV;
     else if (lowered == "div") operation = OperationCode::DIV;
     else if (lowered == "mod") operation = OperationCode::MOD;
     else if (lowered == "==") operation = OperationCode::EQL;
@@ -118,15 +119,6 @@ void CodeGenerator::generateExpression(const ExpressionNode& node) {
 
             const std::string op = text_util::lowercase(binary.op);
 
-            if (op == "/") {
-                diagnostic(
-                    "operator '/' is defined by earlier milestones as real division, "
-                    "but milestone 4 does not define a real-division OPR code",
-                    node.location
-                );
-                return;
-            }
-
             if (op == "and") {
                 generateExpression(*binary.left);
                 int leftFalse = emit(makeJump(OpCode::JPC));
@@ -171,9 +163,56 @@ void CodeGenerator::generateExpression(const ExpressionNode& node) {
             emit(makeOperation(operation));
             break;
         }
-        case ASTNodeKind::FuncCall:
-            diagnostic("function call expressions are not implemented yet", node.location);
+        case ASTNodeKind::FuncCall: {
+            const auto& call = static_cast<const FuncCallNode&>(node);
+            const TabEntry* entry = entryAt(symbolTable, node.tabIndex);
+            int functionIndex = node.tabIndex;
+
+            if (!entry && symbolTable) {
+                functionIndex = symbolTable->lookupTab(call.name);
+                entry = entryAt(symbolTable, functionIndex);
+            }
+
+            if (!entry || entry->obj != OBJ_FUNCTION) {
+                diagnostic("unknown function '" + call.name + "'", node.location);
+                return;
+            }
+
+            const int address = routineAddress(functionIndex);
+            if (address < 0) {
+                diagnostic("function '" + call.name + "' does not have a generated entry address", node.location);
+                return;
+            }
+
+            const std::vector<int> parameterIndices = routineParameterIndices(entry->ref);
+            if (parameterIndices.size() != call.arguments.size()) {
+                diagnostic("function '" + call.name + "' argument count does not match metadata", node.location);
+                return;
+            }
+
+            for (size_t i = 0; i < call.arguments.size(); ++i) {
+                const auto& argument = call.arguments[i];
+                if (!argument) {
+                    diagnostic("function '" + call.name + "' has an empty argument", node.location);
+                    return;
+                }
+
+                const size_t diagnosticCount = result.diagnostics.size();
+                const TabEntry& parameter = symbolTable->tabAt(parameterIndices[i]);
+                emitArgumentValue(*argument, parameter);
+
+                if (result.diagnostics.size() != diagnosticCount) {
+                    return;
+                }
+            }
+
+            Instruction instruction;
+            instruction.opcode = OpCode::CAL;
+            instruction.level = lexicalLevelOffset(*entry);
+            instruction.operand = address;
+            emit(instruction);
             break;
+        }
         default:
             diagnostic("unsupported expression node", node.location);
             break;
@@ -181,14 +220,24 @@ void CodeGenerator::generateExpression(const ExpressionNode& node) {
 }
 
 bool CodeGenerator::emitLoadAddressable(const ExpressionNode& node) {
-    if (node.kind == ASTNodeKind::ArrayAccess) {
-        diagnostic("array access code generation is not implemented yet", node.location);
-        return false;
-    }
+    if (node.kind == ASTNodeKind::ArrayAccess ||
+        node.kind == ASTNodeKind::RecordAccess) {
+        const TypeInfo valueType = expressionTypeInfo(node);
+        if (isStructuredType(valueType)) {
+            diagnostic("structured value cannot be loaded in this expression context", node.location);
+            return false;
+        }
 
-    if (node.kind == ASTNodeKind::RecordAccess) {
-        diagnostic("record access code generation is not implemented yet", node.location);
-        return false;
+        const size_t diagnosticCount = result.diagnostics.size();
+        emitAddressAddressable(node);
+        if (result.diagnostics.size() != diagnosticCount) {
+            return false;
+        }
+
+        Instruction instruction;
+        instruction.opcode = OpCode::LDI;
+        emit(instruction);
+        return true;
     }
 
     if (node.kind != ASTNodeKind::Var) {
@@ -212,15 +261,192 @@ bool CodeGenerator::emitLoadAddressable(const ExpressionNode& node) {
         return emitConstant(*entry);
     }
 
+    if (isCurrentFunctionResult(*entry)) {
+        if (isStructuredType(entry->typeInfo)) {
+            diagnostic("structured function result cannot be loaded as a scalar value", node.location);
+            return false;
+        }
+
+        Instruction instruction;
+        instruction.opcode = OpCode::LOD;
+        instruction.level = 0;
+        instruction.operand = variableAddress(*entry);
+        emit(instruction);
+        return true;
+    }
+
     if (entry->obj != OBJ_VARIABLE) {
         diagnostic("identifier '" + variable.name + "' is not a value", node.location);
         return false;
     }
 
+    if (isStructuredType(entry->typeInfo)) {
+        diagnostic("structured value cannot be loaded in this expression context", node.location);
+        return false;
+    }
+
     Instruction instruction;
     instruction.opcode = OpCode::LOD;
+    instruction.level = lexicalLevelOffset(*entry);
     instruction.operand = variableAddress(*entry);
+    instruction.indirect = entry->nrm == 0;
     emit(instruction);
+    return true;
+}
+
+bool CodeGenerator::emitAddressAddressable(const ExpressionNode& node) {
+    if (node.kind == ASTNodeKind::ArrayAccess) {
+        const auto& access = static_cast<const ArrayAccessNode&>(node);
+        if (!access.array) {
+            diagnostic("array access is missing its base expression", node.location);
+            return false;
+        }
+
+        TypeInfo currentType = expressionTypeInfo(*access.array);
+        const size_t diagnosticCount = result.diagnostics.size();
+        emitAddressAddressable(*access.array);
+        if (result.diagnostics.size() != diagnosticCount) {
+            return false;
+        }
+
+        for (const auto& index : access.indices) {
+            if (!index) {
+                diagnostic("array access has an empty index expression", node.location);
+                return false;
+            }
+
+            if (currentType.code != TYPE_ARRAY ||
+                currentType.ref <= 0 ||
+                currentType.ref >= static_cast<int>(symbolTable->atab().size())) {
+                diagnostic("subscripted expression is not an array", node.location);
+                return false;
+            }
+
+            const ATabEntry& arrayEntry = symbolTable->atabAt(currentType.ref);
+            generateExpression(*index);
+            if (result.diagnostics.size() != diagnosticCount) {
+                return false;
+            }
+
+            if (arrayEntry.low != 0) {
+                emit(makeLiteral(RuntimeValue::integer(arrayEntry.low)));
+                emit(makeOperation(OperationCode::SUB));
+            }
+
+            if (arrayEntry.elsz != 1) {
+                emit(makeLiteral(RuntimeValue::integer(arrayEntry.elsz)));
+                emit(makeOperation(OperationCode::MUL));
+            }
+
+            emit(makeOperation(OperationCode::ADD));
+            currentType = arrayElementType(arrayEntry);
+        }
+
+        return true;
+    }
+
+    if (node.kind == ASTNodeKind::RecordAccess) {
+        const auto& access = static_cast<const RecordAccessNode&>(node);
+        if (!access.record) {
+            diagnostic("record access is missing its base expression", node.location);
+            return false;
+        }
+
+        TypeInfo recordType = expressionTypeInfo(*access.record);
+        if (recordType.code != TYPE_RECORD || recordType.ref <= 0) {
+            diagnostic("field access requires a record operand", node.location);
+            return false;
+        }
+
+        const int fieldIndex = symbolTable ? symbolTable->lookupTab(access.fieldName, recordType.ref) : 0;
+        if (fieldIndex <= 0) {
+            diagnostic("record type does not contain field '" + access.fieldName + "'", node.location);
+            return false;
+        }
+
+        const size_t diagnosticCount = result.diagnostics.size();
+        emitAddressAddressable(*access.record);
+        if (result.diagnostics.size() != diagnosticCount) {
+            return false;
+        }
+
+        const TabEntry& field = symbolTable->tabAt(fieldIndex);
+        if (field.adr != 0) {
+            emit(makeLiteral(RuntimeValue::integer(field.adr)));
+            emit(makeOperation(OperationCode::ADD));
+        }
+
+        return true;
+    }
+
+    if (node.kind != ASTNodeKind::Var) {
+        diagnostic("expression is not addressable", node.location);
+        return false;
+    }
+
+    const auto& variable = static_cast<const VarNode&>(node);
+    const TabEntry* entry = entryAt(symbolTable, node.tabIndex);
+
+    if (!entry && symbolTable) {
+        entry = entryAt(symbolTable, symbolTable->lookupTab(variable.name));
+    }
+
+    if (!entry) {
+        diagnostic("unknown identifier '" + variable.name + "'", node.location);
+        return false;
+    }
+
+    if (entry->obj != OBJ_VARIABLE) {
+        diagnostic("identifier '" + variable.name + "' is not addressable", node.location);
+        return false;
+    }
+
+    Instruction instruction;
+    if (entry->nrm == 0) {
+        instruction.opcode = OpCode::LOD;
+        instruction.level = lexicalLevelOffset(*entry);
+        instruction.operand = variableAddress(*entry);
+    } else {
+        instruction.opcode = OpCode::LDA;
+        instruction.level = lexicalLevelOffset(*entry);
+        instruction.operand = variableAddress(*entry);
+    }
+
+    emit(instruction);
+    return true;
+}
+
+bool CodeGenerator::emitArgumentValue(const ExpressionNode& argument, const TabEntry& parameter) {
+    if (parameter.nrm == 0) {
+        return emitAddressAddressable(argument);
+    }
+
+    if (isStructuredType(parameter.typeInfo)) {
+        if (!symbolTable) {
+            diagnostic("missing symbol table for aggregate argument", argument.location);
+            return false;
+        }
+
+        const int argumentSize = symbolTable->sizeOf(parameter.typeInfo);
+        if (argumentSize <= 0) {
+            diagnostic("aggregate argument has invalid size", argument.location);
+            return false;
+        }
+
+        const size_t diagnosticCount = result.diagnostics.size();
+        emitAddressAddressable(argument);
+        if (result.diagnostics.size() != diagnosticCount) {
+            return false;
+        }
+
+        Instruction instruction;
+        instruction.opcode = OpCode::LDR;
+        instruction.operand = argumentSize;
+        emit(instruction);
+        return true;
+    }
+
+    generateExpression(argument);
     return true;
 }
 

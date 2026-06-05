@@ -1,0 +1,15 @@
+program ByReferenceParameter;
+
+var
+    n: integer;
+
+procedure Increment(var value: integer; delta: integer);
+begin
+    value := value + delta;
+end;
+
+begin
+    n := 1;
+    Increment(n, 2);
+    writeln('n ', n);
+end.
