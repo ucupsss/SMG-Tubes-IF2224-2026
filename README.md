@@ -140,6 +140,17 @@ Tersedia 24 test case yang mencakup eksekusi valid dan error handling.
 | 23 | Runtime error: array index out of bounds | Failed |
 | 24 | Runtime error: stack overflow dari recursive call | Failed |
 
+Test case yang menggunakan `read` atau `readln` membutuhkan input runtime dari terminal:
+
+| No | Input Runtime | Keterangan |
+| --- | --- | --- |
+| 17 | `skip this line` lalu `4 2.5 true Z hello` | Baris pertama dibuang oleh `readln;`, baris kedua dibaca sebagai `integer`, `real`, `boolean`, `char`, dan `string`. |
+| 18 | `7 5 7` | Nilai dibaca ke `nums[2]`, `pair.left`, dan `pair.right`, sehingga output akhirnya `input targets 19`. |
+| 19 | `abc` | Input sengaja tidak valid karena program membaca variabel `integer`. |
+| 23 | `0` | Input sengaja di luar rentang indeks array `1..3`. |
+
+Test 22 juga memuat `readln(p)`, tetapi program berhenti pada semantic analysis sehingga tidak membutuhkan input runtime.
+
 ## Pembagian Tugas
 
 Kontribusi dibagi rata sebesar 25% untuk setiap anggota pada tiap milestone.
