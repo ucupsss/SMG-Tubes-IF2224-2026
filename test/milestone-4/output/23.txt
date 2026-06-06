@@ -25,6 +25,6 @@ Program Output:
 <no output>
 
 Runtime diagnostics:
-Runtime error at instruction 7: BND: array index out of bounds 0 (rentang valid 1..3)
+Runtime error at instruction 7: BND: array index out of bounds 0 (valid range 1..3)
 
 Status: FAILED

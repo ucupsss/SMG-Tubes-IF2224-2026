@@ -23,8 +23,8 @@ enum class PromptResult {
 };
 
 void printTestFolders(const std::vector<std::string>& folders) {
-    std::cout << "\n\nFolder test tersedia:\n";
-    std::cout << "0. Keluar\n";
+    std::cout << "\n\nAvailable test folders:\n";
+    std::cout << "0. Exit\n";
     for (size_t i = 0; i < folders.size(); ++i) {
         std::cout << i + 1 << ". " << folders[i] << "\n";
     }
@@ -110,7 +110,7 @@ PromptResult promptTestFolder(std::string& selectedFolder) {
         printTestFolders(testFolders);
 
         std::string input;
-        PromptResult promptResult = readPrompt("Pilih nomor folder test (0/q untuk keluar): ", input);
+        PromptResult promptResult = readPrompt("Choose a test folder number (0/q to exit): ", input);
 
         if (promptResult == PromptResult::Quit || promptResult == PromptResult::Cancel) {
             return PromptResult::Quit;
@@ -133,9 +133,9 @@ PromptResult promptTestFolder(std::string& selectedFolder) {
 PromptResult promptInputSource(const std::string& selectedFolder, std::string& source) {
     while (true) {
         std::string inputFileName;
-        const std::string prompt = "\nMasukkan nama file input dari test/" +
+        const std::string prompt = "\nEnter input file name from test/" +
                                    selectedFolder +
-                                   "/input (0 untuk kembali, q untuk keluar): ";
+                                   "/input (0 to go back, q to exit): ";
 
         PromptResult promptResult = readPrompt(prompt, inputFileName);
 
@@ -167,9 +167,9 @@ PromptResult promptOutputFile(
 ) {
     while (true) {
         std::string outputFileName;
-        const std::string prompt = "Masukkan nama file output ke test/" +
+        const std::string prompt = "Enter output file name for test/" +
                                    selectedFolder +
-                                   "/output (0 untuk kembali, q untuk keluar): ";
+                                   "/output (0 to go back, q to exit): ";
 
         PromptResult promptResult = readPrompt(prompt, outputFileName);
 
@@ -191,7 +191,7 @@ PromptResult promptOutputFile(
             continue;
         }
 
-        std::cout << "Output berhasil ditulis ke " << resolveTxtPath(outputPath).string() << "\n";
+        std::cout << "Output written to " << resolveTxtPath(outputPath).string() << "\n";
         return PromptResult::Success;
     }
 }
@@ -240,19 +240,19 @@ void printOutputLines(
     const std::vector<std::string>& outputLines
 ) {
     if (shouldRunLexerOnly(selectedFolder)) {
-        std::cout << "\nHasil lexical analyzer:\n";
+        std::cout << "\nLexical analyzer result:\n";
     }
     else if (shouldRunSyntaxAnalyzer(selectedFolder)) {
-        std::cout << "\nHasil syntax analyzer:\n";
+        std::cout << "\nSyntax analyzer result:\n";
     }
     else if (shouldRunSemanticAnalyzer(selectedFolder)) {
-        std::cout << "\nHasil semantic analyzer:\n";
+        std::cout << "\nSemantic analyzer result:\n";
     }
     else if (shouldRunIntermediateCodeInterpreter(selectedFolder)) {
-        std::cout << "\nHasil intermediate code dan interpreter:\n";
+        std::cout << "\nIntermediate code and interpreter result:\n";
     }
     else {
-        std::cout << "\nHasil analyzer:\n";
+        std::cout << "\nAnalyzer result:\n";
     }
 
     for (const std::string& line : outputLines) {
@@ -282,7 +282,7 @@ int runCli() {
             result = promptInputSource(selectedFolder, source);
 
             if (result == PromptResult::Quit) {
-                std::cout << "Program selesai.\n";
+                std::cout << "Program finished.\n";
                 return 0;
             }
 
@@ -295,7 +295,7 @@ int runCli() {
 
             result = promptOutputFile(selectedFolder, outputLines);
             if (result == PromptResult::Quit) {
-                std::cout << "Program selesai.\n";
+                std::cout << "Program finished.\n";
                 return 0;
             }
 
@@ -307,6 +307,6 @@ int runCli() {
         }
     }
 
-    std::cout << "Program selesai.\n";
+    std::cout << "Program finished.\n";
     return 0;
 }

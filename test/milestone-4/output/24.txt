@@ -17,6 +17,6 @@ Program Output:
 <no output>
 
 Runtime diagnostics:
-Runtime error at instruction 2: CAL: stack overflow: call depth melebihi batas 1000
+Runtime error at instruction 2: CAL: stack overflow: call depth exceeds limit 1000
 
 Status: FAILED

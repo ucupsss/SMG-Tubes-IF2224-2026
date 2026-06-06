@@ -59,7 +59,7 @@ bool StackMachineInterpreter::executeOperation(OperationCode operation) {
             } else if (a.kind == RuntimeValueKind::Real) {
                 push(RuntimeValue::real(-a.realValue));
             } else {
-                runtimeError("NEG: tipe data tidak valid untuk negasi");
+                runtimeError("NEG: invalid operand type for negation");
                 return false;
             }
             break;
@@ -80,14 +80,14 @@ bool StackMachineInterpreter::executeOperation(OperationCode operation) {
         case OperationCode::GTR:
         case OperationCode::LEQ:
             return executeComparison(operation);
-        // WRT (13) cetak nilai
+        // WRT (13): append one value to the current output line.
         case OperationCode::WRT: {
             RuntimeValue value = pop();
             if (result.halted) return false;
             currentOutput += value.display();
             break;
         }
-        // WRTLN (14) — cetak nilai ke output lalu newline (simpan sebagai baris)
+        // WRTLN (14): append one value and finish the current output line.
         case OperationCode::WRTLN: {
             RuntimeValue value = pop();
             if (result.halted) return false;
@@ -182,7 +182,7 @@ bool StackMachineInterpreter::executeBinaryNumeric(OperationCode operation) {
         }
         case OperationCode::MOD: {
             if (!bothInt) {
-                runtimeError("MOD: kedua operand harus integer");
+                runtimeError("MOD: both operands must be integers");
                 return false;
             }
             if (ib == 0) {
@@ -219,7 +219,7 @@ bool StackMachineInterpreter::executeComparison(OperationCode operation) {
     RuntimeValue a = pop();
     if (result.halted) return false;
     bool resultBool = false;
-    // Perbandingan integer dengan integer
+    // Integer comparison.
     if (a.kind == RuntimeValueKind::Integer && b.kind == RuntimeValueKind::Integer) {
         const int va = a.integerValue;
         const int vb = b.integerValue;
@@ -233,7 +233,7 @@ bool StackMachineInterpreter::executeComparison(OperationCode operation) {
             default: break;
         }
     }
-    // Perbandingan real
+    // Real comparison.
     else if ((a.kind == RuntimeValueKind::Integer || a.kind == RuntimeValueKind::Real) && (b.kind == RuntimeValueKind::Integer || b.kind == RuntimeValueKind::Real)) {
         const double va = (a.kind == RuntimeValueKind::Integer) ? static_cast<double>(a.integerValue) : a.realValue;
         const double vb = (b.kind == RuntimeValueKind::Integer) ? static_cast<double>(b.integerValue) : b.realValue;
@@ -247,7 +247,7 @@ bool StackMachineInterpreter::executeComparison(OperationCode operation) {
             default: break;
         }
     }
-    // Perbandingan boolean
+    // Boolean comparison.
     else if (a.kind == RuntimeValueKind::Boolean && b.kind == RuntimeValueKind::Boolean) {
         const bool va = a.booleanValue;
         const bool vb = b.booleanValue;
@@ -255,11 +255,11 @@ bool StackMachineInterpreter::executeComparison(OperationCode operation) {
             case OperationCode::EQL: resultBool = (va == vb); break;
             case OperationCode::NEQ: resultBool = (va != vb); break;
             default:
-                runtimeError("perbandingan < > <= >= tidak valid untuk boolean");
+                runtimeError("comparison operators < > <= >= are invalid for boolean operands");
                 return false;
         }
     }
-    // Perbandingan char
+    // Char comparison.
     else if (a.kind == RuntimeValueKind::Char && b.kind == RuntimeValueKind::Char) {
         const char va = a.charValue;
         const char vb = b.charValue;
@@ -273,18 +273,18 @@ bool StackMachineInterpreter::executeComparison(OperationCode operation) {
             default: break;
         }
     }
-    // Perbandingan string (hanya == dan <>)
+    // String comparison (only == and <>).
     else if (a.kind == RuntimeValueKind::String && b.kind == RuntimeValueKind::String) {
         switch (operation) {
             case OperationCode::EQL: resultBool = (a.stringValue == b.stringValue); break;
             case OperationCode::NEQ: resultBool = (a.stringValue != b.stringValue); break;
             default:
-                runtimeError("perbandingan < > <= >= tidak valid untuk string");
+                runtimeError("comparison operators < > <= >= are invalid for string operands");
                 return false;
         }
     }
     else {
-        runtimeError("perbandingan antara tipe data yang tidak kompatibel");
+        runtimeError("comparison between incompatible operand types");
         return false;
     }
     push(RuntimeValue::boolean(resultBool));

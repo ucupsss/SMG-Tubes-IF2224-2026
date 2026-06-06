@@ -77,9 +77,9 @@ void StackMachineInterpreter::push(RuntimeValue value) {
 
 bool StackMachineInterpreter::ensureMemorySize(size_t requiredSize, const std::string& context) {
     if (requiredSize > maxMemorySlots) {
-        runtimeError(context + ": stack overflow: kebutuhan memori " +
+        runtimeError(context + ": stack overflow: required memory " +
                      std::to_string(requiredSize) +
-                     " slot melebihi batas " +
+                     " slots exceeds limit " +
                      std::to_string(maxMemorySlots));
         return false;
     }
@@ -91,7 +91,7 @@ bool StackMachineInterpreter::ensureMemorySize(size_t requiredSize, const std::s
     try {
         memory.resize(requiredSize);
     } catch (const std::exception& error) {
-        runtimeError(context + ": gagal mengalokasikan memori: " + error.what());
+        runtimeError(context + ": failed to allocate memory: " + error.what());
         return false;
     }
 
@@ -100,7 +100,7 @@ bool StackMachineInterpreter::ensureMemorySize(size_t requiredSize, const std::s
 
 bool StackMachineInterpreter::canPushOperand(size_t count, const std::string& context) {
     if (count > maxOperandStackSlots || stack.size() > maxOperandStackSlots - count) {
-        runtimeError(context + ": stack overflow: operand stack melebihi batas " +
+        runtimeError(context + ": stack overflow: operand stack exceeds limit " +
                      std::to_string(maxOperandStackSlots));
         return false;
     }
@@ -110,7 +110,7 @@ bool StackMachineInterpreter::canPushOperand(size_t count, const std::string& co
 
 RuntimeValue StackMachineInterpreter::pop() {
     if (stack.empty()) {
-        runtimeError("stack underflow: pop dari stack kosong");
+        runtimeError("stack underflow: pop from empty stack");
         return RuntimeValue::voidValue();
     }
     RuntimeValue value = std::move(stack.back());
@@ -149,8 +149,8 @@ int StackMachineInterpreter::resolveAddress(int level, int address, bool indirec
 
     const int absoluteAddress = resolvedBase + address;
     if (absoluteAddress < 0 || absoluteAddress >= static_cast<int>(memory.size())) {
-        runtimeError("out-of-bounds access di address " + std::to_string(absoluteAddress) +
-                     " (ukuran memori: " + std::to_string(memory.size()) + ")");
+        runtimeError("out-of-bounds access at address " + std::to_string(absoluteAddress) +
+                     " (memory size: " + std::to_string(memory.size()) + ")");
         return 0;
     }
 
@@ -165,9 +165,9 @@ int StackMachineInterpreter::resolveAddress(int level, int address, bool indirec
     }
 
     if (pointer.integerValue < 0 || pointer.integerValue >= static_cast<int>(memory.size())) {
-        runtimeError("out-of-bounds indirect access di address " +
+        runtimeError("out-of-bounds indirect access at address " +
                      std::to_string(pointer.integerValue) +
-                     " (ukuran memori: " + std::to_string(memory.size()) + ")");
+                     " (memory size: " + std::to_string(memory.size()) + ")");
         return 0;
     }
 
@@ -201,7 +201,7 @@ int StackMachineInterpreter::popAddress(const std::string& instructionName) {
     if (address.integerValue < 0 || address.integerValue >= static_cast<int>(memory.size())) {
         runtimeError(instructionName + ": out-of-bounds address " +
                      std::to_string(address.integerValue) +
-                     " (ukuran memori: " + std::to_string(memory.size()) + ")");
+                     " (memory size: " + std::to_string(memory.size()) + ")");
         return 0;
     }
 
@@ -319,18 +319,18 @@ bool StackMachineInterpreter::executeInstruction(
         case OpCode::INT: {
             const int size = instruction.operand;
             if (size < 0) {
-                runtimeError("INT: ukuran memori tidak valid: " + std::to_string(size));
+                runtimeError("INT: invalid memory size: " + std::to_string(size));
                 return false;
             }
 
             if (base < 0) {
-                runtimeError("INT: base pointer negatif");
+                runtimeError("INT: negative base pointer");
                 return false;
             }
 
             const size_t requiredSize = static_cast<size_t>(base) + static_cast<size_t>(size);
             if (requiredSize > static_cast<size_t>(std::numeric_limits<int>::max())) {
-                runtimeError("INT: ukuran memori terlalu besar");
+                runtimeError("INT: memory size is too large");
                 return false;
             }
 
@@ -344,7 +344,7 @@ bool StackMachineInterpreter::executeInstruction(
             if (instruction.hasLiteral) {
                 push(instruction.literal);
             } else {
-                // Fallback: jika tidak ada literal, perlakukan operand sebagai integer.
+                // Fallback: if no literal is present, treat the operand as an integer.
                 push(RuntimeValue::integer(instruction.operand));
             }
             break;
@@ -374,7 +374,7 @@ bool StackMachineInterpreter::executeInstruction(
         case OpCode::LDR: {
             const int size = instruction.operand;
             if (size < 0) {
-                runtimeError("LDR: ukuran load tidak valid: " + std::to_string(size));
+                runtimeError("LDR: invalid load size: " + std::to_string(size));
                 return false;
             }
 
@@ -398,13 +398,13 @@ bool StackMachineInterpreter::executeInstruction(
         // BND low high
         case OpCode::BND: {
             if (stack.empty()) {
-                runtimeError("BND: stack underflow: indeks array tidak tersedia");
+                runtimeError("BND: stack underflow: missing array index");
                 return false;
             }
 
             int indexValue = 0;
             if (!ordinalValue(stack.back(), indexValue)) {
-                runtimeError("BND: indeks array harus bertipe ordinal");
+                runtimeError("BND: array index must have an ordinal type");
                 return false;
             }
 
@@ -413,7 +413,7 @@ bool StackMachineInterpreter::executeInstruction(
             if (indexValue < low || indexValue > high) {
                 runtimeError("BND: array index out of bounds " +
                              std::to_string(indexValue) +
-                             " (rentang valid " +
+                             " (valid range " +
                              std::to_string(low) +
                              ".." +
                              std::to_string(high) +
@@ -442,7 +442,7 @@ bool StackMachineInterpreter::executeInstruction(
         case OpCode::CPY: {
             const int size = instruction.operand;
             if (size < 0) {
-                runtimeError("CPY: ukuran copy tidak valid: " + std::to_string(size));
+                runtimeError("CPY: invalid copy size: " + std::to_string(size));
                 return false;
             }
 
@@ -610,7 +610,7 @@ bool StackMachineInterpreter::executeInstruction(
             }
 
             if (routineStack.size() >= maxCallDepth) {
-                runtimeError("CAL: stack overflow: call depth melebihi batas " +
+                runtimeError("CAL: stack overflow: call depth exceeds limit " +
                              std::to_string(maxCallDepth));
                 return false;
             }
@@ -631,7 +631,7 @@ bool StackMachineInterpreter::executeInstruction(
 
             const int frameBase = static_cast<int>(memory.size());
             if (routine->frameSize > std::numeric_limits<int>::max() - frameBase) {
-                runtimeError("CAL: ukuran frame terlalu besar");
+                runtimeError("CAL: frame size is too large");
                 return false;
             }
 
@@ -664,7 +664,7 @@ ExecutionResult StackMachineInterpreter::execute(const IntermediateProgram& prog
     reset();
     const int programSize = static_cast<int>(program.instructions.size());
     if (programSize == 0) {
-        result.diagnostics.push_back({"program kosong: tidak ada instruksi", -1});
+        result.diagnostics.push_back({"empty program: no instructions", -1});
         result.halted = true;
         return result;
     }
