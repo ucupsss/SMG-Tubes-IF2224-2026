@@ -1,0 +1,25 @@
+program NestedRoutineFrame;
+
+var
+    g: integer;
+
+procedure Outer(x: integer);
+var
+    y: integer;
+
+procedure Inner(delta: integer);
+begin
+    y := y + delta;
+    g := g + y;
+end;
+
+begin
+    y := x;
+    Inner(2);
+    writeln('nested ', g);
+end;
+
+begin
+    g := 1;
+    Outer(3);
+end.

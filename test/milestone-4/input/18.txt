@@ -1,0 +1,18 @@
+program StructuredInputTargets;
+
+type
+    Index == 1..2;
+    Numbers == array[Index] of integer;
+    RecordPair == record
+        left: integer;
+        right: integer;
+    end;
+
+var
+    nums: Numbers;
+    pair: RecordPair;
+
+begin
+    readln(nums[2], pair.left, pair.right);
+    writeln('input targets ', nums[2] + pair.left + pair.right);
+end.

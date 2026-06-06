@@ -1,0 +1,27 @@
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Intermediate Code:
+0 INT 0 5
+1 LIT 0 5
+2 STO 0 3
+3 LOD 0 3
+4 LIT 0 10
+5 OPR 0 2
+6 STO 0 4
+7 LIT 0 "Result = "
+8 OPR 0 13
+9 LOD 0 4
+10 OPR 0 14
+11 RET 0 0
+
+Codegen diagnostics:
+No code generation errors.
+
+Program Output:
+Result = 15
+
+Runtime diagnostics:
+No runtime errors.
+
+Status: SUCCESS

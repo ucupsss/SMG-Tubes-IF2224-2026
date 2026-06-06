@@ -1,0 +1,22 @@
+program LoopVariants;
+
+var
+    i, total: integer;
+
+begin
+    total := 0;
+
+    for i := 1 to 3 do
+    begin
+        total := total + i;
+    end;
+
+    repeat
+        total := total - 1;
+    until total <= 3;
+
+    case total of
+        3: writeln('three');
+        4: writeln('four');
+    end;
+end.

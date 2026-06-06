@@ -1,0 +1,22 @@
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Intermediate Code:
+0 JMP 0 4
+1 INT 0 3
+2 CAL 1 1
+3 RET 0 0
+4 INT 0 3
+5 CAL 0 1
+6 RET 0 0
+
+Codegen diagnostics:
+No code generation errors.
+
+Program Output:
+<no output>
+
+Runtime diagnostics:
+Runtime error at instruction 2: CAL: stack overflow: call depth exceeds limit 1000
+
+Status: FAILED

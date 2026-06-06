@@ -1,0 +1,18 @@
+Semantic diagnostics:
+Error at line 12, column 21: function return type cannot be an array or record
+Error at line 19, column 13: argument 1 of 'writeln' cannot be a structured value
+Error at line 20, column 12: argument 1 of 'readln' cannot be a structured target
+
+Intermediate Code:
+<not generated because semantic analysis failed>
+
+Codegen diagnostics:
+<not run because semantic analysis failed>
+
+Program Output:
+<not executed>
+
+Runtime diagnostics:
+<not run because semantic analysis failed>
+
+Status: FAILED

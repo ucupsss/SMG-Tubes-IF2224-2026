@@ -1,0 +1,56 @@
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Intermediate Code:
+0 INT 0 5
+1 LIT 0 0
+2 STO 0 4
+3 LIT 0 1
+4 STO 0 3
+5 LOD 0 3
+6 LIT 0 3
+7 OPR 0 12
+8 JPC 0 18
+9 LOD 0 4
+10 LOD 0 3
+11 OPR 0 2
+12 STO 0 4
+13 LOD 0 3
+14 LIT 0 1
+15 OPR 0 2
+16 STO 0 3
+17 JMP 0 5
+18 LOD 0 4
+19 LIT 0 1
+20 OPR 0 3
+21 STO 0 4
+22 LOD 0 4
+23 LIT 0 3
+24 OPR 0 12
+25 JPC 0 18
+26 LOD 0 4
+27 LIT 0 3
+28 OPR 0 7
+29 JPC 0 33
+30 LIT 0 "three"
+31 OPR 0 14
+32 JMP 0 40
+33 LOD 0 4
+34 LIT 0 4
+35 OPR 0 7
+36 JPC 0 40
+37 LIT 0 "four"
+38 OPR 0 14
+39 JMP 0 40
+40 RET 0 0
+
+Codegen diagnostics:
+No code generation errors.
+
+Program Output:
+three
+
+Runtime diagnostics:
+No runtime errors.
+
+Status: SUCCESS

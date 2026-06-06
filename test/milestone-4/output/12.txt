@@ -1,0 +1,62 @@
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Intermediate Code:
+0 INT 0 8
+1 LIT 0 'b'
+2 STO 0 6
+3 LIT 0 1
+4 STO 0 7
+5 LIT 0 4
+6 LDA 0 3
+7 LIT 0 'a'
+8 BND 97 99
+9 LIT 0 97
+10 OPR 0 3
+11 OPR 0 2
+12 STI 0 0
+13 LDA 0 3
+14 LIT 0 'a'
+15 BND 97 99
+16 LIT 0 97
+17 OPR 0 3
+18 OPR 0 2
+19 LDI 0 0
+20 LIT 0 1
+21 OPR 0 2
+22 LDA 0 3
+23 LOD 0 6
+24 BND 97 99
+25 LIT 0 97
+26 OPR 0 3
+27 OPR 0 2
+28 STI 0 0
+29 LIT 0 "ordinal "
+30 OPR 0 13
+31 LDA 0 3
+32 LIT 0 'b'
+33 BND 97 99
+34 LIT 0 97
+35 OPR 0 3
+36 OPR 0 2
+37 LDI 0 0
+38 OPR 0 14
+39 LOD 0 7
+40 LIT 0 1
+41 OPR 0 7
+42 JPC 0 45
+43 LIT 0 "enum ok"
+44 OPR 0 14
+45 RET 0 0
+
+Codegen diagnostics:
+No code generation errors.
+
+Program Output:
+ordinal 5
+enum ok
+
+Runtime diagnostics:
+No runtime errors.
+
+Status: SUCCESS

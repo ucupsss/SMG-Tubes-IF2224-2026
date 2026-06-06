@@ -1,0 +1,10 @@
+program RuntimeStackOverflow;
+
+procedure Loop;
+begin
+    Loop;
+end;
+
+begin
+    Loop;
+end.

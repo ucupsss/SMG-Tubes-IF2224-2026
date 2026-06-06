@@ -1,0 +1,19 @@
+program ArrayElementByReference;
+
+type
+    Index == 1..2;
+    NumberArray == array[Index] of integer;
+
+var
+    slots: NumberArray;
+
+procedure Bump(var slot: integer);
+begin
+    slot := slot + 1;
+end;
+
+begin
+    slots[2] := 8;
+    Bump(slots[2]);
+    writeln('bump ', slots[2]);
+end.

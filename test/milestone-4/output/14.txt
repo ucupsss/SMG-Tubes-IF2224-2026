@@ -1,0 +1,78 @@
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Intermediate Code:
+0 INT 0 9
+1 LIT 0 2
+2 LDA 0 3
+3 LIT 0 1
+4 BND 1 3
+5 LIT 0 1
+6 OPR 0 3
+7 OPR 0 2
+8 STI 0 0
+9 LIT 0 5
+10 LDA 0 3
+11 LIT 0 2
+12 BND 1 3
+13 LIT 0 1
+14 OPR 0 3
+15 OPR 0 2
+16 STI 0 0
+17 LIT 0 8
+18 LDA 0 3
+19 LIT 0 3
+20 BND 1 3
+21 LIT 0 1
+22 OPR 0 3
+23 OPR 0 2
+24 STI 0 0
+25 LDA 0 3
+26 LDA 0 6
+27 CPY 0 3
+28 LIT 0 99
+29 LDA 0 3
+30 LIT 0 2
+31 BND 1 3
+32 LIT 0 1
+33 OPR 0 3
+34 OPR 0 2
+35 STI 0 0
+36 LIT 0 "array copy "
+37 OPR 0 13
+38 LDA 0 6
+39 LIT 0 1
+40 BND 1 3
+41 LIT 0 1
+42 OPR 0 3
+43 OPR 0 2
+44 LDI 0 0
+45 LDA 0 6
+46 LIT 0 2
+47 BND 1 3
+48 LIT 0 1
+49 OPR 0 3
+50 OPR 0 2
+51 LDI 0 0
+52 OPR 0 2
+53 LDA 0 6
+54 LIT 0 3
+55 BND 1 3
+56 LIT 0 1
+57 OPR 0 3
+58 OPR 0 2
+59 LDI 0 0
+60 OPR 0 2
+61 OPR 0 14
+62 RET 0 0
+
+Codegen diagnostics:
+No code generation errors.
+
+Program Output:
+array copy 15
+
+Runtime diagnostics:
+No runtime errors.
+
+Status: SUCCESS

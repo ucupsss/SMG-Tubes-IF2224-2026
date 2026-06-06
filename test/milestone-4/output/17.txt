@@ -1,0 +1,55 @@
+Semantic diagnostics:
+No semantic errors or warnings.
+
+Intermediate Code:
+0 INT 0 8
+1 INL 0 1
+2 LDA 0 3
+3 INP 0 1
+4 LDA 0 4
+5 INP 0 2
+6 LDA 0 5
+7 INP 0 4
+8 LDA 0 6
+9 INP 0 3
+10 LDA 0 7
+11 INP 0 5
+12 INL 0 0
+13 LIT 0 "n "
+14 OPR 0 13
+15 LOD 0 3
+16 LIT 0 1
+17 OPR 0 2
+18 OPR 0 14
+19 LIT 0 "amount "
+20 OPR 0 13
+21 LOD 0 4
+22 OPR 0 14
+23 LIT 0 "flag "
+24 OPR 0 13
+25 LOD 0 5
+26 OPR 0 14
+27 LIT 0 "letter "
+28 OPR 0 13
+29 LOD 0 6
+30 OPR 0 14
+31 LIT 0 "word "
+32 OPR 0 13
+33 LOD 0 7
+34 OPR 0 14
+35 RET 0 0
+
+Codegen diagnostics:
+No code generation errors.
+
+Program Output:
+n 5
+amount 2.5
+flag true
+letter Z
+word hello
+
+Runtime diagnostics:
+No runtime errors.
+
+Status: SUCCESS

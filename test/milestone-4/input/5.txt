@@ -1,0 +1,14 @@
+program ShortCircuit;
+
+var
+    ok, skipped: boolean;
+
+begin
+    ok := true or (1 div 0 > 0);
+    skipped := false and (1 div 0 > 0);
+
+    if ok and not skipped then
+        writeln('short')
+    else
+        writeln('bad');
+end.
