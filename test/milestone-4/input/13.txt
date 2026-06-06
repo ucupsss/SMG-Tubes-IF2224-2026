@@ -1,18 +1,12 @@
-program FunctionByReferenceParameter;
+program RealDivision;
 
 var
-    value: integer;
-    result: integer;
-
-function AddAndReturn(var target: integer; amount: integer): integer;
-begin
-    target := target + amount;
-    AddAndReturn := target;
-end;
+    half: real;
+    mixed: real;
 
 begin
-    value := 4;
-    result := AddAndReturn(value, 3);
-    writeln('value ', value);
-    writeln('result ', result);
+    half := 5 / 2;
+    mixed := 7.5 / 3;
+    writeln('half ', half);
+    writeln('mixed ', mixed);
 end.

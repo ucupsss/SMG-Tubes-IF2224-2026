@@ -2,38 +2,31 @@ Semantic diagnostics:
 No semantic errors or warnings.
 
 Intermediate Code:
-0 JMP 0 9
-1 INT 0 6
-2 LOD 0 3 ; indirect
-3 LOD 0 4
-4 OPR 0 2
-5 STO 0 3 ; indirect
-6 LOD 0 3 ; indirect
-7 STO 0 5
-8 RET 0 0
-9 INT 0 5
-10 LIT 0 4
-11 STO 0 3
-12 LDA 0 3
-13 LIT 0 3
-14 CAL 0 1
-15 STO 0 4
-16 LIT 0 "value "
-17 OPR 0 13
-18 LOD 0 3
-19 OPR 0 14
-20 LIT 0 "result "
-21 OPR 0 13
-22 LOD 0 4
-23 OPR 0 14
-24 RET 0 0
+0 INT 0 5
+1 LIT 0 5
+2 LIT 0 2
+3 OPR 0 15
+4 STO 0 3
+5 LIT 0 7.5
+6 LIT 0 3
+7 OPR 0 15
+8 STO 0 4
+9 LIT 0 "half "
+10 OPR 0 13
+11 LOD 0 3
+12 OPR 0 14
+13 LIT 0 "mixed "
+14 OPR 0 13
+15 LOD 0 4
+16 OPR 0 14
+17 RET 0 0
 
 Codegen diagnostics:
 No code generation errors.
 
 Program Output:
-value 7
-result 7
+half 2.5
+mixed 2.5
 
 Runtime diagnostics:
 No runtime errors.

@@ -1,17 +1,18 @@
-program ArrayScalarAccess;
+program ArrayCopy;
 
 type
     Index == 1..3;
     NumberArray == array[Index] of integer;
 
 var
-    nums: NumberArray;
-    sum: integer;
+    source: NumberArray;
+    target: NumberArray;
 
 begin
-    nums[1] := 2;
-    nums[2] := 3;
-    nums[3] := nums[1] + nums[2];
-    sum := nums[3];
-    writeln('array ', sum);
+    source[1] := 2;
+    source[2] := 5;
+    source[3] := 8;
+    target := source;
+    source[2] := 99;
+    writeln('array copy ', target[1] + target[2] + target[3]);
 end.

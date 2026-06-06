@@ -1,15 +1,19 @@
-program ByReferenceParameter;
+program ArrayElementByReference;
+
+type
+    Index == 1..2;
+    NumberArray == array[Index] of integer;
 
 var
-    n: integer;
+    slots: NumberArray;
 
-procedure Increment(var value: integer; delta: integer);
+procedure Bump(var slot: integer);
 begin
-    value := value + delta;
+    slot := slot + 1;
 end;
 
 begin
-    n := 1;
-    Increment(n, 2);
-    writeln('n ', n);
+    slots[2] := 8;
+    Bump(slots[2]);
+    writeln('bump ', slots[2]);
 end.

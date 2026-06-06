@@ -1,11 +1,23 @@
-program RealDivisionByZero;
+program AggregateByValueParameter;
+
+type
+    Point == record
+        x: integer;
+        y: integer;
+    end;
 
 var
-    numerator: real;
-    denominator: integer;
+    p: Point;
+
+procedure Show(value: Point);
+begin
+    value.x := value.x + 10;
+    writeln('record param ', value.x + value.y);
+end;
 
 begin
-    numerator := 4.0;
-    denominator := 0;
-    writeln(numerator / denominator);
+    p.x := 3;
+    p.y := 4;
+    Show(p);
+    writeln('record original ', p.x + p.y);
 end.

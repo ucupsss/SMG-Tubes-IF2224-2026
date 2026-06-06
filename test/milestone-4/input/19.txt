@@ -1,12 +1,9 @@
-program RealDivision;
+program InvalidRuntimeInput;
 
 var
-    half: real;
-    mixed: real;
+    n: integer;
 
 begin
-    half := 5 / 2;
-    mixed := 7.5 / 3;
-    writeln('half ', half);
-    writeln('mixed ', mixed);
+    readln(n);
+    writeln('unreachable ', n);
 end.

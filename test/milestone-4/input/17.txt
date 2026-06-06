@@ -1,19 +1,18 @@
-program ArrayElementByReference;
-
-type
-    Index == 1..2;
-    NumberArray == array[Index] of integer;
+program BasicInput;
 
 var
-    slots: NumberArray;
+    n: integer;
+    amount: real;
+    flag: boolean;
+    letter: char;
+    word: string;
 
-procedure Bump(var slot: integer);
 begin
-    slot := slot + 1;
-end;
-
-begin
-    slots[2] := 8;
-    Bump(slots[2]);
-    writeln('bump ', slots[2]);
+    read(n, amount);
+    readln(flag, letter, word);
+    writeln('n ', n + 1);
+    writeln('amount ', amount);
+    writeln('flag ', flag);
+    writeln('letter ', letter);
+    writeln('word ', word);
 end.

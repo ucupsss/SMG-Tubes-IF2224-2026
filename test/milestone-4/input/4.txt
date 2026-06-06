@@ -1,7 +1,15 @@
-program EmptyWriteln;
+program ForDownto;
+
+var
+    i, total: integer;
 
 begin
-    write('A');
-    writeln;
-    writeln('B');
+    total := 0;
+
+    for i := 3 downto 1 do
+    begin
+        total := total + i;
+    end;
+
+    writeln('down ', total);
 end.

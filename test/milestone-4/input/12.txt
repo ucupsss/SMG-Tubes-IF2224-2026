@@ -1,25 +1,16 @@
-program NestedRoutineFrame;
+program OrdinalArrayIndex;
+
+type
+    LetterRange == 'a'..'c';
+    LetterMap == array[LetterRange] of integer;
 
 var
-    g: integer;
-
-procedure Outer(x: integer);
-var
-    y: integer;
-
-procedure Inner(delta: integer);
-begin
-    y := y + delta;
-    g := g + y;
-end;
+    table: LetterMap;
+    key: char;
 
 begin
-    y := x;
-    Inner(2);
-    writeln('nested ', g);
-end;
-
-begin
-    g := 1;
-    Outer(3);
+    key := 'b';
+    table['a'] := 4;
+    table[key] := table['a'] + 1;
+    writeln('ordinal ', table['b']);
 end.

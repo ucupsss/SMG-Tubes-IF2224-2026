@@ -1,17 +1,19 @@
-program FunctionReturn;
+program ArrayOfRecordAccess;
+
+type
+    Index == 1..2;
+    Point == record
+        x: integer;
+        y: integer;
+    end;
+    PointArray == array[Index] of Point;
 
 var
-    z: integer;
-
-function Max(a, b: integer): integer;
-begin
-    if a > b then
-        Max := a
-    else
-        Max := b;
-end;
+    plist: PointArray;
 
 begin
-    z := Max(3, 5);
-    writeln('max ', z);
+    plist[1].x := 2;
+    plist[1].y := 5;
+    plist[2].x := plist[1].x + plist[1].y;
+    writeln('point ', plist[2].x);
 end.

@@ -1,15 +1,13 @@
-program ForDownto;
+program ShortCircuit;
 
 var
-    i, total: integer;
+    ok: boolean;
 
 begin
-    total := 0;
+    ok := true or (1 div 0 > 0);
 
-    for i := 3 downto 1 do
-    begin
-        total := total + i;
-    end;
-
-    writeln('down ', total);
+    if ok then
+        writeln('short')
+    else
+        writeln('bad');
 end.

@@ -1,21 +1,15 @@
-program AggregateElementCopy;
+program RuntimeArrayBounds;
 
 type
-    Index == 1..2;
-    Point == record
-        x: integer;
-        y: integer;
-    end;
-    PointArray == array[Index] of Point;
+    Index == 1..3;
+    Numbers == array[Index] of integer;
 
 var
-    source: PointArray;
-    target: PointArray;
+    nums: Numbers;
+    i: integer;
 
 begin
-    source[1].x := 6;
-    source[1].y := 7;
-    target[2] := source[1];
-    source[1].y := 100;
-    writeln('element copy ', target[2].x + target[2].y);
+    readln(i);
+    nums[i] := 42;
+    writeln('unreachable');
 end.

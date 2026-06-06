@@ -1,13 +1,25 @@
-program ShortCircuit;
+program NestedRoutineFrame;
 
 var
-    ok: boolean;
+    g: integer;
+
+procedure Outer(x: integer);
+var
+    y: integer;
+
+procedure Inner(delta: integer);
+begin
+    y := y + delta;
+    g := g + y;
+end;
 
 begin
-    ok := true or (1 div 0 > 0);
+    y := x;
+    Inner(2);
+    writeln('nested ', g);
+end;
 
-    if ok then
-        writeln('short')
-    else
-        writeln('bad');
+begin
+    g := 1;
+    Outer(3);
 end.

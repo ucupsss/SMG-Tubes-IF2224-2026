@@ -1,11 +1,10 @@
-program BasicArithmetic;
+program Hello;
 
 var
-    a, b, c: integer;
+    a, b: integer;
 
 begin
     a := 5;
-    b := 10;
-    c := (a + b) * 2 div 3;
-    writeln('Result = ', c);
+    b := a + 10;
+    writeln('Result = ', b);
 end.

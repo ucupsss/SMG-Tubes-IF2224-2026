@@ -2,24 +2,40 @@ Semantic diagnostics:
 No semantic errors or warnings.
 
 Intermediate Code:
-0 INT 0 5
-1 LIT 0 10
-2 STO 0 3
-3 LIT 0 0
-4 STO 0 4
-5 LOD 0 3
-6 LOD 0 4
-7 OPR 0 5
-8 OPR 0 14
-9 RET 0 0
+0 JMP 0 9
+1 INT 0 6
+2 LOD 0 3 ; indirect
+3 LOD 0 4
+4 OPR 0 2
+5 STO 0 3 ; indirect
+6 LOD 0 3 ; indirect
+7 STO 0 5
+8 RET 0 0
+9 INT 0 5
+10 LIT 0 4
+11 STO 0 3
+12 LDA 0 3
+13 LIT 0 3
+14 CAL 0 1
+15 STO 0 4
+16 LIT 0 "value "
+17 OPR 0 13
+18 LOD 0 3
+19 OPR 0 14
+20 LIT 0 "result "
+21 OPR 0 13
+22 LOD 0 4
+23 OPR 0 14
+24 RET 0 0
 
 Codegen diagnostics:
 No code generation errors.
 
 Program Output:
-<no output>
+value 7
+result 7
 
 Runtime diagnostics:
-Runtime error at instruction 7: division by zero (div)
+No runtime errors.
 
-Status: FAILED
+Status: SUCCESS

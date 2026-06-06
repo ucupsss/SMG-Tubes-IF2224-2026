@@ -1,10 +1,18 @@
-program RuntimeDivisionByZero;
+program FunctionByReferenceParameter;
 
 var
-    x, y: integer;
+    value: integer;
+    result: integer;
+
+function AddAndReturn(var target: integer; amount: integer): integer;
+begin
+    target := target + amount;
+    AddAndReturn := target;
+end;
 
 begin
-    x := 10;
-    y := 0;
-    writeln(x div y);
+    value := 4;
+    result := AddAndReturn(value, 3);
+    writeln('value ', value);
+    writeln('result ', result);
 end.

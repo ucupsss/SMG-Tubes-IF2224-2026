@@ -1,19 +1,22 @@
-program RecordCopy;
+program ArrayByValueParameter;
 
 type
-    Point == record
-        x: integer;
-        y: integer;
-    end;
+    Index == 1..3;
+    Numbers == array[Index] of integer;
 
 var
-    source: Point;
-    target: Point;
+    nums: Numbers;
+
+procedure Sum(values: Numbers);
+begin
+    values[2] := 100;
+    writeln('array param ', values[1] + values[2] + values[3]);
+end;
 
 begin
-    source.x := 3;
-    source.y := 4;
-    target := source;
-    source.x := 9;
-    writeln('record copy ', target.x + target.y);
+    nums[1] := 2;
+    nums[2] := 5;
+    nums[3] := 8;
+    Sum(nums);
+    writeln('array original ', nums[1] + nums[2] + nums[3]);
 end.

@@ -1,16 +1,18 @@
-program OrdinalArrayIndex;
+program StructuredInputTargets;
 
 type
-    LetterRange == 'a'..'c';
-    LetterMap == array[LetterRange] of integer;
+    Index == 1..2;
+    Numbers == array[Index] of integer;
+    RecordPair == record
+        left: integer;
+        right: integer;
+    end;
 
 var
-    table: LetterMap;
-    key: char;
+    nums: Numbers;
+    pair: RecordPair;
 
 begin
-    key := 'b';
-    table['a'] := 4;
-    table[key] := table['a'] + 1;
-    writeln('ordinal ', table['b']);
+    readln(nums[2], pair.left, pair.right);
+    writeln('input targets ', nums[2] + pair.left + pair.right);
 end.

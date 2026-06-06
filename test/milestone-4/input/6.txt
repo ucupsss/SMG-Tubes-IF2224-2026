@@ -1,13 +1,10 @@
-program ElseBranch;
+program RuntimeDivisionByZero;
 
 var
-    x: integer;
+    x, y: integer;
 
 begin
-    x := 1;
-
-    if x > 2 then
-        writeln('then')
-    else
-        writeln('else ', x);
+    x := 10;
+    y := 0;
+    writeln(x div y);
 end.
