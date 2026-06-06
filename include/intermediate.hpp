@@ -38,6 +38,7 @@ enum class OpCode {
     LDA,
     LDI,
     LDR,
+    BND,
     STO,
     STI,
     CPY,

@@ -5,6 +5,7 @@
 #include <cctype>
 #include <exception>
 #include <iostream>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -13,6 +14,22 @@ namespace {
 
 bool isValidInstructionAddress(const IntermediateProgram& program, int address) {
     return address >= 0 && address < static_cast<int>(program.instructions.size());
+}
+
+bool ordinalValue(const RuntimeValue& value, int& ordinal) {
+    switch (value.kind) {
+        case RuntimeValueKind::Integer:
+            ordinal = value.integerValue;
+            return true;
+        case RuntimeValueKind::Boolean:
+            ordinal = value.booleanValue ? 1 : 0;
+            return true;
+        case RuntimeValueKind::Char:
+            ordinal = static_cast<unsigned char>(value.charValue);
+            return true;
+        default:
+            return false;
+    }
 }
 
 std::string lowercase(std::string text) {
@@ -51,7 +68,44 @@ void StackMachineInterpreter::runtimeError(const std::string& message) {
 }
 
 void StackMachineInterpreter::push(RuntimeValue value) {
+    if (!canPushOperand(1, "push")) {
+        return;
+    }
+
     stack.push_back(std::move(value));
+}
+
+bool StackMachineInterpreter::ensureMemorySize(size_t requiredSize, const std::string& context) {
+    if (requiredSize > maxMemorySlots) {
+        runtimeError(context + ": stack overflow: kebutuhan memori " +
+                     std::to_string(requiredSize) +
+                     " slot melebihi batas " +
+                     std::to_string(maxMemorySlots));
+        return false;
+    }
+
+    if (memory.size() >= requiredSize) {
+        return true;
+    }
+
+    try {
+        memory.resize(requiredSize);
+    } catch (const std::exception& error) {
+        runtimeError(context + ": gagal mengalokasikan memori: " + error.what());
+        return false;
+    }
+
+    return true;
+}
+
+bool StackMachineInterpreter::canPushOperand(size_t count, const std::string& context) {
+    if (count > maxOperandStackSlots || stack.size() > maxOperandStackSlots - count) {
+        runtimeError(context + ": stack overflow: operand stack melebihi batas " +
+                     std::to_string(maxOperandStackSlots));
+        return false;
+    }
+
+    return true;
 }
 
 RuntimeValue StackMachineInterpreter::pop() {
@@ -268,9 +322,20 @@ bool StackMachineInterpreter::executeInstruction(
                 runtimeError("INT: ukuran memori tidak valid: " + std::to_string(size));
                 return false;
             }
-            const int requiredSize = base + size;
-            if (static_cast<int>(memory.size()) < requiredSize) {
-                memory.resize(static_cast<size_t>(requiredSize));
+
+            if (base < 0) {
+                runtimeError("INT: base pointer negatif");
+                return false;
+            }
+
+            const size_t requiredSize = static_cast<size_t>(base) + static_cast<size_t>(size);
+            if (requiredSize > static_cast<size_t>(std::numeric_limits<int>::max())) {
+                runtimeError("INT: ukuran memori terlalu besar");
+                return false;
+            }
+
+            if (!ensureMemorySize(requiredSize, "INT")) {
+                return false;
             }
             break;
         }
@@ -313,6 +378,10 @@ bool StackMachineInterpreter::executeInstruction(
                 return false;
             }
 
+            if (!canPushOperand(static_cast<size_t>(size), "LDR")) {
+                return false;
+            }
+
             const int sourceAddress = popAddress("LDR");
             if (result.halted) return false;
 
@@ -323,6 +392,33 @@ bool StackMachineInterpreter::executeInstruction(
 
             for (int offset = 0; offset < size; ++offset) {
                 push(memory[static_cast<size_t>(sourceAddress + offset)]);
+            }
+            break;
+        }
+        // BND low high
+        case OpCode::BND: {
+            if (stack.empty()) {
+                runtimeError("BND: stack underflow: indeks array tidak tersedia");
+                return false;
+            }
+
+            int indexValue = 0;
+            if (!ordinalValue(stack.back(), indexValue)) {
+                runtimeError("BND: indeks array harus bertipe ordinal");
+                return false;
+            }
+
+            const int low = instruction.level;
+            const int high = instruction.operand;
+            if (indexValue < low || indexValue > high) {
+                runtimeError("BND: array index out of bounds " +
+                             std::to_string(indexValue) +
+                             " (rentang valid " +
+                             std::to_string(low) +
+                             ".." +
+                             std::to_string(high) +
+                             ")");
+                return false;
             }
             break;
         }
@@ -471,6 +567,16 @@ bool StackMachineInterpreter::executeInstruction(
             }
 
             const int oldBase = base;
+            if (dynamicLink.integerValue < 0 || dynamicLink.integerValue > oldBase) {
+                runtimeError("RET: dynamic link points outside the active stack frame");
+                return false;
+            }
+
+            if (!isValidInstructionAddress(program, returnAddressValue.integerValue)) {
+                runtimeError("RET: return address is not a valid instruction");
+                return false;
+            }
+
             base = dynamicLink.integerValue;
             ip = returnAddressValue.integerValue;
             memory.resize(static_cast<size_t>(oldBase));
@@ -492,8 +598,31 @@ bool StackMachineInterpreter::executeInstruction(
                 return false;
             }
 
+            if (routine->parameterCount < 0) {
+                runtimeError("CAL: invalid routine parameter count " +
+                             std::to_string(routine->parameterCount));
+                return false;
+            }
+
             if (static_cast<int>(stack.size()) < routine->parameterCount) {
                 runtimeError("CAL: not enough argument values on stack");
+                return false;
+            }
+
+            if (routineStack.size() >= maxCallDepth) {
+                runtimeError("CAL: stack overflow: call depth melebihi batas " +
+                             std::to_string(maxCallDepth));
+                return false;
+            }
+
+            if (routine->frameSize < 3) {
+                runtimeError("CAL: invalid routine frame size " +
+                             std::to_string(routine->frameSize));
+                return false;
+            }
+
+            if (routine->frameSize < 3 + routine->parameterCount) {
+                runtimeError("CAL: routine frame is too small for its parameters");
                 return false;
             }
 
@@ -501,7 +630,17 @@ bool StackMachineInterpreter::executeInstruction(
             if (result.halted) return false;
 
             const int frameBase = static_cast<int>(memory.size());
-            memory.resize(static_cast<size_t>(frameBase + routine->frameSize));
+            if (routine->frameSize > std::numeric_limits<int>::max() - frameBase) {
+                runtimeError("CAL: ukuran frame terlalu besar");
+                return false;
+            }
+
+            const size_t requiredSize =
+                static_cast<size_t>(frameBase) + static_cast<size_t>(routine->frameSize);
+            if (!ensureMemorySize(requiredSize, "CAL")) {
+                return false;
+            }
+
             memory[static_cast<size_t>(frameBase)] = RuntimeValue::integer(staticBase);
             memory[static_cast<size_t>(frameBase + 1)] = RuntimeValue::integer(base);
             memory[static_cast<size_t>(frameBase + 2)] = RuntimeValue::integer(ip);

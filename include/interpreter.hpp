@@ -25,11 +25,17 @@ public:
     ExecutionResult execute(const IntermediateProgram& program);
 
 private:
+    static constexpr size_t maxCallDepth = 1000;
+    static constexpr size_t maxMemorySlots = 1000000;
+    static constexpr size_t maxOperandStackSlots = 1000000;
+
     void reset();
     bool executeInstruction(const IntermediateProgram& program, const Instruction& instruction);
 
     RuntimeValue pop();
     void push(RuntimeValue value);
+    bool ensureMemorySize(size_t requiredSize, const std::string& context);
+    bool canPushOperand(size_t count, const std::string& context);
     RuntimeValue load(int level, int address, bool indirect);
     void store(int level, int address, RuntimeValue value, bool indirect);
     int resolveBase(int level);

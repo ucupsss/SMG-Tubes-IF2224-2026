@@ -27,6 +27,14 @@ Instruction makeJump(OpCode opcode) {
     return instruction;
 }
 
+Instruction makeBoundsCheck(int low, int high) {
+    Instruction instruction;
+    instruction.opcode = OpCode::BND;
+    instruction.level = low;
+    instruction.operand = high;
+    return instruction;
+}
+
 bool mapBinaryOperator(const std::string& op, OperationCode& operation) {
     const std::string lowered = text_util::lowercase(op);
 
@@ -327,6 +335,8 @@ bool CodeGenerator::emitAddressAddressable(const ExpressionNode& node) {
             if (result.diagnostics.size() != diagnosticCount) {
                 return false;
             }
+
+            emit(makeBoundsCheck(arrayEntry.low, arrayEntry.high));
 
             if (arrayEntry.low != 0) {
                 emit(makeLiteral(RuntimeValue::integer(arrayEntry.low)));
