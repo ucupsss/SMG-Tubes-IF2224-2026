@@ -2,7 +2,7 @@ Semantic diagnostics:
 No semantic errors or warnings.
 
 Intermediate Code:
-0 INT 0 4
+0 INT 0 5
 1 LIT 0 true
 2 JPC 0 5
 3 LIT 0 true
@@ -17,14 +17,34 @@ Intermediate Code:
 12 JMP 0 14
 13 LIT 0 false
 14 STO 0 3
-15 LOD 0 3
-16 JPC 0 20
-17 LIT 0 "short"
-18 OPR 0 14
-19 JMP 0 22
-20 LIT 0 "bad"
-21 OPR 0 14
-22 RET 0 0
+15 LIT 0 false
+16 JPC 0 25
+17 LIT 0 1
+18 LIT 0 0
+19 OPR 0 5
+20 LIT 0 0
+21 OPR 0 11
+22 JPC 0 25
+23 LIT 0 true
+24 JMP 0 26
+25 LIT 0 false
+26 STO 0 4
+27 LOD 0 3
+28 JPC 0 35
+29 LOD 0 4
+30 LIT 0 false
+31 OPR 0 7
+32 JPC 0 35
+33 LIT 0 true
+34 JMP 0 36
+35 LIT 0 false
+36 JPC 0 40
+37 LIT 0 "short"
+38 OPR 0 14
+39 JMP 0 42
+40 LIT 0 "bad"
+41 OPR 0 14
+42 RET 0 0
 
 Codegen diagnostics:
 No code generation errors.

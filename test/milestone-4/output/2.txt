@@ -33,13 +33,29 @@ Intermediate Code:
 28 OPR 0 13
 29 LOD 0 4
 30 OPR 0 14
-31 RET 0 0
+31 LOD 0 4
+32 LIT 0 2
+33 OPR 0 6
+34 LIT 0 0
+35 OPR 0 8
+36 JPC 0 42
+37 LIT 0 "odd "
+38 OPR 0 13
+39 LOD 0 4
+40 OPR 0 14
+41 JMP 0 46
+42 LIT 0 "even "
+43 OPR 0 13
+44 LOD 0 4
+45 OPR 0 14
+46 RET 0 0
 
 Codegen diagnostics:
 No code generation errors.
 
 Program Output:
 large 6
+even 6
 
 Runtime diagnostics:
 No runtime errors.

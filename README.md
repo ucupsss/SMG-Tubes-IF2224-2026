@@ -119,19 +119,19 @@ Tersedia 24 test case yang mencakup eksekusi valid dan error handling.
 | 2 | `while`, `if-else`, dan akumulasi nilai | Success |
 | 3 | `for-to`, `repeat-until`, dan `case` | Success |
 | 4 | `for-downto` | Success |
-| 5 | Short-circuit Boolean `or` | Success |
+| 5 | Short-circuit Boolean `and/or` dan unary `not` | Success |
 | 6 | Runtime error: integer division by zero | Failed |
 | 7 | Nested routine dan static link | Success |
 | 8 | Function return dan parameter by-reference | Success |
 | 9 | Array scalar access dan assignment elemen | Success |
 | 10 | Array of record dan akses field bertingkat | Success |
 | 11 | Parameter by-reference ke elemen array | Success |
-| 12 | Array dengan indeks ordinal `char` | Success |
-| 13 | Real division dan operasi campuran integer-real | Success |
+| 12 | Array dengan indeks ordinal `char` dan enum sederhana | Success |
+| 13 | Real division, operasi campuran integer-real, dan `write` | Success |
 | 14 | Assignment/copy array | Success |
 | 15 | Copy elemen aggregate array of record | Success |
 | 16 | Copy aggregate melalui parameter by-reference | Success |
-| 17 | `read`, `readln`, dan input scalar berbagai tipe | Success |
+| 17 | `read`, `readln` tanpa argumen, dan input scalar berbagai tipe | Success |
 | 18 | Input ke target terstruktur scalar: elemen array dan field record | Success |
 | 19 | Runtime error: input tidak sesuai tipe target | Failed |
 | 20 | Parameter record by-value | Success |

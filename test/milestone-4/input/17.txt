@@ -8,6 +8,7 @@ var
     word: string;
 
 begin
+    readln;
     read(n, amount);
     readln(flag, letter, word);
     writeln('n ', n + 1);

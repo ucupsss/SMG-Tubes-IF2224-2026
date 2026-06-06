@@ -1,5 +1,9 @@
 program ControlFlow;
 
+const
+    Limit == 3;
+    Threshold == 5;
+
 var
     i, total: integer;
 
@@ -7,14 +11,19 @@ begin
     total := 0;
     i := 1;
 
-    while i <= 3 do
+    while i <= Limit do
     begin
         total := total + i;
         i := i + 1;
     end;
 
-    if total > 5 then
+    if total > Threshold then
         writeln('large ', total)
     else
         writeln('small ', total);
+
+    if total mod 2 <> 0 then
+        writeln('odd ', total)
+    else
+        writeln('even ', total);
 end.

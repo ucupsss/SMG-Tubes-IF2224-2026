@@ -3,14 +3,20 @@ program OrdinalArrayIndex;
 type
     LetterRange == 'a'..'c';
     LetterMap == array[LetterRange] of integer;
+    Color == (Red, Green, Blue);
 
 var
     table: LetterMap;
     key: char;
+    shade: Color;
 
 begin
     key := 'b';
+    shade := Green;
     table['a'] := 4;
     table[key] := table['a'] + 1;
     writeln('ordinal ', table['b']);
+
+    if shade == Green then
+        writeln('enum ok');
 end.
